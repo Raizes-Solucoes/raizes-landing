@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raízes Soluções | Tecnologia com Raízes Profundas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* HERO */
+        .hero-bg {
+            background-image: url('/raizes_aquarela_final.jpg');
+            background-size: cover;
+            background-position: 62% top;
+            height: 100svh; min-height: 600px; width: 100%; position: relative;
+        }
+        @media (max-width: 480px) { .hero-bg { background-position: 58% 20%; } }
+        @media (min-width: 481px) and (max-width: 767px) { .hero-bg { background-position: 60% 15%; } }
+        @media (min-width: 768px) and (max-width: 1279px) { .hero-bg { background-position: 61% top; } }
+        @media (min-width: 1280px) { .hero-bg { background-position: 62% top; } }
+
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(249,247,242,0) 0%, rgba(249,247,242,0) 45%, rgba(249,247,242,0.3) 65%, rgba(249,247,242,0.9) 88%, rgba(249,247,242,1) 100%);
+            position: absolute; inset: 0; z-index: 1;
+        }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { background: rgba(255,255,255,0.95); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.06); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* PROCESSO — LINHA */
+        .process-line { position: relative; }
+        .process-line::before { content: ''; position: absolute; left: 28px; top: 56px; bottom: 0; width: 2px; background: linear-gradient(to bottom, #394dfa, #10b981); opacity: 0.2; }
+
+        /* NAVBAR */
+        .nav-scrolled { background: rgba(249,247,242,0.92) !important; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(60,61,55,0.05); height: 70px !important; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center bg-transparent">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+            <div class="hidden md:flex gap-10 text-sm font-medium uppercase tracking-widest text-brand-earth/60">
+                <a href="#manifesto" class="hover:text-brand-blue transition-colors">Manifesto</a>
+                <a href="#servicos" class="hover:text-brand-blue transition-colors">Serviços</a>
+                <a href="#processo" class="hover:text-brand-blue transition-colors">Processo</a>
+                <a href="#contato" class="hover:text-brand-blue transition-colors">Contato</a>
+            </div>
+            <a href="#contato" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg">Falar com a equipe</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero-bg">
+        <div class="hero-overlay"></div>
+        <div class="container mx-auto px-4 sm:px-6 h-full flex flex-col justify-end items-center pb-8 sm:pb-12 md:pb-16 relative z-10">
+            <div class="max-w-2xl space-y-4 text-center">
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    Tecnologia com <br />
+                    <span class="italic text-brand-leaf underline decoration-brand-blue/40">raízes profundas.</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-brand-earth/80 font-medium max-w-xl mx-auto leading-snug">
+                    Não vendemos software. Entendemos o problema, construímos a solução certa — e ficamos ao lado até ela dar frutos.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2 justify-center">
+                    <a href="#servicos" class="btn-gradient text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Conhecer Soluções</a>
+                    <a href="#manifesto" class="bg-white border-2 border-brand-earth text-brand-earth px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Ver Manifesto</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MANIFESTO -->
+    <section id="manifesto" class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="reveal space-y-6 text-center md:text-left">
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Manifesto</span>
+                    <h2 class="serif-title text-4xl md:text-6xl font-bold leading-tight">
+                        O nome não é <br class="hidden md:block"/> por acaso.
+                    </h2>
+                </div>
+                <div class="mt-16 grid md:grid-cols-2 gap-12 md:gap-20 reveal">
+                    <div class="space-y-6">
+                        <p class="text-xl md:text-2xl font-medium text-brand-earth leading-relaxed">
+                            "Raízes" representa o que acreditamos: que toda solução de tecnologia precisa partir de uma <em>base sólida</em>, construída sobre o entendimento real do problema — e não sobre suposições.
+                        </p>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">
+                            Enquanto a maioria das empresas de tecnologia entrega um produto e pede para o cliente se adaptar a ele, nós fazemos o caminho contrário. Começamos ouvindo. Profundamente. Até entender a dor em sua essência — sua raiz.
+                        </p>
+                    </div>
+                    <div class="space-y-6">
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">
+                            Só então construímos. Não existe template. Não existe solução pronta. Cada projeto nasce do zero, moldado à realidade de quem nos contratou.
+                        </p>
+                        <p class="text-xl font-bold text-brand-earth leading-relaxed">
+                            O resultado são sistemas que crescem com a empresa, resistem ao tempo e formam a base sobre a qual o negócio pode escalar com segurança.
+                        </p>
+                        <div class="pt-4 border-l-4 border-brand-blue pl-6">
+                            <p class="text-brand-earth/50 text-sm font-bold uppercase tracking-widest">Nossa missão</p>
+                            <p class="text-brand-earth text-lg font-semibold italic mt-1">"Entender a raiz do problema. Construir soluções feitas para durar."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="py-16 bg-brand-earth relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x divide-white/10 reveal">
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">2<span class="text-brand-cyan text-3xl">sem</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Da ideia ao protótipo funcional</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">100<span class="text-brand-cyan text-3xl">%</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Projetos aprovados no POC</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">3<span class="text-brand-cyan text-3xl">x</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Mais rápido que a média do mercado</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">0<span class="text-brand-cyan text-3xl">.</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Projetos abandonados no meio</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 top-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <section id="servicos" class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">O que fazemos</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Três frentes. <br/><span class="italic text-brand-leaf">Um único foco.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Cada solução é escolhida a dedo para atacar o problema certo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 reveal">
+                <!-- Miller CRM — Grande -->
+                <div class="md:col-span-7 glass-card p-8 md:p-12 flex flex-col justify-between group overflow-hidden relative shadow-2xl shadow-brand-earth/5">
+                    <div class="space-y-5 relative z-10">
+                        <div class="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.658-2.658c.19.012.38.022.57.032Z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-blue mb-2">Produto Próprio</p>
+                            <h3 class="serif-title text-3xl md:text-4xl font-bold">Miller CRM</h3>
+                            <p class="text-brand-earth/60 mt-3 text-lg leading-relaxed max-w-md">O CRM desenhado para quem vive no WhatsApp. Centraliza atendimentos, organiza leads e dá à sua equipe inteira uma única linha de frente — sem caos, sem mensagem perdida.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 pt-2">
+                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">WhatsApp Nativo</span>
+                            <span class="px-4 py-2 bg-brand-leaf/10 text-brand-leaf text-xs font-bold rounded-full">Multi-usuário</span>
+                            <span class="px-4 py-2 bg-brand-earth/8 text-brand-earth text-xs font-bold rounded-full">100% Nuvem</span>
+                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">IA Integrada</span>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex items-center gap-4">
+                        <a href="#contato" class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-sm shadow-lg">Quero conhecer</a>
+                        <span class="text-brand-earth/30 text-sm font-medium">Demo disponível</span>
+                    </div>
+                    <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl group-hover:bg-brand-blue/10 transition-all duration-700"></div>
+                </div>
+
+                <!-- Coluna direita -->
+                <div class="md:col-span-5 flex flex-col gap-6">
+                    <!-- Software Personalizado -->
+                    <div class="glass-card p-8 bg-brand-earth text-white flex-1 flex flex-col justify-between shadow-xl">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
+                            </div>
+                            <h3 class="serif-title text-2xl font-bold">Software <span class="italic text-brand-green">personalizado.</span></h3>
+                            <p class="text-white/55 text-sm leading-relaxed">Nenhum negócio é igual ao outro. Desenvolvemos do zero — do backend escalável ao frontend que seus clientes vão amar — arquitetado para crescer com você.</p>
+                        </div>
+                        <a href="#contato" class="mt-6 inline-block py-3 px-6 border border-white/20 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-earth transition-all text-center">Contar meu projeto</a>
+                    </div>
+
+                    <!-- Agentes de IA -->
+                    <div class="glass-card p-8 bg-gradient-to-br from-brand-leaf to-brand-leaf/80 text-white flex-1 flex flex-col justify-between shadow-xl">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/></svg>
+                            </div>
+                            <h3 class="serif-title text-2xl font-bold">Agentes de <span class="italic">Inteligência Artificial.</span></h3>
+                            <p class="text-white/70 text-sm leading-relaxed">Automações que aprendem, decidem e agem. Atendimento autônomo, extração de dados, qualificação de leads — IA que trabalha enquanto você dorme.</p>
+                        </div>
+                        <a href="#contato" class="mt-6 inline-block py-3 px-6 border border-white/30 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-leaf transition-all text-center">Explorar possibilidades</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESSO -->
+    <section id="processo" class="py-24 md:py-40 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-20 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue mb-4">Como trabalhamos</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Sem surpresas. <br/><span class="italic text-brand-leaf">Só resultados.</span></h2>
+                <p class="text-brand-earth/50 text-lg mt-4">Do primeiro contato até o produto em produção — um processo próximo, transparente e iterativo.</p>
+            </div>
+
+            <div class="process-line max-w-3xl space-y-0 reveal">
+                <!-- Passo 1 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10">1</div>
+                    <div class="pt-2 space-y-2">
+                        <h3 class="serif-title text-2xl font-bold">Diagnóstico profundo</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Antes de escrever uma linha de código, sentamos com você. Entrevistamos, mapeamos processos, entendemos as dores reais — e não as que você acha que tem. O problema verdadeiro raramente é o que aparece na superfície.</p>
+                    </div>
+                </div>
+                <!-- Passo 2 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10">2</div>
+                    <div class="pt-2 space-y-2">
+                        <h3 class="serif-title text-2xl font-bold">POC em até 2 semanas</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Construímos um protótipo funcional — real, não um mockup bonito. Em até duas semanas você coloca as mãos na solução e valida se ela resolve cada dor levantada. Contato diário garantido nessa fase.</p>
+                    </div>
+                </div>
+                <!-- Passo 3 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-green/30 z-10">3</div>
+                    <div class="pt-2 space-y-2">
+                        <h3 class="serif-title text-2xl font-bold">Validação e aprovação</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Você testa, quebra, questiona e aprova. Nenhuma linha de desenvolvimento final começa antes do POC estar perfeito. Esse passo existe para uma razão simples: você sabe o que quer, e nós precisamos provar que entendemos.</p>
+                    </div>
+                </div>
+                <!-- Passo 4 -->
+                <div class="flex gap-8">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-earth flex items-center justify-center text-white font-bold text-xl shadow-lg z-10">4</div>
+                    <div class="pt-2 space-y-2">
+                        <h3 class="serif-title text-2xl font-bold">Produto final que supera expectativas</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Com o caminho validado, construímos o produto final sem atalhos. Pode ser mais trabalhoso — mas o resultado é um sistema robusto, escalável e que o seu time vai querer usar. Não apenas mais um software abandonado.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- POR QUE A RAÍZES -->
+    <section class="py-24 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue mb-4">Por que a Raízes</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold">A diferença que <br/><span class="italic text-brand-leaf">você vai sentir.</span></h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+                <div class="glass-card p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.311a8.25 8.25 0 0 1-3 0M18.75 10.5h.008v.008h-.008V10.5Zm-12 0h.008v.008H6.75V10.5Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">A solução se adapta a você</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Você não muda seu processo para usar nosso software. Nós moldamos o software ao seu processo — do jeito que seu time já trabalha.</p>
+                </div>
+                <div class="glass-card p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Contato diário, de verdade</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Nada de tickets e filas de suporte. Enquanto o projeto estiver em desenvolvimento, você tem acesso direto à equipe todos os dias.</p>
+                </div>
+                <div class="glass-card p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Construído para escalar</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Não entregamos código que funciona hoje e trava amanhã. Cada arquitetura é pensada para suportar o crescimento que você está planejando.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA — CHAT DE DIAGNÓSTICO COM IA -->
+    <section id="contato" class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-5xl mx-auto rounded-[40px] bg-brand-earth p-10 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative overflow-hidden">
+                <div class="relative z-10">
+
+                    <!-- ESTADO 1: Chamada para ação -->
+                    <div id="cta-intro" class="text-center space-y-8 py-8">
+                        <div class="space-y-4">
+                            <h2 class="serif-title text-4xl md:text-6xl font-bold text-white leading-tight">Pronto para fincar <br class="hidden md:block"/> suas raízes?</h2>
+                            <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">Não preencha mais um formulário que cai no vazio. Fala com nosso agente — ele entende a sua dor antes da equipe entrar em contato.</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onclick="startChat()" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all">
+                                💬 Iniciar Diagnóstico com IA
+                            </button>
+                        </div>
+                        <p class="text-white/20 text-xs">Em média 5 minutos. Sem compromisso, sem pitch de vendas.</p>
+                    </div>
+
+                    <!-- ESTADO 2: Chat -->
+                    <div id="cta-chat" class="hidden flex-col h-full">
+                        <div class="flex items-center gap-3 pb-4 border-b border-white/10 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-brand-green/20 flex items-center justify-center text-lg">🌱</div>
+                            <div>
+                                <p class="text-white font-bold text-sm">Agente Raízes</p>
+                                <p class="text-white/30 text-xs">Diagnóstico gratuito • Responde na hora</p>
+                            </div>
+                            <div class="ml-auto w-2 h-2 rounded-full bg-brand-green animate-pulse"></div>
+                        </div>
+
+                        <!-- Mensagens -->
+                        <div id="chat-messages" class="flex flex-col gap-3 min-h-64 max-h-96 overflow-y-auto pb-2 pr-1 scrollbar-hide">
+                        </div>
+
+                        <!-- Typing indicator -->
+                        <div id="chat-typing" class="hidden items-center gap-2 mt-2 mb-1">
+                            <div class="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center text-sm">🌱</div>
+                            <div class="flex gap-1 bg-white/5 rounded-2xl px-4 py-3">
+                                <span class="w-2 h-2 bg-white/40 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                                <span class="w-2 h-2 bg-white/40 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+                                <span class="w-2 h-2 bg-white/40 rounded-full animate-bounce" style="animation-delay:300ms"></span>
+                            </div>
+                        </div>
+
+                        <!-- Input -->
+                        <div class="flex gap-3 mt-4 pt-4 border-t border-white/10">
+                            <input id="chat-input" type="text" placeholder="Digite sua resposta..."
+                                class="flex-1 bg-white/8 border border-white/15 rounded-2xl px-5 py-4 text-white placeholder:text-white/25 focus:border-brand-green outline-none transition-all text-sm"
+                                onkeydown="if(event.key==='Enter') sendMessage()" />
+                            <button onclick="sendMessage()" id="chat-send"
+                                class="btn-gradient text-white px-5 py-4 rounded-2xl font-bold text-sm shadow-lg flex-none">
+                                Enviar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO 3: Sucesso -->
+                    <div id="cta-success" class="hidden text-center py-12 space-y-6">
+                        <div class="text-6xl">🌳</div>
+                        <h3 class="serif-title text-3xl md:text-4xl font-bold text-white">Perfeito! Suas raízes estão fincadas.</h3>
+                        <p class="text-white/50 text-lg max-w-md mx-auto">Nossa equipe recebeu o diagnóstico completo e entrará em contato em até 24h com uma proposta personalizada.</p>
+                        <p class="text-brand-green font-bold">Até logo! 🌱</p>
+                    </div>
+
+                </div>
+                <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-blue/20 blur-[120px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-green/10 blur-[120px] rounded-full pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid md:grid-cols-3 items-center gap-8 text-center md:text-left">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesagencia.com.br</p>
+            </div>
+            <div class="text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+                &copy; 2026. Todos os direitos reservados. <br/>Feito para durar.
+            </div>
+            <div class="flex justify-center md:justify-end gap-8">
+                <a href="#" class="text-xs font-bold text-brand-earth/35 hover:text-brand-blue uppercase tracking-widest transition-colors">LinkedIn</a>
+                <a href="#" class="text-xs font-bold text-brand-earth/35 hover:text-brand-green uppercase tracking-widest transition-colors">Instagram</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+    <script>
+        const SUPABASE_URL = "https://mselftsinxinawzsgfyx.supabase.co";
+        const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zZWxmdHNpbnhpbmF3enNnZnl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MDM1NDgsImV4cCI6MjA4NjM3OTU0OH0.DPC5AooUYDh6s8Cu5OkIGCzueauVuZyKAowNQCglBXw";
+        const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/raizes-chat`;
+
+        let messages = [];
+        let chatStarted = false;
+        let leadCollected = false;
+
+        function startChat() {
+            document.getElementById('cta-intro').classList.add('hidden');
+            document.getElementById('cta-chat').classList.remove('hidden');
+            document.getElementById('cta-chat').classList.add('flex');
+            if (!chatStarted) {
+                chatStarted = true;
+                sendToAgent(null); // Inicia a conversa
+            }
+        }
+
+        function addMessage(role, text) {
+            const div = document.getElementById('chat-messages');
+            const isUser = role === 'user';
+            const bubble = document.createElement('div');
+            bubble.className = `flex gap-2 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
+            bubble.innerHTML = isUser
+                ? `<div class="max-w-xs md:max-w-sm bg-brand-blue/80 text-white rounded-2xl rounded-br-sm px-5 py-3 text-sm leading-relaxed">${text}</div>`
+                : `<div class="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center text-sm flex-none">🌱</div>
+                   <div class="max-w-xs md:max-w-sm bg-white/8 text-white/90 rounded-2xl rounded-bl-sm px-5 py-3 text-sm leading-relaxed">${text}</div>`;
+            div.appendChild(bubble);
+            div.scrollTop = div.scrollHeight;
+        }
+
+        function setTyping(show) {
+            const t = document.getElementById('chat-typing');
+            t.classList.toggle('hidden', !show);
+            t.classList.toggle('flex', show);
+            if (show) document.getElementById('chat-messages').scrollTop = 99999;
+        }
+
+        async function sendToAgent(userText) {
+            if (userText) {
+                messages.push({ role: 'user', content: userText });
+                addMessage('user', userText);
+            }
+
+            const input = document.getElementById('chat-input');
+            const btn = document.getElementById('chat-send');
+            if (input) { input.disabled = true; btn.disabled = true; }
+            setTyping(true);
+
+            try {
+                const res = await fetch(FUNCTION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON,
+                        'Authorization': `Bearer ${SUPABASE_ANON}`
+                    },
+                    body: JSON.stringify({ messages })
+                });
+
+                const data = await res.json();
+                setTyping(false);
+
+                if (data.error) {
+                    addMessage('assistant', 'Ops, tive um problema técnico. Tente novamente em instantes.');
+                    return;
+                }
+
+                messages.push({ role: 'assistant', content: data.reply });
+                addMessage('assistant', data.reply);
+
+                if (data.lead) {
+                    leadCollected = true;
+                    setTimeout(() => {
+                        document.getElementById('cta-chat').classList.add('hidden');
+                        document.getElementById('cta-chat').classList.remove('flex');
+                        document.getElementById('cta-success').classList.remove('hidden');
+                    }, 2500);
+                }
+            } catch (e) {
+                setTyping(false);
+                addMessage('assistant', 'Ops, houve uma instabilidade. Tente de novo!');
+            } finally {
+                if (input && !leadCollected) { input.disabled = false; btn.disabled = false; input.focus(); }
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || leadCollected) return;
+            input.value = '';
+            sendToAgent(text);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raízes Agência — Soluções Digitais que Crescem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #070E09;
+    --dark: #0D1F10;
+    --green-deep: #142818;
+    --green-mid: #2D5A3D;
+    --green-accent: #6BBF7A;
+    --gold: #C4A254;
+    --cream: #F0E6CC;
+    --cream-dim: #C8BB9E;
+    --white: #FAFAF7;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--black);
+    color: var(--cream);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ─── CUSTOM CURSOR ─── */
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--green-accent);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: screen;
+  }
+  #cursor-ring {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(107,191,122,0.5);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.45s cubic-bezier(0.23,1,0.32,1), width 0.3s, height 0.3s, opacity 0.3s;
+  }
+  body:hover #cursor { transform: translate(-50%,-50%); }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 2px; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 4rem;
+    background: linear-gradient(to bottom, rgba(7,14,9,0.9) 0%, transparent 100%);
+    backdrop-filter: blur(8px);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--green-accent); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    color: var(--cream-dim);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--green-accent); }
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--green-accent);
+    color: var(--green-accent);
+    padding: 0.6rem 1.5rem;
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  .nav-cta:hover { background: var(--green-accent); color: var(--black); }
+
+  /* ─── HERO ─── */
+  #hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 4rem;
+    overflow: hidden;
+  }
+  #root-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.55;
+  }
+  .hero-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green-accent);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.9s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 9vw, 9rem);
+    font-weight: 300;
+    line-height: 0.92;
+    color: var(--white);
+    position: relative;
+    z-index: 1;
+  }
+  .hero-title .line { overflow: hidden; display: block; }
+  .hero-title .line span {
+    display: block;
+    transform: translateY(110%);
+    animation: slideUp 1s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  }
+  .hero-title .line:nth-child(1) span { animation-delay: 0.5s; }
+  .hero-title .line:nth-child(2) span { animation-delay: 0.7s; }
+  .hero-title .line:nth-child(3) span { animation-delay: 0.9s; }
+  .hero-title em {
+    font-style: italic;
+    color: var(--green-accent);
+  }
+  .hero-sub {
+    margin-top: 2.5rem;
+    max-width: 420px;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--cream-dim);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.9s 1.3s forwards;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 3rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.9s 1.5s forwards;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-primary {
+    background: var(--green-accent);
+    color: var(--black);
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: none;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .btn-primary:hover { background: var(--white); transform: translateY(-2px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--cream);
+    padding: 1rem 2.5rem;
+    border: 1px solid rgba(240,230,204,0.3);
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: none;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--cream); background: rgba(240,230,204,0.05); }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 2s forwards;
+  }
+  .hero-scroll-hint span {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--green-accent), transparent);
+    animation: scrollPulse 2s 2.5s infinite;
+  }
+
+  /* ─── MARQUEE ─── */
+  .marquee-section {
+    background: var(--green-accent);
+    padding: 1rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-flex;
+    gap: 0;
+    animation: marquee 25s linear infinite;
+  }
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--black);
+  }
+  .marquee-dot {
+    width: 5px; height: 5px;
+    background: var(--black);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ─── SECTIONS ─── */
+  section { padding: 7rem 4rem; }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--green-accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 30px;
+    height: 1px;
+    background: var(--green-accent);
+    display: block;
+  }
+
+  /* ─── SERVICES ─── */
+  #services { background: var(--dark); }
+  .services-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 5rem;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .services-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    max-width: 550px;
+  }
+  .services-title em { font-style: italic; color: var(--green-accent); }
+  .services-desc {
+    max-width: 300px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--cream-dim);
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+  .service-card {
+    background: var(--dark);
+    padding: 3rem 2.5rem;
+    transition: background 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover { background: var(--green-deep); }
+  .service-number {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--green-accent);
+    margin-bottom: 2rem;
+  }
+  .service-icon {
+    width: 48px; height: 48px;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  .service-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    color: var(--white);
+  }
+  .service-desc {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--cream-dim);
+  }
+
+  /* ─── NUMBERS ─── */
+  #numbers { background: var(--black); }
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4rem;
+    margin-top: 4rem;
+  }
+  .number-item { text-align: center; }
+  .number-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 6vw, 6rem);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1;
+  }
+  .number-value span { color: var(--green-accent); }
+  .number-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-top: 0.8rem;
+  }
+
+  /* ─── MILLER PRODUCT ─── */
+  #product {
+    background: var(--green-deep);
+    position: relative;
+    overflow: hidden;
+  }
+  #product::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(107,191,122,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .product-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+  .product-text .product-tag {
+    display: inline-block;
+    background: rgba(107,191,122,0.15);
+    border: 1px solid rgba(107,191,122,0.3);
+    color: var(--green-accent);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .product-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 4vw, 4.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--white);
+  }
+  .product-title em { font-style: italic; color: var(--green-accent); }
+  .product-desc {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--cream-dim);
+    margin-bottom: 2.5rem;
+  }
+  .product-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 3rem;
+  }
+  .product-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--cream);
+  }
+  .product-feature::before {
+    content: '✓';
+    width: 20px; height: 20px;
+    background: rgba(107,191,122,0.2);
+    border: 1px solid rgba(107,191,122,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--green-accent);
+    flex-shrink: 0;
+  }
+  .product-mockup {
+    position: relative;
+  }
+  .mockup-window {
+    background: #0D1F10;
+    border: 1px solid rgba(107,191,122,0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(107,191,122,0.1);
+    transform: perspective(1200px) rotateY(-8deg) rotateX(3deg);
+    transition: transform 0.5s ease;
+  }
+  .mockup-window:hover { transform: perspective(1200px) rotateY(-3deg) rotateX(1deg); }
+  .mockup-bar {
+    background: rgba(255,255,255,0.04);
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mockup-content {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 1px;
+    background: rgba(255,255,255,0.03);
+    min-height: 280px;
+  }
+  .mockup-sidebar {
+    background: #0D1F10;
+    padding: 1rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .mockup-nav-item {
+    height: 32px;
+    border-radius: 4px;
+    background: rgba(107,191,122,0.1);
+    animation: shimmer 2s infinite;
+  }
+  .mockup-nav-item.active { background: rgba(107,191,122,0.25); }
+  .mockup-main {
+    background: #0A180C;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .mockup-row {
+    height: 48px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    animation: shimmer 2s infinite;
+  }
+  .mockup-row:nth-child(2) { animation-delay: 0.2s; }
+  .mockup-row:nth-child(3) { animation-delay: 0.4s; height: 80px; }
+  .mockup-row:nth-child(4) { animation-delay: 0.6s; }
+
+  /* ─── PROCESS ─── */
+  #process { background: var(--dark); }
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 4rem;
+    position: relative;
+  }
+  .process-steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: calc(12.5%);
+    right: calc(12.5%);
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--green-mid), var(--green-mid), transparent);
+  }
+  .process-step {
+    padding: 0 2rem;
+    text-align: center;
+  }
+  .step-num {
+    width: 56px; height: 56px;
+    border: 1px solid var(--green-mid);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--green-accent);
+    margin: 0 auto 1.5rem;
+    background: var(--dark);
+    transition: all 0.4s;
+  }
+  .process-step:hover .step-num {
+    background: var(--green-accent);
+    color: var(--black);
+    border-color: var(--green-accent);
+    transform: scale(1.15);
+  }
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+    color: var(--white);
+  }
+  .step-desc { font-size: 0.82rem; line-height: 1.65; color: var(--cream-dim); }
+
+  /* ─── CTA ─── */
+  #cta {
+    background: var(--black);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(107,191,122,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 7vw, 7rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--white);
+    max-width: 800px;
+    margin: 2rem auto;
+  }
+  .cta-title em { font-style: italic; color: var(--green-accent); }
+  .cta-sub {
+    font-size: 1rem;
+    color: var(--cream-dim);
+    margin-bottom: 3rem;
+  }
+  .cta-email {
+    font-size: 0.8rem;
+    color: var(--cream-dim);
+    margin-top: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+  .cta-email a { color: var(--green-accent); text-decoration: none; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--cream);
+  }
+  .footer-logo span { color: var(--green-accent); }
+  .footer-copy { font-size: 0.75rem; color: var(--cream-dim); letter-spacing: 0.05em; }
+
+  /* ─── REVEAL ANIMATIONS ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.9s cubic-bezier(0.23, 1, 0.32, 1),
+                transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+
+  /* ─── KEYFRAMES ─── */
+  @keyframes slideUp {
+    to { transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.3); }
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    nav .nav-links { display: none; }
+    section { padding: 5rem 1.5rem; }
+    #hero { padding: 0 1.5rem; }
+    .services-grid { grid-template-columns: 1fr; }
+    .numbers-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    .product-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .process-steps { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .process-steps::before { display: none; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Raízes<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Serviços</a></li>
+    <li><a href="#product">Miller CRM</a></li>
+    <li><a href="#process">Processo</a></li>
+    <li><a href="#cta">Contato</a></li>
+  </ul>
+  <a href="mailto:contato@raizesagencia.com.br" class="nav-cta">Falar Conosco</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="root-canvas"></canvas>
+  <p class="hero-tag">Agência de Soluções Digitais</p>
+  <h1 class="hero-title">
+    <span class="line"><span>Crescemos</span></span>
+    <span class="line"><span>com você,</span></span>
+    <span class="line"><span>da <em>raiz.</em></span></span>
+  </h1>
+  <p class="hero-sub">Desenvolvemos sistemas, automações e estratégias digitais que impulsionam negócios reais. Do CRM ao marketing, a gente planta — e cuida até florescer.</p>
+  <div class="hero-actions">
+    <a href="#services" class="btn-primary">
+      Ver Serviços
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#product" class="btn-secondary">Conhecer o Miller CRM</a>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item">Desenvolvimento Web<div class="marquee-dot"></div></div>
+    <div class="marquee-item">CRM White-Label<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Automação de Marketing<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Integração WhatsApp<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Gestão de Leads<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Soluções Sob Medida<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Desenvolvimento Web<div class="marquee-dot"></div></div>
+    <div class="marquee-item">CRM White-Label<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Automação de Marketing<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Integração WhatsApp<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Gestão de Leads<div class="marquee-dot"></div></div>
+    <div class="marquee-item">Soluções Sob Medida<div class="marquee-dot"></div></div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-header">
+    <div>
+      <div class="section-label reveal">O que fazemos</div>
+      <h2 class="services-title reveal reveal-delay-1">Soluções que <em>brotam</em> do seu negócio</h2>
+    </div>
+    <p class="services-desc reveal reveal-delay-2">Cada projeto começa com escuta ativa. Entendemos suas raízes antes de propor qualquer solução.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-number">01</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="36" height="28" rx="3" stroke="#6BBF7A" stroke-width="1.5"/>
+        <path d="M6 34h36v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2z" stroke="#6BBF7A" stroke-width="1.5"/>
+        <path d="M20 42h8" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M14 18l5 5 9-9" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3 class="service-name">CRM White-Label</h3>
+      <p class="service-desc">Plataforma de gestão de clientes com sua marca, personalizável para qualquer nicho. Inclui WhatsApp integrado, funil de vendas e muito mais.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-1">
+      <div class="service-number">02</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="16" stroke="#6BBF7A" stroke-width="1.5"/>
+        <path d="M24 8v4M24 36v4M8 24h4M36 24h4" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="24" cy="24" r="6" stroke="#6BBF7A" stroke-width="1.5"/>
+      </svg>
+      <h3 class="service-name">Automação Digital</h3>
+      <p class="service-desc">Fluxos automáticos de atendimento, follow-up e nutrição de leads. Menos trabalho manual, mais conversões.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-2">
+      <div class="service-number">03</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none">
+        <path d="M10 38L24 10l14 28" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 28h18" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <h3 class="service-name">Desenvolvimento Web</h3>
+      <p class="service-desc">Sites, sistemas e aplicações sob medida. Do design à entrega, com foco em performance, conversão e experiência do usuário.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-1">
+      <div class="service-number">04</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none">
+        <rect x="8" y="14" width="32" height="24" rx="3" stroke="#6BBF7A" stroke-width="1.5"/>
+        <path d="M16 14v-4a8 8 0 0116 0v4" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="24" cy="26" r="4" stroke="#6BBF7A" stroke-width="1.5"/>
+      </svg>
+      <h3 class="service-name">Integração WhatsApp</h3>
+      <p class="service-desc">Conecte seu número ao CRM e gerencie todas as conversas em um só lugar. Atendimento profissional, sem perder mensagens.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-2">
+      <div class="service-number">05</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none">
+        <path d="M10 36L24 12l14 24H10z" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19 26h10M24 20v12" stroke="#6BBF7A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <h3 class="service-name">Consultoria Estratégica</h3>
+      <p class="service-desc">Análise do seu processo de vendas e sugestão de melhorias. A gente enxerga o que você não consegue ver por estar dentro do negócio.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-3">
+      <div class="service-number">06</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none">
+        <rect x="8" y="8" width="14" height="14" rx="2" stroke="#6BBF7A" stroke-width="1.5"/>
+        <rect x="26" y="8" width="14" height="14" rx="2" stroke="#6BBF7A" stroke-width="1.5"/>
+        <rect x="8" y="26" width="14" height="14" rx="2" stroke="#6BBF7A" stroke-width="1.5"/>
+        <rect x="26" y="26" width="14" height="14" rx="2" stroke="#6BBF7A" stroke-width="1.5"/>
+      </svg>
+      <h3 class="service-name">Multi-Tenant SaaS</h3>
+      <p class="service-desc">Plataformas escaláveis com múltiplos clientes. Construímos seu produto SaaS do zero, com arquitetura robusta e pronta para crescer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section id="numbers">
+  <div class="section-label reveal">Em números</div>
+  <div class="numbers-grid">
+    <div class="number-item reveal">
+      <div class="number-value" data-target="120">0<span>+</span></div>
+      <div class="number-label">Projetos Entregues</div>
+    </div>
+    <div class="number-item reveal reveal-delay-1">
+      <div class="number-value" data-target="98">0<span>%</span></div>
+      <div class="number-label">Clientes Satisfeitos</div>
+    </div>
+    <div class="number-item reveal reveal-delay-2">
+      <div class="number-value" data-target="5">0<span>+</span></div>
+      <div class="number-label">Anos de Experiência</div>
+    </div>
+    <div class="number-item reveal reveal-delay-3">
+      <div class="number-value" data-target="40">0<span>k</span></div>
+      <div class="number-label">Usuários na Plataforma</div>
+    </div>
+  </div>
+</section>
+
+<!-- MILLER PRODUCT -->
+<section id="product">
+  <div class="product-inner">
+    <div class="product-text">
+      <div class="section-label reveal">Nosso Produto</div>
+      <div class="product-tag reveal">White-Label CRM</div>
+      <h2 class="product-title reveal reveal-delay-1">Miller CRM — <em>o CRM que tem sua cara</em></h2>
+      <p class="product-desc reveal reveal-delay-2">Uma plataforma completa de gestão de relacionamento com clientes, pronta para ser vendida com a marca da sua empresa. WhatsApp integrado, funil visual, relatórios em tempo real.</p>
+      <div class="product-features reveal reveal-delay-2">
+        <div class="product-feature">WhatsApp Business integrado nativamente</div>
+        <div class="product-feature">Funil de vendas visual e customizável</div>
+        <div class="product-feature">Gestão de usuários com hierarquia de permissões</div>
+        <div class="product-feature">Multi-tenant — cada cliente tem seu espaço</div>
+        <div class="product-feature">Relatórios e dashboards em tempo real</div>
+      </div>
+      <div class="reveal reveal-delay-3">
+        <a href="mailto:contato@raizesagencia.com.br" class="btn-primary">Quero uma Demo</a>
+      </div>
+    </div>
+    <div class="product-mockup reveal reveal-delay-2">
+      <div class="mockup-window">
+        <div class="mockup-bar">
+          <div class="mockup-dot" style="background:#ff5f56"></div>
+          <div class="mockup-dot" style="background:#ffbd2e"></div>
+          <div class="mockup-dot" style="background:#27c93f"></div>
+        </div>
+        <div class="mockup-content">
+          <div class="mockup-sidebar">
+            <div class="mockup-nav-item active"></div>
+            <div class="mockup-nav-item"></div>
+            <div class="mockup-nav-item"></div>
+            <div class="mockup-nav-item"></div>
+            <div class="mockup-nav-item"></div>
+          </div>
+          <div class="mockup-main">
+            <div class="mockup-row"></div>
+            <div class="mockup-row"></div>
+            <div class="mockup-row"></div>
+            <div class="mockup-row"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="section-label reveal">Como trabalhamos</div>
+  <h2 class="services-title reveal reveal-delay-1" style="margin-bottom:0">Do diagnóstico à entrega</h2>
+  <div class="process-steps">
+    <div class="process-step reveal">
+      <div class="step-num">01</div>
+      <h3 class="step-title">Diagnóstico</h3>
+      <p class="step-desc">Entendemos suas raízes — processo, dores, objetivos e onde você quer chegar.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-1">
+      <div class="step-num">02</div>
+      <h3 class="step-title">Estratégia</h3>
+      <p class="step-desc">Desenhamos o caminho mais eficiente, com tecnologia certa e sem excesso.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-2">
+      <div class="step-num">03</div>
+      <h3 class="step-title">Execução</h3>
+      <p class="step-desc">Desenvolvimento ágil, com atualizações constantes e total transparência.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-3">
+      <div class="step-num">04</div>
+      <h3 class="step-title">Crescimento</h3>
+      <p class="step-desc">Suporte contínuo, melhorias e evolução junto com o seu negócio.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-label reveal" style="justify-content:center">Vamos conversar?</div>
+  <h2 class="cta-title reveal reveal-delay-1">Plante hoje o que vai colher <em>amanhã.</em></h2>
+  <p class="cta-sub reveal reveal-delay-2">Fale com a gente e descubra como crescer com tecnologia que funciona.</p>
+  <div class="reveal reveal-delay-3">
+    <a href="mailto:contato@raizesagencia.com.br" class="btn-primary" style="display:inline-flex;font-size:0.9rem;padding:1.2rem 3rem;">
+      Entrar em Contato
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+  <p class="cta-email reveal reveal-delay-4"><a href="mailto:contato@raizesagencia.com.br">contato@raizesagencia.com.br</a></p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Raízes<span>.</span></div>
+  <div class="footer-copy">© 2026 Raízes Agência. Todos os direitos reservados.</div>
+</footer>
+
+<script>
+// ─── CURSOR ───
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0;
+let ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursor.style.left = mouseX + 'px';
+  cursor.style.top = mouseY + 'px';
+});
+
+function animateRing() {
+  ringX += (mouseX - ringX) * 0.12;
+  ringY += (mouseY - ringY) * 0.12;
+  ring.style.left = ringX + 'px';
+  ring.style.top = ringY + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, [class*="btn"]').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    ring.style.width = '60px';
+    ring.style.height = '60px';
+    ring.style.opacity = '0.6';
+    cursor.style.transform = 'translate(-50%,-50%) scale(1.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    ring.style.width = '40px';
+    ring.style.height = '40px';
+    ring.style.opacity = '1';
+    cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+  });
+});
+
+// ─── ROOT CANVAS ANIMATION ───
+const canvas = document.getElementById('root-canvas');
+const ctx = canvas.getContext('2d');
+let roots = [];
+let W, H;
+
+function resizeCanvas() {
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', () => { resizeCanvas(); roots = []; init(); });
+
+class Root {
+  constructor(x, y, angle, depth, maxDepth) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.depth = depth;
+    this.maxDepth = maxDepth;
+    this.length = 0;
+    this.maxLength = 40 + Math.random() * 80;
+    this.speed = 0.8 + Math.random() * 1.2;
+    this.children = [];
+    this.spawned = false;
+    this.alpha = 0;
+    this.wobble = (Math.random() - 0.5) * 0.04;
+  }
+  update() {
+    if (this.length < this.maxLength) {
+      this.length += this.speed;
+      this.alpha = Math.min(1, this.alpha + 0.03);
+      this.angle += this.wobble;
+    } else if (!this.spawned && this.depth < this.maxDepth) {
+      this.spawned = true;
+      const numChildren = this.depth < 2 ? 2 + Math.floor(Math.random() * 2) : 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < numChildren; i++) {
+        const spread = (Math.random() - 0.5) * 1.4;
+        this.children.push(new Root(
+          this.x + Math.cos(this.angle) * this.maxLength,
+          this.y + Math.sin(this.angle) * this.maxLength,
+          this.angle + spread,
+          this.depth + 1,
+          this.maxDepth
+        ));
+      }
+    }
+    this.children.forEach(c => c.update());
+  }
+  draw() {
+    const endX = this.x + Math.cos(this.angle) * this.length;
+    const endY = this.y + Math.sin(this.angle) * this.length;
+    const thickness = Math.max(0.3, (1 - this.depth / this.maxDepth) * 1.5);
+    const greenAlpha = 0.3 + (1 - this.depth / this.maxDepth) * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = `rgba(107, 191, 122, ${this.alpha * greenAlpha})`;
+    ctx.lineWidth = thickness;
+    ctx.stroke();
+    this.children.forEach(c => c.draw());
+  }
+}
+
+function init() {
+  roots = [];
+  const numRoots = 8;
+  for (let i = 0; i < numRoots; i++) {
+    const x = W * 0.2 + Math.random() * W * 0.6;
+    const y = H * 0.5 + Math.random() * H * 0.4;
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.2;
+    roots.push(new Root(x, y, angle, 0, 5));
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  roots.forEach(r => { r.update(); r.draw(); });
+  requestAnimationFrame(animate);
+}
+
+setTimeout(() => { init(); animate(); }, 400);
+
+// ─── SCROLL REVEAL ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ─── NUMBER COUNTERS ───
+function animateCounter(el, target) {
+  let start = 0;
+  const suffix = el.querySelector('span').textContent;
+  const duration = 1800;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const value = Math.floor(progress * target);
+    const textNode = el.firstChild;
+    textNode.textContent = value;
+    if (progress < 1) requestAnimationFrame(step);
+    else textNode.textContent = target;
+  };
+  requestAnimationFrame(step);
+}
+
+const numberObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = parseInt(e.target.dataset.target);
+      animateCounter(e.target, target);
+      numberObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('[data-target]').forEach(el => numberObserver.observe(el));
+</script>
+</body>
+</html>
