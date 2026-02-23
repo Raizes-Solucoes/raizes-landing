@@ -35,21 +35,47 @@ REGRAS DE COMPORTAMENTO (GUARD RAILS):
 - Resposta CURTA: máximo 2-3 frases + a pergunta do fluxo. Nunca bullet points.
 - Idioma: sempre Português Brasileiro, tom próximo e profissional.`;
 
-async function sendTelegramNotification(lead: { name: string; contact: string; summary: string; }) {
+async function sendTelegramNotification(
+  lead: { name: string; contact: string; summary: string; },
+  conversation: Array<{ role: string; content: string }>
+) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
   const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
   if (!token || !chatId) return;
 
-  const msg = `🌱 *Novo Lead — Raízes LP*\n\n` +
+  const tg = (text: string, extra = {}) =>
+    fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown", ...extra }),
+    }).catch(() => {});
+
+  const roleLabel = (r: string) => r === "user" ? `👤 *${lead.name}*` : `🤖 *Agente Raízes*`;
+  const realConvo = conversation.filter(
+    (m, i) => !(i === 0 && m.role === "user" && m.content.startsWith("Olá"))
+  );
+
+  let transcript = "";
+  for (const m of realConvo) {
+    transcript += `${roleLabel(m.role)}\n${m.content}\n\n`;
+  }
+
+  const full =
+    `🌱 *Novo Lead — Raízes LP*\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━\n` +
     `👤 *Nome:* ${lead.name}\n` +
     `📞 *Contato:* ${lead.contact}\n` +
-    `📝 *Resumo:* ${lead.summary}`;
+    `📝 *Resumo:* ${lead.summary}\n` +
+    (transcript ? `━━━━━━━━━━━━━━━━━━━━━━\n💬 *Conversa completa:*\n\n${transcript}` : "");
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "Markdown" }),
-  }).catch(() => {/* não quebrar se telegram falhar */});
+  // Telegram tem limite de 4096 chars — parte se necessário
+  const chunks: string[] = [];
+  let rest = full;
+  while (rest.length > 0) {
+    chunks.push(rest.slice(0, 4000));
+    rest = rest.slice(4000);
+  }
+  for (const chunk of chunks) await tg(chunk);
 }
 
 serve(async (req) => {
@@ -123,8 +149,8 @@ serve(async (req) => {
           created_at: new Date().toISOString(),
         });
 
-        // Notifica no Telegram
-        await sendTelegramNotification(lead);
+        // Notifica no Telegram com conversa na íntegra
+        await sendTelegramNotification(lead, messages);
       } catch (_) { /* silencia erros de parse */ }
     }
 
