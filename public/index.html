@@ -332,11 +332,31 @@
                             <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">Não preencha mais um formulário que cai no vazio. Fala com nosso agente — ele entende a sua dor antes da equipe entrar em contato.</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button onclick="startChat()" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all">
+                            <button onclick="showPreChat()" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all">
                                 💬 Iniciar Diagnóstico com IA
                             </button>
                         </div>
                         <p class="text-white/20 text-xs">Em média 5 minutos. Sem compromisso, sem pitch de vendas.</p>
+                    </div>
+
+                    <!-- ESTADO 1.5: Pré-chat (coleta contato antes de iniciar) -->
+                    <div id="cta-prechat" class="hidden py-6 space-y-6 max-w-md mx-auto">
+                        <div class="text-center space-y-2">
+                            <h3 class="serif-title text-2xl font-bold text-white">Antes de começar...</h3>
+                            <p class="text-white/40 text-sm">Precisamos de um contato para a equipe retornar caso a conversa não conclua.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <input id="pre-name" type="text" placeholder="Seu nome *"
+                                style="color:#fff; background:rgba(255,255,255,0.12);"
+                                class="w-full border border-white/20 rounded-2xl px-5 py-4 placeholder:text-white/30 focus:border-brand-green outline-none transition-all text-sm"/>
+                            <input id="pre-contact" type="text" placeholder="E-mail ou WhatsApp *" onkeydown="if(event.key==='Enter') submitPreChat()"
+                                style="color:#fff; background:rgba(255,255,255,0.12);"
+                                class="w-full border border-white/20 rounded-2xl px-5 py-4 placeholder:text-white/30 focus:border-brand-green outline-none transition-all text-sm"/>
+                            <p id="pre-error" class="text-red-400 text-xs hidden">Preencha seu nome e pelo menos um contato (e-mail ou WhatsApp).</p>
+                        </div>
+                        <button onclick="submitPreChat()" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest shadow-lg hover:-translate-y-0.5 transition-all">
+                            Iniciar Conversa →
+                        </button>
                     </div>
 
                     <!-- ESTADO 2: Chat -->
@@ -433,6 +453,24 @@
         let messages = [];
         let chatStarted = false;
         let leadCollected = false;
+        let contactData = null;
+
+        function showPreChat() {
+            document.getElementById('cta-intro').classList.add('hidden');
+            document.getElementById('cta-prechat').classList.remove('hidden');
+            setTimeout(() => document.getElementById('pre-name').focus(), 100);
+        }
+
+        function submitPreChat() {
+            const name = document.getElementById('pre-name').value.trim();
+            const contact = document.getElementById('pre-contact').value.trim();
+            const err = document.getElementById('pre-error');
+            if (!name || !contact) { err.classList.remove('hidden'); return; }
+            err.classList.add('hidden');
+            contactData = { name, email: contact };
+            document.getElementById('cta-prechat').classList.add('hidden');
+            startChat();
+        }
 
         function startChat() {
             document.getElementById('cta-intro').classList.add('hidden');
@@ -483,7 +521,7 @@
                         'apikey': SUPABASE_ANON,
                         'Authorization': `Bearer ${SUPABASE_ANON}`
                     },
-                    body: JSON.stringify({ messages })
+                    body: JSON.stringify({ messages, contact: contactData })
                 });
 
                 const data = await res.json();
