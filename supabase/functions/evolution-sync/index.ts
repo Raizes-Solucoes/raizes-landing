@@ -91,135 +91,37 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch chats: ${chatsRes.statusText}`);
     }
 
-    const chatsData = await chatsRes.json();
+    const allChats = await chatsRes.json();
+    
+    // Only sync the 30 most recent chats (avoid timeout with 400+ chats)
+    const recentChats = allChats.slice(0, 30);
+    
     let syncedChats = 0;
     let syncedMessages = 0;
 
-    // Process each chat
-    for (const chat of chatsData) {
+    // Batch upsert chats
+    const chatRows = recentChats.map((chat: any) => {
       const phoneNumber = normalizePhone(chat.id);
-      const isGroup = phoneNumber.endsWith('-group');
+      return {
+        org_id: orgId,
+        phone_number: phoneNumber,
+        contact_name: chat.name || chat.pushName || phoneNumber,
+        is_group: phoneNumber.endsWith('-group'),
+        profile_pic_url: chat.profilePicUrl || null,
+        updated_at: new Date().toISOString()
+      };
+    });
 
-      // Upsert chat
-      const { error: chatError } = await adminClient
-        .from('whatsapp_chats')
-        .upsert({
-          org_id: orgId,
-          phone_number: phoneNumber,
-          contact_name: chat.name || chat.pushName || phoneNumber,
-          is_group: isGroup,
-          profile_pic_url: chat.profilePicUrl || null,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'org_id,phone_number'
-        });
+    const { error: batchErr } = await adminClient
+      .from('whatsapp_chats')
+      .upsert(chatRows, { onConflict: 'org_id,phone_number' });
 
-      if (!chatError) syncedChats++;
-
-      // Fetch recent messages for this chat
-      try {
-        const messagesRes = await fetch(
-          `${EVO_URL}/chat/findMessages/${instanceName}?limit=50&where[key.remoteJid]=${chat.id}`,
-          { headers: { "apikey": EVO_KEY } }
-        );
-
-        if (messagesRes.ok) {
-          const messagesData = await messagesRes.json();
-
-          for (const msg of messagesData) {
-            const messageId = msg.key?.id || `${Date.now()}-${Math.random()}`;
-            const isFromMe = msg.key?.fromMe || false;
-            const timestamp = msg.messageTimestamp ? new Date(msg.messageTimestamp * 1000).toISOString() : new Date().toISOString();
-
-            // Extract message content
-            let content = '';
-            let messageType = 'text';
-            let mediaUrl = null;
-            let mimeType = null;
-            let fileName = null;
-
-            if (msg.message?.conversation) {
-              content = msg.message.conversation;
-            } else if (msg.message?.extendedTextMessage) {
-              content = msg.message.extendedTextMessage.text || '';
-            } else if (msg.message?.imageMessage) {
-              messageType = 'image';
-              content = msg.message.imageMessage.caption || '[Image]';
-              mediaUrl = msg.message.imageMessage.url || null;
-              mimeType = msg.message.imageMessage.mimetype || null;
-            } else if (msg.message?.videoMessage) {
-              messageType = 'video';
-              content = msg.message.videoMessage.caption || '[Video]';
-              mediaUrl = msg.message.videoMessage.url || null;
-              mimeType = msg.message.videoMessage.mimetype || null;
-            } else if (msg.message?.audioMessage) {
-              messageType = 'audio';
-              content = '[Audio]';
-              mediaUrl = msg.message.audioMessage.url || null;
-              mimeType = msg.message.audioMessage.mimetype || null;
-            } else if (msg.message?.documentMessage) {
-              messageType = 'document';
-              content = '[Document]';
-              mediaUrl = msg.message.documentMessage.url || null;
-              mimeType = msg.message.documentMessage.mimetype || null;
-              fileName = msg.message.documentMessage.fileName || null;
-            }
-
-            // Get chat_id
-            const { data: chatData } = await adminClient
-              .from('whatsapp_chats')
-              .select('id')
-              .eq('org_id', orgId)
-              .eq('phone_number', phoneNumber)
-              .single();
-
-            if (chatData) {
-              // Upsert message
-              const { error: msgError } = await adminClient
-                .from('whatsapp_messages')
-                .upsert({
-                  chat_id: chatData.id,
-                  org_id: orgId,
-                  message_id: messageId,
-                  content,
-                  message_type: messageType,
-                  media_url: mediaUrl,
-                  mime_type: mimeType,
-                  file_name: fileName,
-                  is_from_me: isFromMe,
-                  sender_name: msg.pushName || null,
-                  sender_phone: msg.key?.participant ? normalizePhone(msg.key.participant) : phoneNumber,
-                  timestamp,
-                  status: 'delivered',
-                  created_at: timestamp
-                }, {
-                  onConflict: 'message_id,chat_id'
-                });
-
-              if (!msgError) {
-                syncedMessages++;
-                
-                // Update chat's last message
-                await adminClient
-                  .from('whatsapp_chats')
-                  .update({
-                    last_message: content,
-                    last_message_at: timestamp,
-                    updated_at: new Date().toISOString()
-                  })
-                  .eq('id', chatData.id);
-              }
-            }
-          }
-        }
-      } catch (msgErr) {
-        console.error(`Failed to fetch messages for chat ${phoneNumber}:`, msgErr);
-      }
-    }
+    if (!batchErr) syncedChats = chatRows.length;
 
     return new Response(JSON.stringify({
       synced: syncedChats,
-      messages: syncedMessages
+      messages: syncedMessages,
+      total: allChats.length
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
