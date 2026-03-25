@@ -295,6 +295,9 @@ function OrgDetail({ org, onClose, onUpdate }) {
         <button onClick={impersonate} style={{ padding: '10px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           🔐 Impersonar como Admin
         </button>
+        <button onClick={() => deleteOrg(org.id, org.name)} style={{ padding: '10px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          🗑️ Deletar Organização
+        </button>
 
         {/* Users */}
         <div style={{ flex: 1 }}>
@@ -406,6 +409,21 @@ function Dashboard({ session }) {
   const toggleOrg = async (orgId, active) => {
     await callFn('deactivate-org', { orgId, action: active ? 'deactivate' : 'activate' });
     loadOrgs();
+  };
+
+  const deleteOrg = async (orgId, orgName) => {
+    if (!confirm(`⚠️ DELETAR "${orgName}"?\n\nIsso vai remover TODOS os dados: usuários, deals, clientes, chats, mensagens.\n\nEssa ação é IRREVERSÍVEL.`)) return;
+    if (!confirm(`Tem certeza ABSOLUTA? Digite o nome da org no próximo prompt para confirmar.`)) return;
+    const typed = prompt(`Digite "${orgName}" para confirmar:`);
+    if (typed !== orgName) { setMsg({ type: 'error', text: 'Nome não confere. Cancelado.' }); return; }
+    const data = await callFn('deactivate-org', { orgId, action: 'delete' });
+    if (data.ok) {
+      setMsg({ type: 'success', text: `"${orgName}" deletada permanentemente.` });
+      setSelectedOrg(null);
+      loadOrgs();
+    } else {
+      setMsg({ type: 'error', text: data.error || 'Erro ao deletar' });
+    }
   };
 
   const filtered = orgs.filter(o => o.name.toLowerCase().includes(search.toLowerCase()) || o.slug.toLowerCase().includes(search.toLowerCase()));

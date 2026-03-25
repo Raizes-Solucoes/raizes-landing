@@ -27,6 +27,35 @@ Deno.serve(async (req) => {
     const { orgId, action } = await req.json();
     if (!orgId) return new Response(JSON.stringify({ error: "orgId required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+    // DELETE ORG
+    if (action === "delete") {
+      // Get all user IDs to delete from auth
+      const { data: orgUsers } = await adminClient.from("users").select("id").eq("org_id", orgId);
+      
+      // Delete in order: dependent tables first
+      await adminClient.from("whatsapp_messages").delete().in("chat_id", 
+        (await adminClient.from("whatsapp_chats").select("id").eq("org_id", orgId)).data?.map((c: any) => c.id) || []
+      );
+      await adminClient.from("whatsapp_chats").delete().eq("org_id", orgId);
+      await adminClient.from("tasks").delete().eq("org_id", orgId);
+      await adminClient.from("notifications").delete().eq("org_id", orgId);
+      await adminClient.from("documents").delete().eq("org_id", orgId);
+      await adminClient.from("activity_logs").delete().eq("org_id", orgId);
+      await adminClient.from("deals").delete().eq("org_id", orgId);
+      await adminClient.from("clientes").delete().eq("org_id", orgId);
+      await adminClient.from("users").delete().eq("org_id", orgId);
+      await adminClient.from("subscriptions").delete().eq("org_id", orgId);
+      await adminClient.from("usage_counters").delete().eq("org_id", orgId);
+      await adminClient.from("organizations").delete().eq("id", orgId);
+
+      // Delete auth users
+      for (const u of (orgUsers || [])) {
+        await adminClient.auth.admin.deleteUser(u.id);
+      }
+
+      return new Response(JSON.stringify({ ok: true, deleted: orgId }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const newStatus = action === "activate";
 
     // Update org
