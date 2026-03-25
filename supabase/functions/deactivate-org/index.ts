@@ -29,6 +29,19 @@ Deno.serve(async (req) => {
 
     // DELETE ORG
     if (action === "delete") {
+      // Get org settings to check for Evolution API instance
+      const { data: orgData } = await adminClient.from("organizations").select("settings").eq("id", orgId).single();
+      const evolutionInstance = orgData?.settings?.evolution_instance;
+      if (evolutionInstance) {
+        // Delete Evolution API instance
+        const EVO_URL = "http://95.111.236.173:8080";
+        const EVO_KEY = "raizes-evo-2026-secret";
+        await fetch(`${EVO_URL}/instance/delete/${evolutionInstance}`, {
+          method: "DELETE",
+          headers: { "apikey": EVO_KEY },
+        }).catch(() => {});
+      }
+
       // Get all user IDs to delete from auth
       const { data: orgUsers } = await adminClient.from("users").select("id").eq("org_id", orgId);
       
