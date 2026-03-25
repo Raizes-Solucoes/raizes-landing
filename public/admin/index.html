@@ -126,7 +126,7 @@ function GrowthChart({ orgs }) {
   );
 }
 
-function OrgDetail({ org, onClose, onUpdate }) {
+function OrgDetail({ org, onClose, onUpdate, onDelete }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -295,7 +295,7 @@ function OrgDetail({ org, onClose, onUpdate }) {
         <button onClick={impersonate} style={{ padding: '10px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           🔐 Impersonar como Admin
         </button>
-        <button onClick={() => deleteOrg(org.id, org.name)} style={{ padding: '10px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+        <button onClick={() => onDelete(org.id, org.name)} style={{ padding: '10px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           🗑️ Deletar Organização
         </button>
 
@@ -536,7 +536,7 @@ function Dashboard({ session }) {
           </div>
 
           {/* Detail Panel */}
-          {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} />}
+          {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} onDelete={deleteOrg} />}
         </div>
       </div>
 
