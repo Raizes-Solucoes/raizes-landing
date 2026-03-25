@@ -105,28 +105,21 @@ Deno.serve(async (req) => {
 
       if (!adminUser) throw new Error('Nenhum usuário ativo encontrado nesta organização')
 
-      // Generate magic link for admin
-      const { data: org } = await supabase
-        .from('organizations')
-        .select('slug')
-        .eq('id', orgId)
-        .single()
-
-      if (!org) throw new Error('Org not found')
-
-      // Get admin email
+      // Get admin email from auth
       const { data: { user: authUser } } = await supabase.auth.admin.getUserById(adminUser.id)
       if (!authUser?.email) throw new Error('Admin email not found')
 
-      // Generate magic link
+      // Generate magic link with redirect to CRM
       const { data: magicLinkData, error: magicError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email: authUser.email,
+        options: { redirectTo: 'https://multibank.raizesolucoes.com.br' }
       })
 
       if (magicError) throw magicError
 
-      const magicLink = `https://${org.slug}.raizesolucoes.com.br/auth/callback?token=${magicLinkData.properties?.hashed_token}`
+      const magicLink = magicLinkData.properties?.action_link
+      if (!magicLink) throw new Error('Falha ao gerar magic link')
 
       return new Response(JSON.stringify({ ok: true, magicLink }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

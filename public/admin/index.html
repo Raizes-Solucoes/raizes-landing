@@ -213,9 +213,8 @@ function OrgDetail({ org, onClose, onUpdate }) {
   const impersonate = async () => {
     const data = await callFn('admin-manage-users', { action: 'impersonate', orgId: org.id });
     if (data.magicLink) {
-      setMsg({ type: 'success', text: 'Link copiado!' });
-      navigator.clipboard.writeText(data.magicLink);
-      alert(`Link de acesso (copiado):\n\n${data.magicLink}`);
+      setMsg({ type: 'success', text: 'Abrindo CRM como admin...' });
+      window.open(data.magicLink, '_blank');
     } else {
       setMsg({ type: 'error', text: data.error || 'Erro ao gerar link' });
     }
