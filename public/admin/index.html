@@ -314,14 +314,14 @@ function OrgDetail({ org, onClose, onUpdate }) {
                 <div key={user.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: user.is_active ? 1 : 0.5 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{user.name}</div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>@{user.username} • {user.role}</div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>@{(user.email || '').split('@')[0]} • {user.role}</div>
                     {user.last_login_at && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Último login: {new Date(user.last_login_at).toLocaleString('pt-BR')}</div>}
                   </div>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button onClick={() => toggleUser(user.id, user.is_active)} style={{ padding: '4px 10px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', fontSize: 11, cursor: 'pointer', color: user.is_active ? '#dc2626' : '#166534' }}>
                       {user.is_active ? 'Desativar' : 'Ativar'}
                     </button>
-                    <button onClick={() => resetPassword(user.id, user.username)} style={{ padding: '4px 10px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', fontSize: 11, cursor: 'pointer' }}>🔑 Reset</button>
+                    <button onClick={() => resetPassword(user.id, (user.email || '').split('@')[0])} style={{ padding: '4px 10px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', fontSize: 11, cursor: 'pointer' }}>🔑 Reset</button>
                   </div>
                 </div>
               ))}

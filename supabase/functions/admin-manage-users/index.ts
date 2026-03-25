@@ -1,12 +1,11 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -31,7 +30,7 @@ serve(async (req) => {
     if (action === 'list') {
       const { data: users, error } = await supabase
         .from('users')
-        .select('id, name, username, role, is_active, last_login_at, created_at')
+        .select('id, name, email, role, is_active, last_login_at, created_at')
         .eq('org_id', orgId)
         .order('created_at', { ascending: true })
 
@@ -82,7 +81,7 @@ serve(async (req) => {
       // Find admin user for org
       const { data: adminUser } = await supabase
         .from('users')
-        .select('id, username')
+        .select('id, email')
         .eq('org_id', orgId)
         .eq('role', 'admin')
         .single()
