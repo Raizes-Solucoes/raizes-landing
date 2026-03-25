@@ -6,196 +6,104 @@ const corsHeaders = {
 };
 
 function normalizePhone(phone: string): string {
-  // Remove WhatsApp suffixes
-  let normalized = phone.replace(/@s\.whatsapp\.net$/, '').replace(/@c\.us$/, '');
-  
-  // Check if it's a group
-  if (phone.includes('@g.us')) {
-    normalized = phone.replace(/@g\.us$/, '-group');
-  }
-  
-  return normalized;
+  if (phone.includes('@g.us')) return phone.replace(/@g\.us$/, '-group');
+  return phone.replace(/@s\.whatsapp\.net$/, '').replace(/@c\.us$/, '').replace(/@lid$/, '');
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const body = await req.json();
+    const event = body.event || body.data?.event;
+    const instance = body.instance || body.data?.instance;
+
+    // Only process message events
+    if (!['messages.upsert', 'MESSAGES_UPSERT'].includes(event)) {
+      return new Response(JSON.stringify({ ok: true, skipped: event }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body = await req.json();
-    const { event, instance, data } = body;
+    // Find org by instance name
+    const instanceName = instance?.instanceName || instance;
+    const { data: orgs } = await adminClient.from('organizations').select('id').filter('settings->>evolution_instance', 'eq', instanceName);
+    if (!orgs || orgs.length === 0) {
+      return new Response(JSON.stringify({ ok: true, skipped: 'no org' }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const orgId = orgs[0].id;
 
-    console.log('Received webhook event:', event, 'for instance:', instance);
+    // Process messages
+    const messages = body.data?.message ? [body.data] : (body.data || []);
+    
+    for (const msgData of (Array.isArray(messages) ? messages : [messages])) {
+      const msg = msgData.message ? msgData : { key: msgData.key, message: msgData.message, pushName: msgData.pushName, messageTimestamp: msgData.messageTimestamp, messageType: msgData.messageType };
+      if (!msg.key) continue;
 
-    // Handle different event types
-    if (event === 'messages.upsert') {
-      // Find organization by instance name
-      const { data: orgs } = await adminClient
-        .from('organizations')
-        .select('id, settings')
-        .contains('settings', { evolution_instance: instance });
+      const remoteJid = msg.key.remoteJid || '';
+      const phone = normalizePhone(remoteJid);
+      const isFromMe = msg.key.fromMe || false;
+      const zapiId = msg.key.id || `wh-${Date.now()}`;
+      const ts = msg.messageTimestamp ? new Date((msg.messageTimestamp > 9999999999 ? msg.messageTimestamp : msg.messageTimestamp * 1000)).toISOString() : new Date().toISOString();
 
-      if (!orgs || orgs.length === 0) {
-        console.log('No organization found for instance:', instance);
-        return new Response(JSON.stringify({ ok: true, message: 'No org found' }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
+      // Extract content
+      const m = msg.message || {};
+      let content = m.conversation || m.extendedTextMessage?.text || '';
+      let messageType = 'text';
+      let mediaUrl = null;
+      let mimeType = null;
+      let fileName = null;
 
-      const org = orgs[0];
-      const orgId = org.id;
+      if (m.imageMessage) { messageType = 'image'; content = m.imageMessage.caption || '[Imagem]'; mimeType = m.imageMessage.mimetype; }
+      else if (m.videoMessage) { messageType = 'video'; content = m.videoMessage.caption || '[Vídeo]'; mimeType = m.videoMessage.mimetype; }
+      else if (m.audioMessage) { messageType = 'audio'; content = '[Áudio]'; mimeType = m.audioMessage.mimetype; }
+      else if (m.documentMessage) { messageType = 'document'; content = m.documentMessage.fileName || '[Documento]'; fileName = m.documentMessage.fileName; mimeType = m.documentMessage.mimetype; }
+      else if (m.stickerMessage) { messageType = 'sticker'; content = '[Sticker]'; }
+      
+      if (!content) continue;
 
-      // Process messages
-      for (const msg of data) {
-        const remoteJid = msg.key?.remoteJid;
-        if (!remoteJid) continue;
+      // Upsert chat
+      await adminClient.from('whatsapp_chats').upsert({
+        org_id: orgId,
+        phone_number: phone,
+        custom_name: msg.pushName || phone,
+        is_group: phone.endsWith('-group'),
+        last_message_content: content,
+        last_message_at: ts,
+        last_message_direction: isFromMe ? 'outbound' : 'inbound',
+        last_message_is_read: isFromMe,
+        unread_count: isFromMe ? 0 : 1,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'org_id,phone_number' });
 
-        const phoneNumber = normalizePhone(remoteJid);
-        const isGroup = phoneNumber.endsWith('-group');
-        const isFromMe = msg.key?.fromMe || false;
-        const messageId = msg.key?.id || `${Date.now()}-${Math.random()}`;
-        const timestamp = msg.messageTimestamp 
-          ? new Date(msg.messageTimestamp * 1000).toISOString() 
-          : new Date().toISOString();
+      // Get chat id
+      const { data: chatDb } = await adminClient.from('whatsapp_chats').select('id').eq('org_id', orgId).eq('phone_number', phone).single();
+      if (!chatDb) continue;
 
-        // Extract message content
-        let content = '';
-        let messageType = 'text';
-        let mediaUrl = null;
-        let mimeType = null;
-        let fileName = null;
-
-        if (msg.message?.conversation) {
-          content = msg.message.conversation;
-        } else if (msg.message?.extendedTextMessage) {
-          content = msg.message.extendedTextMessage.text || '';
-        } else if (msg.message?.imageMessage) {
-          messageType = 'image';
-          content = msg.message.imageMessage.caption || '[Image]';
-          mediaUrl = msg.message.imageMessage.url || null;
-          mimeType = msg.message.imageMessage.mimetype || null;
-        } else if (msg.message?.videoMessage) {
-          messageType = 'video';
-          content = msg.message.videoMessage.caption || '[Video]';
-          mediaUrl = msg.message.videoMessage.url || null;
-          mimeType = msg.message.videoMessage.mimetype || null;
-        } else if (msg.message?.audioMessage) {
-          messageType = 'audio';
-          content = '[Audio]';
-          mediaUrl = msg.message.audioMessage.url || null;
-          mimeType = msg.message.audioMessage.mimetype || null;
-        } else if (msg.message?.documentMessage) {
-          messageType = 'document';
-          content = '[Document]';
-          mediaUrl = msg.message.documentMessage.url || null;
-          mimeType = msg.message.documentMessage.mimetype || null;
-          fileName = msg.message.documentMessage.fileName || null;
-        }
-
-        const contactName = msg.pushName || phoneNumber;
-
-        // Upsert chat
-        const { data: chatData, error: chatError } = await adminClient
-          .from('whatsapp_chats')
-          .upsert({
-            org_id: orgId,
-            phone_number: phoneNumber,
-            contact_name: contactName,
-            is_group: isGroup,
-            last_message: content,
-            last_message_at: timestamp,
-            updated_at: timestamp
-          }, {
-            onConflict: 'org_id,phone_number',
-            returning: 'representation'
-          })
-          .select('id')
-          .single();
-
-        if (chatError) {
-          console.error('Failed to upsert chat:', chatError);
-          continue;
-        }
-
-        const chatId = chatData.id;
-
-        // If message is not from us, increment unread count
-        if (!isFromMe) {
-          await adminClient
-            .from('whatsapp_chats')
-            .update({
-              unread_count: adminClient.rpc('increment', { chat_id: chatId })
-            })
-            .eq('id', chatId);
-        }
-
-        // Upsert message
-        const senderPhone = msg.key?.participant 
-          ? normalizePhone(msg.key.participant) 
-          : phoneNumber;
-
-        const { error: msgError } = await adminClient
-          .from('whatsapp_messages')
-          .upsert({
-            chat_id: chatId,
-            org_id: orgId,
-            message_id: messageId,
-            content,
-            message_type: messageType,
-            media_url: mediaUrl,
-            mime_type: mimeType,
-            file_name: fileName,
-            is_from_me: isFromMe,
-            sender_name: msg.pushName || null,
-            sender_phone: senderPhone,
-            timestamp,
-            status: 'delivered',
-            created_at: timestamp
-          }, {
-            onConflict: 'message_id,chat_id'
-          });
-
-        if (msgError) {
-          console.error('Failed to upsert message:', msgError);
-        }
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      // Insert message
+      await adminClient.from('whatsapp_messages').insert({
+        chat_id: chatDb.id,
+        org_id: orgId,
+        content,
+        message_type: messageType,
+        media_url: mediaUrl,
+        mime_type: mimeType,
+        file_name: fileName,
+        direction: isFromMe ? 'outbound' : 'inbound',
+        is_read: isFromMe,
+        status: 'delivered',
+        zapi_message_id: zapiId,
+        timestamp: ts,
+        participant_phone: msg.key.participant ? normalizePhone(msg.key.participant) : (isFromMe ? null : phone),
+        participant_name: msg.pushName || null,
       });
     }
 
-    if (event === 'connection.update') {
-      console.log('Connection update for instance:', instance, data);
-      // You can store connection status in org settings if needed
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    if (event === 'qrcode.updated') {
-      console.log('QR code updated for instance:', instance);
-      // You can store the QR code in org settings if needed
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Unknown event type - just acknowledge
-    console.log('Unknown event type:', event);
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-
-  } catch (e) {
+    return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e: any) {
     console.error('Evolution webhook error:', e);
-    // Always return 200 to prevent Evolution API from retrying
-    return new Response(JSON.stringify({ ok: false, error: e.message }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    return new Response(JSON.stringify({ ok: true, error: e.message }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
