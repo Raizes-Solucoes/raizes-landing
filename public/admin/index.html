@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raízes Admin — Gerenciamento SaaS</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
+  .loader { display: flex; align-items: center; justify-content: center; height: 100vh; }
+  .loader::after { content: ''; width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #2D5A3D; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"><div class="loader"></div></div>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect } = React;
+
+const SUPABASE_URL = 'https://mselftsinxinawzsgfyx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zZWxmdHNpbnhpbmF3enNnZnl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MDM1NDgsImV4cCI6MjA4NjM3OTU0OH0.DPC5AooUYDh6s8Cu5OkIGCzueauVuZyKAowNQCglBXw';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const statusColors = { active: '#dcfce7', trial: '#dbeafe', suspended: '#fee2e2', cancelled: '#f1f5f9', past_due: '#fef9c3' };
+const statusText = { active: '#166534', trial: '#1e40af', suspended: '#991b1b', cancelled: '#475569', past_due: '#854d0e' };
+const statusLabels = { active: 'Ativo', trial: 'Trial', suspended: 'Suspenso', cancelled: 'Cancelado', past_due: 'Inadimplente' };
+
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const email = username.includes('@') ? username : `${username}@miller.internal`;
+    const { data, error: err } = await sb.auth.signInWithPassword({ email, password });
+    if (err) { setError('Credenciais inválidas'); setLoading(false); return; }
+
+    const { data: profile } = await sb.from('users').select('role, name').eq('id', data.user.id).single();
+    if (profile?.role !== 'super_admin') {
+      setError('Acesso restrito a super administradores');
+      await sb.auth.signOut();
+      setLoading(false);
+      return;
+    }
+    onLogin({ ...data, profile });
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0D1F10 0%, #142818 50%, #2D5A3D 100%)' }}>
+      <form onSubmit={handleLogin} style={{ background: '#fff', padding: 40, borderRadius: 16, width: 380, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#142818' }}>🌱 Raízes</div>
+          <div style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Painel Administrativo</div>
+        </div>
+        {error && <div style={{ background: '#fef2f2', color: '#dc2626', padding: '8px 12px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+        <input
+          type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
+          style={{ width: '100%', padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, marginBottom: 12, outline: 'none' }}
+        />
+        <input
+          type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Senha"
+          style={{ width: '100%', padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, marginBottom: 20, outline: 'none' }}
+        />
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px 14px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: loading ? 0.6 : 1 }}>
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function Badge({ status }) {
+  return (
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: statusColors[status] || '#f1f5f9', color: statusText[status] || '#475569' }}>
+      {statusLabels[status] || status || '—'}
+    </span>
+  );
+}
+
+function Dashboard({ session }) {
+  const [orgs, setOrgs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '' });
+  const [creating, setCreating] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [search, setSearch] = useState('');
+
+  const callFn = async (fn, body = {}) => {
+    const { data: { session: s } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.access_token}` },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  };
+
+  const loadOrgs = async () => {
+    setLoading(true);
+    const data = await callFn('admin-list-orgs');
+    if (data.orgs) setOrgs(data.orgs);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadOrgs(); }, []);
+
+  const handleCreate = async () => {
+    if (!form.orgName || !form.adminName || !form.adminUsername || !form.adminPassword) { setMsg({ type: 'error', text: 'Preencha todos os campos obrigatórios' }); return; }
+    setCreating(true);
+    const data = await callFn('provision-org', form);
+    if (data.ok) {
+      setMsg({ type: 'success', text: `"${data.org.name}" criada! Admin: ${data.admin.username}` });
+      setShowModal(false);
+      setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '' });
+      loadOrgs();
+    } else {
+      setMsg({ type: 'error', text: data.error });
+    }
+    setCreating(false);
+  };
+
+  const toggleOrg = async (orgId, active) => {
+    await callFn('deactivate-org', { orgId, action: active ? 'deactivate' : 'activate' });
+    loadOrgs();
+  };
+
+  const filtered = orgs.filter(o => o.name.toLowerCase().includes(search.toLowerCase()) || o.slug.toLowerCase().includes(search.toLowerCase()));
+  const activeOrgs = orgs.filter(o => o.isActive).length;
+  const totalUsers = orgs.reduce((s, o) => s + (o.metrics?.users || 0), 0);
+  const mrr = orgs.reduce((s, o) => s + (o.subscription?.plan?.price_monthly || 0), 0);
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      {/* Header */}
+      <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <span style={{ fontSize: 20, fontWeight: 700, color: '#142818' }}>🌱 Raízes</span>
+          <span style={{ fontSize: 14, color: '#94a3b8', marginLeft: 12 }}>Gerenciamento SaaS</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, color: '#64748b' }}>{session.profile?.name}</span>
+          <button onClick={() => sb.auth.signOut().then(() => location.reload())} style={{ padding: '6px 14px', background: '#f1f5f9', border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer' }}>Sair</button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+        {/* Message */}
+        {msg && (
+          <div style={{ padding: '10px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13, background: msg.type === 'error' ? '#fef2f2' : '#f0fdf4', color: msg.type === 'error' ? '#dc2626' : '#166534', display: 'flex', justifyContent: 'space-between' }}>
+            {msg.text}
+            <span onClick={() => setMsg(null)} style={{ cursor: 'pointer' }}>✕</span>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+          {[
+            { label: 'Organizações', value: `${activeOrgs}/${orgs.length}` },
+            { label: 'Usuários', value: totalUsers },
+            { label: 'MRR Estimado', value: `R$ ${mrr.toLocaleString('pt-BR')}` },
+            { label: 'Deals', value: orgs.reduce((s, o) => s + (o.metrics?.deals || 0), 0) },
+          ].map((s, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{s.label}</div>
+              <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Toolbar */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <input type="text" placeholder="Buscar organização..." value={search} onChange={e => setSearch(e.target.value)}
+            style={{ flex: 1, padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none' }} />
+          <button onClick={() => loadOrgs()} style={{ padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 14 }}>↻</button>
+          <button onClick={() => setShowModal(true)} style={{ padding: '8px 20px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>+ Nova Organização</button>
+        </div>
+
+        {/* Table */}
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Organização</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Plano</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Status</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Usuários</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Deals</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Clientes</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Chats</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#64748b' }}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Carregando...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Nenhuma organização</td></tr>
+              ) : filtered.map(org => (
+                <tr key={org.id} style={{ borderBottom: '1px solid #f1f5f9', opacity: org.isActive ? 1 : 0.5 }}>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: org.primaryColor || '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden' }}>
+                        {org.logoUrl ? <img src={org.logoUrl} style={{ width: 32, height: 32, objectFit: 'cover' }} /> : org.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{org.name}</div>
+                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{org.slug}.raizesolucoes.com.br</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>{org.subscription?.plan?.name || '—'}</td>
+                  <td style={{ padding: '12px 16px' }}><Badge status={org.subscription?.status} /></td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.users || 0}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.deals || 0}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.clients || 0}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.chats || 0}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                    <button onClick={() => toggleOrg(org.id, org.isActive)} style={{ padding: '4px 12px', border: '1px solid #e2e8f0', borderRadius: 6, background: 'transparent', fontSize: 12, cursor: 'pointer', color: org.isActive ? '#dc2626' : '#166534' }}>
+                      {org.isActive ? 'Desativar' : 'Ativar'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Create Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#fff', borderRadius: 16, width: 480, maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Nova Organização</div>
+              <div style={{ fontSize: 13, color: '#94a3b8' }}>Provisione um novo cliente SaaS</div>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input type="text" value={form.orgName} onChange={e => setForm({...form, orgName: e.target.value})} placeholder="Nome da empresa *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }} />
+              <input type="text" value={form.adminName} onChange={e => setForm({...form, adminName: e.target.value})} placeholder="Nome do admin *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }} />
+              <input type="text" value={form.adminUsername} onChange={e => setForm({...form, adminUsername: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})} placeholder="Username de login *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }} />
+              <input type="password" value={form.adminPassword} onChange={e => setForm({...form, adminPassword: e.target.value})} placeholder="Senha *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }} />
+
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                {['starter', 'pro', 'enterprise'].map(p => (
+                  <button key={p} onClick={() => setForm({...form, planSlug: p})} style={{ flex: 1, padding: '10px', border: form.planSlug === p ? '2px solid #2D5A3D' : '1px solid #e2e8f0', borderRadius: 8, background: form.planSlug === p ? '#f0fdf4' : '#fff', cursor: 'pointer', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, textTransform: 'capitalize' }}>{p}</div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>{p === 'starter' ? 'R$ 97' : p === 'pro' ? 'R$ 197' : 'R$ 497'}/mês</div>
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Cor</div>
+                  <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})} style={{ width: 40, height: 36, border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Trial (dias)</div>
+                  <input type="number" value={form.trialDays} onChange={e => setForm({...form, trialDays: parseInt(e.target.value) || 0})} min={0} max={90} style={{ width: 80, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }} />
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button onClick={() => setShowModal(false)} style={{ padding: '8px 20px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
+              <button onClick={handleCreate} disabled={creating} style={{ padding: '8px 20px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: creating ? 0.6 : 1 }}>
+                {creating ? 'Criando...' : 'Criar Organização'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        sb.from('users').select('role, name').eq('id', data.session.user.id).single().then(({ data: profile }) => {
+          if (profile?.role === 'super_admin') setSession({ ...data, profile });
+          else sb.auth.signOut();
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    });
+  }, []);
+
+  if (loading) return <div className="loader"></div>;
+  if (!session) return <LoginPage onLogin={setSession} />;
+  return <Dashboard session={session} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
