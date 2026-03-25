@@ -15,6 +15,9 @@
   .loader { display: flex; align-items: center; justify-content: center; height: 100vh; }
   .loader::after { content: ''; width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #2D5A3D; border-radius: 50%; animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .slide-in { animation: slideIn 0.2s ease-out; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  tr:hover { background: #f8fafc; }
 </style>
 </head>
 <body>
@@ -31,6 +34,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const statusColors = { active: '#dcfce7', trial: '#dbeafe', suspended: '#fee2e2', cancelled: '#f1f5f9', past_due: '#fef9c3' };
 const statusText = { active: '#166534', trial: '#1e40af', suspended: '#991b1b', cancelled: '#475569', past_due: '#854d0e' };
 const statusLabels = { active: 'Ativo', trial: 'Trial', suspended: 'Suspenso', cancelled: 'Cancelado', past_due: 'Inadimplente' };
+
+const planNames = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
+const planPrices = { starter: 97, pro: 197, enterprise: 497 };
 
 function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -88,10 +94,277 @@ function Badge({ status }) {
   );
 }
 
+function GrowthChart({ orgs }) {
+  const monthData = {};
+  orgs.forEach(org => {
+    const date = new Date(org.createdAt);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    monthData[key] = (monthData[key] || 0) + 1;
+  });
+
+  const sorted = Object.entries(monthData).sort();
+  const maxVal = Math.max(...sorted.map(([,v]) => v), 1);
+  const barWidth = 100 / Math.max(sorted.length, 6);
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#64748b' }}>Crescimento de Organizações</div>
+      {sorted.length === 0 ? (
+        <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, padding: 40 }}>Sem dados</div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120 }}>
+          {sorted.map(([month, count]) => (
+            <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{ fontSize: 10, color: '#2D5A3D', fontWeight: 600 }}>{count}</div>
+              <div style={{ width: '100%', background: '#2D5A3D', borderRadius: '4px 4px 0 0', height: `${(count / maxVal) * 100}%`, minHeight: 4, opacity: 0.7 }} />
+              <div style={{ fontSize: 9, color: '#94a3b8', transform: 'rotate(-45deg)', transformOrigin: 'center', whiteSpace: 'nowrap', marginTop: 8 }}>{month.slice(5)}/{month.slice(2, 4)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OrgDetail({ org, onClose, onUpdate }) {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [editPlan, setEditPlan] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(org.subscription?.plan?.slug || 'starter');
+  const [msg, setMsg] = useState(null);
+  const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'user' });
+  const [creating, setCreating] = useState(false);
+
+  const callFn = async (fn, body = {}) => {
+    const { data: { session: s } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.access_token}` },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  };
+
+  const loadUsers = async () => {
+    setLoading(true);
+    const data = await callFn('admin-manage-users', { action: 'list', orgId: org.id });
+    if (data.users) setUsers(data.users);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadUsers(); }, [org.id]);
+
+  const toggleUser = async (userId, isActive) => {
+    await callFn('admin-manage-users', { action: 'toggle', userId, isActive: !isActive });
+    loadUsers();
+  };
+
+  const resetPassword = async (userId, username) => {
+    const newPass = prompt(`Nova senha para ${username}:`);
+    if (!newPass) return;
+    const data = await callFn('admin-manage-users', { action: 'reset-password', userId, newPassword: newPass });
+    if (data.ok) setMsg({ type: 'success', text: `Senha de ${username} alterada!` });
+    else setMsg({ type: 'error', text: data.error || 'Erro ao resetar senha' });
+  };
+
+  const createUser = async () => {
+    if (!userForm.name || !userForm.username || !userForm.password) {
+      setMsg({ type: 'error', text: 'Preencha todos os campos' });
+      return;
+    }
+    setCreating(true);
+    const data = await callFn('create-user', { 
+      orgId: org.id, 
+      name: userForm.name, 
+      username: userForm.username,
+      password: userForm.password,
+      role: userForm.role 
+    });
+    if (data.ok) {
+      setMsg({ type: 'success', text: `Usuário ${userForm.username} criado!` });
+      setShowUserModal(false);
+      setUserForm({ name: '', username: '', password: '', role: 'user' });
+      loadUsers();
+    } else {
+      setMsg({ type: 'error', text: data.error || 'Erro ao criar usuário' });
+    }
+    setCreating(false);
+  };
+
+  const updatePlan = async () => {
+    const { error } = await sb.from('organizations')
+      .update({ 
+        'subscription.plan.slug': selectedPlan,
+        'subscription.plan.name': planNames[selectedPlan],
+        'subscription.plan.price_monthly': planPrices[selectedPlan]
+      })
+      .eq('id', org.id);
+    
+    if (!error) {
+      setMsg({ type: 'success', text: 'Plano atualizado!' });
+      setEditPlan(false);
+      onUpdate();
+    } else {
+      setMsg({ type: 'error', text: 'Erro ao atualizar plano' });
+    }
+  };
+
+  const impersonate = async () => {
+    const data = await callFn('admin-manage-users', { action: 'impersonate', orgId: org.id });
+    if (data.magicLink) {
+      setMsg({ type: 'success', text: 'Link copiado!' });
+      navigator.clipboard.writeText(data.magicLink);
+      alert(`Link de acesso (copiado):\n\n${data.magicLink}`);
+    } else {
+      setMsg({ type: 'error', text: data.error || 'Erro ao gerar link' });
+    }
+  };
+
+  const adminUser = users.find(u => u.role === 'admin');
+  const lastLogin = adminUser?.last_login_at ? new Date(adminUser.last_login_at).toLocaleString('pt-BR') : 'Nunca';
+
+  return (
+    <div className="slide-in" style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 600, background: '#fff', boxShadow: '-4px 0 20px rgba(0,0,0,0.1)', zIndex: 100, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      {/* Header */}
+      <div style={{ padding: 20, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: org.primaryColor || '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 700, overflow: 'hidden' }}>
+            {org.logoUrl ? <img src={org.logoUrl} style={{ width: 48, height: 48, objectFit: 'cover' }} /> : org.name.charAt(0)}
+          </div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>{org.name}</div>
+            <div style={{ fontSize: 12, color: '#64748b' }}>{org.slug}.raizesolucoes.com.br</div>
+          </div>
+        </div>
+        <button onClick={onClose} style={{ width: 32, height: 32, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 20, color: '#64748b' }}>×</button>
+      </div>
+
+      {/* Message */}
+      {msg && (
+        <div style={{ margin: '12px 20px', padding: '10px 16px', borderRadius: 8, fontSize: 13, background: msg.type === 'error' ? '#fef2f2' : '#f0fdf4', color: msg.type === 'error' ? '#dc2626' : '#166534', display: 'flex', justifyContent: 'space-between' }}>
+          {msg.text}
+          <span onClick={() => setMsg(null)} style={{ cursor: 'pointer' }}>✕</span>
+        </div>
+      )}
+
+      <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 20, overflow: 'auto' }}>
+        {/* Metrics */}
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#64748b' }}>Métricas</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12 }}>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>Último Login Admin</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{lastLogin}</div>
+            </div>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12 }}>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>Z-API Status</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{org.zapiConnected ? '🟢 Conectado' : '⚫ Desconectado'}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Plan */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#64748b' }}>Plano</div>
+            <button onClick={() => setEditPlan(!editPlan)} style={{ padding: '4px 12px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12 }}>
+              {editPlan ? 'Cancelar' : 'Editar'}
+            </button>
+          </div>
+          {editPlan ? (
+            <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+              <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14 }}>
+                <option value="starter">Starter — R$ 97/mês</option>
+                <option value="pro">Pro — R$ 197/mês</option>
+                <option value="enterprise">Enterprise — R$ 497/mês</option>
+              </select>
+              <button onClick={updatePlan} style={{ padding: '8px 14px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Salvar Alteração</button>
+            </div>
+          ) : (
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>{org.subscription?.plan?.name || 'Starter'}</div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>R$ {org.subscription?.plan?.price_monthly || 97}/mês</div>
+              </div>
+              <Badge status={org.subscription?.status} />
+            </div>
+          )}
+        </div>
+
+        {/* Impersonate */}
+        <button onClick={impersonate} style={{ padding: '10px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          🔐 Impersonar como Admin
+        </button>
+
+        {/* Users */}
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#64748b' }}>Usuários ({users.length})</div>
+            <button onClick={() => setShowUserModal(true)} style={{ padding: '6px 12px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>+ Novo</button>
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 20, fontSize: 13 }}>Carregando...</div>
+          ) : users.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 20, fontSize: 13 }}>Nenhum usuário</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {users.map(user => (
+                <div key={user.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: user.is_active ? 1 : 0.5 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{user.name}</div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>@{user.username} • {user.role}</div>
+                    {user.last_login_at && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Último login: {new Date(user.last_login_at).toLocaleString('pt-BR')}</div>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button onClick={() => toggleUser(user.id, user.is_active)} style={{ padding: '4px 10px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', fontSize: 11, cursor: 'pointer', color: user.is_active ? '#dc2626' : '#166534' }}>
+                      {user.is_active ? 'Desativar' : 'Ativar'}
+                    </button>
+                    <button onClick={() => resetPassword(user.id, user.username)} style={{ padding: '4px 10px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', fontSize: 11, cursor: 'pointer' }}>🔑 Reset</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Create User Modal */}
+      {showUserModal && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 150 }}>
+          <div style={{ background: '#fff', borderRadius: 12, width: 400, boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: 16, borderBottom: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>Novo Usuário</div>
+            </div>
+            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input type="text" value={userForm.name} onChange={e => setUserForm({...userForm, name: e.target.value})} placeholder="Nome completo *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13 }} />
+              <input type="text" value={userForm.username} onChange={e => setUserForm({...userForm, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})} placeholder="Username *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13 }} />
+              <input type="password" value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} placeholder="Senha *" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13 }} />
+              <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13 }}>
+                <option value="user">Usuário</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Gerente</option>
+              </select>
+            </div>
+            <div style={{ padding: 16, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setShowUserModal(false)} style={{ padding: '6px 14px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
+              <button onClick={createUser} disabled={creating} style={{ padding: '6px 14px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: creating ? 0.6 : 1 }}>
+                {creating ? 'Criando...' : 'Criar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard({ session }) {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState(null);
   const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '' });
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -155,7 +428,7 @@ function Dashboard({ session }) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px' }}>
         {/* Message */}
         {msg && (
           <div style={{ padding: '10px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13, background: msg.type === 'error' ? '#fef2f2' : '#f0fdf4', color: msg.type === 'error' ? '#dc2626' : '#166534', display: 'flex', justifyContent: 'space-between' }}>
@@ -164,77 +437,89 @@ function Dashboard({ session }) {
           </div>
         )}
 
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-          {[
-            { label: 'Organizações', value: `${activeOrgs}/${orgs.length}` },
-            { label: 'Usuários', value: totalUsers },
-            { label: 'MRR Estimado', value: `R$ ${mrr.toLocaleString('pt-BR')}` },
-            { label: 'Deals', value: orgs.reduce((s, o) => s + (o.metrics?.deals || 0), 0) },
-          ].map((s, i) => (
-            <div key={i} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{s.label}</div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Toolbar */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-          <input type="text" placeholder="Buscar organização..." value={search} onChange={e => setSearch(e.target.value)}
-            style={{ flex: 1, padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none' }} />
-          <button onClick={() => loadOrgs()} style={{ padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 14 }}>↻</button>
-          <button onClick={() => setShowModal(true)} style={{ padding: '8px 20px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>+ Nova Organização</button>
-        </div>
-
-        {/* Table */}
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Organização</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Plano</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Status</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Usuários</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Deals</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Clientes</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Chats</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#64748b' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Carregando...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Nenhuma organização</td></tr>
-              ) : filtered.map(org => (
-                <tr key={org.id} style={{ borderBottom: '1px solid #f1f5f9', opacity: org.isActive ? 1 : 0.5 }}>
-                  <td style={{ padding: '12px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: org.primaryColor || '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden' }}>
-                        {org.logoUrl ? <img src={org.logoUrl} style={{ width: 32, height: 32, objectFit: 'cover' }} /> : org.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{org.name}</div>
-                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{org.slug}.raizesolucoes.com.br</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px 16px' }}>{org.subscription?.plan?.name || '—'}</td>
-                  <td style={{ padding: '12px 16px' }}><Badge status={org.subscription?.status} /></td>
-                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.users || 0}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.deals || 0}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.clients || 0}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.chats || 0}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                    <button onClick={() => toggleOrg(org.id, org.isActive)} style={{ padding: '4px 12px', border: '1px solid #e2e8f0', borderRadius: 6, background: 'transparent', fontSize: 12, cursor: 'pointer', color: org.isActive ? '#dc2626' : '#166534' }}>
-                      {org.isActive ? 'Desativar' : 'Ativar'}
-                    </button>
-                  </td>
-                </tr>
+        <div style={{ display: 'grid', gridTemplateColumns: selectedOrg ? '1fr 600px' : '1fr', gap: 24 }}>
+          <div>
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+              {[
+                { label: 'Organizações', value: `${activeOrgs}/${orgs.length}` },
+                { label: 'Usuários', value: totalUsers },
+                { label: 'MRR Estimado', value: `R$ ${mrr.toLocaleString('pt-BR')}` },
+                { label: 'Deals', value: orgs.reduce((s, o) => s + (o.metrics?.deals || 0), 0) },
+              ].map((s, i) => (
+                <div key={i} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+                  <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Growth Chart */}
+            <div style={{ marginBottom: 24 }}>
+              <GrowthChart orgs={orgs} />
+            </div>
+
+            {/* Toolbar */}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              <input type="text" placeholder="Buscar organização..." value={search} onChange={e => setSearch(e.target.value)}
+                style={{ flex: 1, padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, outline: 'none' }} />
+              <button onClick={() => loadOrgs()} style={{ padding: '8px 14px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 14 }}>↻</button>
+              <button onClick={() => setShowModal(true)} style={{ padding: '8px 20px', background: '#2D5A3D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>+ Nova Organização</button>
+            </div>
+
+            {/* Table */}
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Organização</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Plano</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#64748b' }}>Status</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Usuários</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Deals</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Clientes</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#64748b' }}>Chats</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#64748b' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Carregando...</td></tr>
+                  ) : filtered.length === 0 ? (
+                    <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Nenhuma organização</td></tr>
+                  ) : filtered.map(org => (
+                    <tr key={org.id} onClick={() => setSelectedOrg(org)} style={{ borderBottom: '1px solid #f1f5f9', opacity: org.isActive ? 1 : 0.5, cursor: 'pointer' }}>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: org.primaryColor || '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden' }}>
+                            {org.logoUrl ? <img src={org.logoUrl} style={{ width: 32, height: 32, objectFit: 'cover' }} /> : org.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{org.name}</div>
+                            <div style={{ fontSize: 11, color: '#94a3b8' }}>{org.slug}.raizesolucoes.com.br</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>{org.subscription?.plan?.name || '—'}</td>
+                      <td style={{ padding: '12px 16px' }}><Badge status={org.subscription?.status} /></td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.users || 0}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.deals || 0}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.clients || 0}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>{org.metrics?.chats || 0}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                        <button onClick={(e) => { e.stopPropagation(); toggleOrg(org.id, org.isActive); }} style={{ padding: '4px 12px', border: '1px solid #e2e8f0', borderRadius: 6, background: 'transparent', fontSize: 12, cursor: 'pointer', color: org.isActive ? '#dc2626' : '#166534' }}>
+                          {org.isActive ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Detail Panel */}
+          {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} />}
         </div>
       </div>
 
@@ -256,7 +541,7 @@ function Dashboard({ session }) {
                 {['starter', 'pro', 'enterprise'].map(p => (
                   <button key={p} onClick={() => setForm({...form, planSlug: p})} style={{ flex: 1, padding: '10px', border: form.planSlug === p ? '2px solid #2D5A3D' : '1px solid #e2e8f0', borderRadius: 8, background: form.planSlug === p ? '#f0fdf4' : '#fff', cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ fontWeight: 600, fontSize: 14, textTransform: 'capitalize' }}>{p}</div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>{p === 'starter' ? 'R$ 97' : p === 'pro' ? 'R$ 197' : 'R$ 497'}/mês</div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>R$ {planPrices[p]}/mês</div>
                   </button>
                 ))}
               </div>
