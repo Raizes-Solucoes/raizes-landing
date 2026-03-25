@@ -99,24 +99,27 @@ Deno.serve(async (req) => {
     let syncedChats = 0;
     let syncedMessages = 0;
 
-    // Batch upsert chats
+    // Batch upsert chats (columns match actual whatsapp_chats table)
     const chatRows = recentChats.map((chat: any) => {
       const phoneNumber = normalizePhone(chat.id);
       return {
         org_id: orgId,
         phone_number: phoneNumber,
-        contact_name: chat.name || chat.pushName || phoneNumber,
+        custom_name: chat.name || chat.pushName || phoneNumber,
         is_group: phoneNumber.endsWith('-group'),
-        profile_pic_url: chat.profilePicUrl || null,
+        group_subject: phoneNumber.endsWith('-group') ? (chat.subject || null) : null,
         updated_at: new Date().toISOString()
       };
     });
 
-    const { error: batchErr } = await adminClient
+    const { error: batchErr, count } = await adminClient
       .from('whatsapp_chats')
-      .upsert(chatRows, { onConflict: 'org_id,phone_number' });
+      .upsert(chatRows, { onConflict: 'org_id,phone_number', count: 'exact' });
 
-    if (!batchErr) syncedChats = chatRows.length;
+    if (batchErr) {
+      console.error('Upsert error:', batchErr);
+    }
+    syncedChats = count || chatRows.length;
 
     return new Response(JSON.stringify({
       synced: syncedChats,
