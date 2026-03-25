@@ -79,14 +79,31 @@ Deno.serve(async (req) => {
     // IMPERSONATE
     if (action === 'impersonate') {
       // Find admin user for org
-      const { data: adminUser } = await supabase
+      // Find highest-role user: admin > manager > any
+      let { data: adminUser } = await supabase
         .from('users')
         .select('id, email')
         .eq('org_id', orgId)
-        .eq('role', 'admin')
+        .in('role', ['admin', 'manager'])
+        .eq('is_active', true)
+        .order('role', { ascending: true })
+        .limit(1)
         .single()
 
-      if (!adminUser) throw new Error('Admin not found')
+      if (!adminUser) {
+        // Fallback: any active user in the org
+        const { data: anyUser } = await supabase
+          .from('users')
+          .select('id, email')
+          .eq('org_id', orgId)
+          .eq('is_active', true)
+          .neq('role', 'super_admin')
+          .limit(1)
+          .single()
+        adminUser = anyUser
+      }
+
+      if (!adminUser) throw new Error('Nenhum usuário ativo encontrado nesta organização')
 
       // Generate magic link for admin
       const { data: org } = await supabase
