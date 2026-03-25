@@ -25,13 +25,23 @@ Deno.serve(async (req) => {
     const { action, instanceName } = body;
 
     if (action === "create") {
-      const res = await fetch(`${EVO_URL}/instance/create`, {
+      // Create instance
+      const createRes = await fetch(`${EVO_URL}/instance/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": EVO_KEY },
         body: JSON.stringify({ instanceName, qrcode: true, integration: "WHATSAPP-BAILEYS" }),
       });
-      const data = await res.json();
-      return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const createData = await createRes.json();
+      
+      // Fetch QR code via connect endpoint
+      const qrRes = await fetch(`${EVO_URL}/instance/connect/${instanceName}`, {
+        headers: { "apikey": EVO_KEY },
+      });
+      const qrData = await qrRes.json();
+      
+      // Merge: return create data + qrcode from connect
+      const merged = { ...createData, qrcode: qrData };
+      return new Response(JSON.stringify(merged), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "status") {
