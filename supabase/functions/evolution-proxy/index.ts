@@ -25,27 +25,14 @@ Deno.serve(async (req) => {
     const { action, instanceName } = body;
 
     if (action === "create") {
-      // Create instance
+      // v1.8 returns QR code directly in the create response
       const createRes = await fetch(`${EVO_URL}/instance/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": EVO_KEY },
-        body: JSON.stringify({ instanceName, qrcode: true, integration: "WHATSAPP-BAILEYS" }),
+        body: JSON.stringify({ instanceName, qrcode: true }),
       });
       const createData = await createRes.json();
-      
-      // Poll for QR code — Baileys takes a few seconds to connect to WhatsApp servers
-      let qrData: any = { count: 0 };
-      for (let i = 0; i < 15; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        const qrRes = await fetch(`${EVO_URL}/instance/connect/${instanceName}`, {
-          headers: { "apikey": EVO_KEY },
-        });
-        qrData = await qrRes.json();
-        if (qrData.base64) break; // QR ready!
-      }
-      
-      const merged = { ...createData, qrcode: qrData };
-      return new Response(JSON.stringify(merged), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify(createData), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "status") {
