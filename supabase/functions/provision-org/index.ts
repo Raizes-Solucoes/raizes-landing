@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       username: adminUsername,
       email,
       role: "admin",
-      organization_id: org.id,
+      org_id: org.id,
       is_active: true,
     });
     if (profileErr) throw profileErr;

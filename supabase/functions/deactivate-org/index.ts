@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     }
 
     // Deactivate/activate all users of that org
-    await adminClient.from("users").update({ is_active: newStatus }).eq("organization_id", orgId);
+    await adminClient.from("users").update({ is_active: newStatus }).eq("org_id", orgId);
 
     return new Response(JSON.stringify({ ok: true, orgId, is_active: newStatus }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {

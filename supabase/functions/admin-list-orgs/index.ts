@@ -33,10 +33,10 @@ Deno.serve(async (req) => {
     // Get metrics per org
     const orgResults = await Promise.all((orgs || []).map(async (org: any) => {
       const [usersRes, dealsRes, clientsRes, chatsRes] = await Promise.all([
-        adminClient.from("users").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
-        adminClient.from("deals").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
-        adminClient.from("clientes").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
-        adminClient.from("whatsapp_chats").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+        adminClient.from("users").select("id", { count: "exact", head: true }).eq("org_id", org.id),
+        adminClient.from("deals").select("id", { count: "exact", head: true }).eq("org_id", org.id),
+        adminClient.from("clientes").select("id", { count: "exact", head: true }).eq("org_id", org.id),
+        adminClient.from("whatsapp_chats").select("id", { count: "exact", head: true }).eq("org_id", org.id),
       ]);
 
       const sub = subs?.find((s: any) => s.org_id === org.id);
