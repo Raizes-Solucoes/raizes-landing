@@ -32,6 +32,19 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ instanceName, qrcode: true }),
       });
       const createData = await createRes.json();
+      
+      // Configure webhook for this instance
+      const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/evolution-webhook`;
+      await fetch(`${EVO_URL}/webhook/set/${instanceName}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": EVO_KEY },
+        body: JSON.stringify({
+          enabled: true,
+          url: webhookUrl,
+          events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "QRCODE_UPDATED"],
+        }),
+      }).catch(() => {});
+
       return new Response(JSON.stringify(createData), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
