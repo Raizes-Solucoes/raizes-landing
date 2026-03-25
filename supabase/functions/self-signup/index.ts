@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     if (profileErr) throw profileErr;
 
     // Retorna sucesso com a URL de login
-    const loginUrl = `https://${slug}.raizessolucoes.com.br`;
+    const loginUrl = `https://app.raizesolucoes.com.br`;
 
     return new Response(
       JSON.stringify({
