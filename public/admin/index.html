@@ -362,6 +362,114 @@ function OrgDetail({ org, onClose, onUpdate, onDelete }) {
   );
 }
 
+function SupportPanel() {
+  const [tickets, setTickets] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('tickets');
+
+  useEffect(() => { loadData(); }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    const { data: t } = await sb.from('support_tickets').select('*, organizations:org_id(name), users:user_id(name)').order('created_at', { ascending: false }).limit(50);
+    setTickets(t || []);
+    const { data: f } = await sb.from('support_ticket_feedback').select('*, support_tickets:ticket_id(title, linear_issue_id), users:requester_user_id(name)').order('created_at', { ascending: false }).limit(50);
+    setFeedbacks(f || []);
+    setLoading(false);
+  };
+
+  const statusColors = { aberto: '#dbeafe', em_analise: '#e0e7ff', em_execucao: '#fef3c7', resolvido: '#dcfce7', reaberto: '#fee2e2', cancelado: '#f1f5f9' };
+  const statusText = { aberto: '#1e40af', em_analise: '#4338ca', em_execucao: '#92400e', resolvido: '#166534', reaberto: '#991b1b', cancelado: '#475569' };
+  const statusLabels = { aberto: 'Aberto', em_analise: 'Em Análise', em_execucao: 'Em Execução', resolvido: 'Resolvido', reaberto: 'Reaberto', cancelado: 'Fechado' };
+
+  const avgNps = feedbacks.filter(f => f.nps_score !== null).length > 0
+    ? (feedbacks.filter(f => f.nps_score !== null).reduce((s, f) => s + f.nps_score, 0) / feedbacks.filter(f => f.nps_score !== null).length).toFixed(1)
+    : '—';
+  const promoters = feedbacks.filter(f => f.nps_score >= 9).length;
+  const detractors = feedbacks.filter(f => f.nps_score !== null && f.nps_score <= 6).length;
+  const totalNps = feedbacks.filter(f => f.nps_score !== null).length;
+  const npsScore = totalNps > 0 ? Math.round(((promoters - detractors) / totalNps) * 100) : '—';
+  const reopened = feedbacks.filter(f => !f.resolved_confirmed).length;
+
+  if (loading) return React.createElement('div', { style: { textAlign: 'center', padding: 60, color: '#94a3b8' } }, 'Carregando...');
+
+  return React.createElement('div', null,
+    // Stats
+    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 } },
+      [
+        { label: 'Tickets', value: tickets.length },
+        { label: 'NPS Score', value: npsScore },
+        { label: 'NPS Médio', value: avgNps },
+        { label: 'Reabertos', value: reopened },
+      ].map((s, i) => React.createElement('div', { key: i, style: { background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 } },
+        React.createElement('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, s.label),
+        React.createElement('div', { style: { fontSize: 24, fontWeight: 700 } }, s.value)
+      ))
+    ),
+    // Tabs
+    React.createElement('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
+      ['tickets', 'nps'].map(t => React.createElement('button', {
+        key: t, onClick: () => setTab(t),
+        style: { padding: '6px 16px', borderRadius: 8, border: tab === t ? 'none' : '1px solid #e2e8f0', background: tab === t ? '#2D5A3D' : '#fff', color: tab === t ? '#fff' : '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+      }, t === 'tickets' ? 'Tickets' : 'NPS & Feedback'))
+    ),
+    // Tickets table
+    tab === 'tickets' && React.createElement('div', { style: { background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' } },
+      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13 } },
+        React.createElement('thead', null,
+          React.createElement('tr', { style: { background: '#f8fafc', borderBottom: '1px solid #e2e8f0' } },
+            ['Título', 'Org', 'Usuário', 'Tipo', 'Impacto', 'Status', 'Linear', 'Data'].map(h =>
+              React.createElement('th', { key: h, style: { padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' } }, h)
+            )
+          )
+        ),
+        React.createElement('tbody', null,
+          tickets.map(t => React.createElement('tr', { key: t.id, style: { borderBottom: '1px solid #f1f5f9' } },
+            React.createElement('td', { style: { padding: '10px 12px', fontWeight: 500, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, t.title),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#64748b' } }, t.organizations?.name || '—'),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#64748b' } }, t.users?.name || '—'),
+            React.createElement('td', { style: { padding: '10px 12px' } }, t.type),
+            React.createElement('td', { style: { padding: '10px 12px' } }, t.impact),
+            React.createElement('td', { style: { padding: '10px 12px' } },
+              React.createElement('span', { style: { display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusColors[t.status] || '#f1f5f9', color: statusText[t.status] || '#475569' } }, statusLabels[t.status] || t.status)
+            ),
+            React.createElement('td', { style: { padding: '10px 12px' } },
+              t.linear_issue_id ? React.createElement('a', { href: t.linear_issue_url, target: '_blank', style: { color: '#2D5A3D', fontWeight: 600, textDecoration: 'none' } }, t.linear_issue_id) : '—'
+            ),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#94a3b8', fontSize: 12 } }, new Date(t.created_at).toLocaleDateString('pt-BR'))
+          ))
+        )
+      )
+    ),
+    // NPS table
+    tab === 'nps' && React.createElement('div', { style: { background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' } },
+      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13 } },
+        React.createElement('thead', null,
+          React.createElement('tr', { style: { background: '#f8fafc', borderBottom: '1px solid #e2e8f0' } },
+            ['Ticket', 'Linear', 'Usuário', 'Resolvido?', 'NPS', 'Comentário', 'Data'].map(h =>
+              React.createElement('th', { key: h, style: { padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' } }, h)
+            )
+          )
+        ),
+        React.createElement('tbody', null,
+          feedbacks.map(f => React.createElement('tr', { key: f.id, style: { borderBottom: '1px solid #f1f5f9' } },
+            React.createElement('td', { style: { padding: '10px 12px', fontWeight: 500, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, f.support_tickets?.title || '—'),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#2D5A3D', fontWeight: 600 } }, f.support_tickets?.linear_issue_id || '—'),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#64748b' } }, f.users?.name || '—'),
+            React.createElement('td', { style: { padding: '10px 12px' } },
+              React.createElement('span', { style: { display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: f.resolved_confirmed ? '#dcfce7' : '#fee2e2', color: f.resolved_confirmed ? '#166534' : '#991b1b' } }, f.resolved_confirmed ? 'Sim' : 'Não')
+            ),
+            React.createElement('td', { style: { padding: '10px 12px', fontWeight: 700, fontSize: 16, color: f.nps_score >= 9 ? '#166534' : f.nps_score >= 7 ? '#92400e' : f.nps_score !== null ? '#991b1b' : '#94a3b8' } }, f.nps_score !== null ? f.nps_score : '—'),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#64748b', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, f.comment || f.reopen_reason || '—'),
+            React.createElement('td', { style: { padding: '10px 12px', color: '#94a3b8', fontSize: 12 } }, new Date(f.created_at).toLocaleDateString('pt-BR'))
+          ))
+        )
+      )
+    )
+  );
+}
+
 function Dashboard({ session }) {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -371,6 +479,7 @@ function Dashboard({ session }) {
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('orgs');
 
   const callFn = async (fn, body = {}) => {
     const { data: { session: s } } = await sb.auth.getSession();
@@ -435,9 +544,19 @@ function Dashboard({ session }) {
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       {/* Header */}
       <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <span style={{ fontSize: 20, fontWeight: 700, color: '#142818' }}>🌱 Raízes</span>
-          <span style={{ fontSize: 14, color: '#94a3b8', marginLeft: 12 }}>Gerenciamento SaaS</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#142818' }}>🌱 Raízes</span>
+            <span style={{ fontSize: 14, color: '#94a3b8', marginLeft: 12 }}>Gerenciamento SaaS</span>
+          </div>
+          <div style={{ display: 'flex', gap: 4, marginLeft: 20 }}>
+            {[{ key: 'orgs', label: 'Organizações' }, { key: 'suporte', label: 'Suporte & NPS' }].map(t => (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                style={{ padding: '6px 16px', borderRadius: 8, border: activeTab === t.key ? 'none' : '1px solid #e2e8f0', background: activeTab === t.key ? '#2D5A3D' : 'transparent', color: activeTab === t.key ? '#fff' : '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 13, color: '#64748b' }}>{session.profile?.name}</span>
@@ -454,6 +573,9 @@ function Dashboard({ session }) {
           </div>
         )}
 
+        {activeTab === 'suporte' ? (
+          <SupportPanel />
+        ) : (
         <div style={{ display: 'grid', gridTemplateColumns: selectedOrg ? '1fr 600px' : '1fr', gap: 24 }}>
           <div>
             {/* Stats */}
@@ -538,6 +660,7 @@ function Dashboard({ session }) {
           {/* Detail Panel */}
           {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} onDelete={deleteOrg} />}
         </div>
+        )}
       </div>
 
       {/* Create Modal */}
