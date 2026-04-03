@@ -45,6 +45,8 @@
   tbody tr:hover { background: rgba(57,77,250,0.02); }
   th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: rgba(60,61,55,0.45); text-transform: uppercase; letter-spacing: 0.08em; }
   td { padding: 12px 16px; font-size: 14px; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: #3C3D37; }
 
   /* Sidebar nav */
   .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 500; color: rgba(60,61,55,0.55); cursor: pointer; transition: all 0.2s; text-decoration: none; }
@@ -122,9 +124,34 @@ const callFn = async (fn, body = {}) => {
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('pt-BR') : 'Nunca';
+const formatCurrency = (v) => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+
+const timeAgo = (date) => {
+  if (!date) return '—';
+  const now = new Date();
+  const d = new Date(date);
+  const diffMs = now - d;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+
+  if (diffSec < 60) return 'agora';
+  if (diffMin < 60) return `${diffMin}min atrás`;
+  if (diffHour < 24) return `${diffHour}h atrás`;
+  if (diffDay === 1) return 'ontem';
+  if (diffDay < 7) return `${diffDay} dias atrás`;
+  if (diffWeek < 4) return `${diffWeek} semanas`;
+  const diffMonth = Math.floor(diffDay / 30);
+  if (diffMonth < 12) return `${diffMonth} meses`;
+  const diffYear = Math.floor(diffDay / 365);
+  return `${diffYear} anos`;
+};
 
 // ─── Icons (inline SVG) ───
 const Icons = {
+  overview: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
   building: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg>,
   users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   chat: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
@@ -149,6 +176,18 @@ function Badge({ status, styles = statusStyles }) {
   return <span className="badge" style={{ background: s.bg, color: s.fg }}>{s.label}</span>;
 }
 
+function HealthBadge({ score }) {
+  const s = score != null ? score : 0;
+  let bg = '#ef4444';
+  if (s >= 70) bg = '#10b981';
+  else if (s >= 40) bg = '#f59e0b';
+  return (
+    <div style={{ width: 32, height: 32, borderRadius: '50%', background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>
+      {s}
+    </div>
+  );
+}
+
 function StatCard({ label, value, icon, accent }) {
   return (
     <div className="stat-card glass-solid" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -157,6 +196,107 @@ function StatCard({ label, value, icon, accent }) {
         {icon && <span style={{ color: accent || colors.blue, opacity: 0.5, width: 18, height: 18, display: 'flex' }}>{icon}</span>}
       </div>
       <span className="serif" style={{ fontSize: 28, fontWeight: 700, color: colors.earth }}>{value}</span>
+    </div>
+  );
+}
+
+function MiniBarChart({ data, color, label }) {
+  if (!data || !data.values || data.values.length === 0) {
+    return (
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 16 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+        <div style={{ textAlign: 'center', color: colors.muted, fontSize: 12, padding: '20px 0' }}>Sem dados</div>
+      </div>
+    );
+  }
+  const maxVal = Math.max(...data.values, 1);
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 16 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
+        {data.values.map((v, i) => (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div style={{ fontSize: 10, color: color || colors.blue, fontWeight: 700 }}>{v}</div>
+            <div style={{ width: '100%', maxWidth: 36, background: color ? color : `linear-gradient(to top, ${colors.blue}, ${colors.cyan})`, borderRadius: 6, height: `${(v / maxVal) * 100}%`, minHeight: 4, opacity: 0.8, transition: 'height 0.5s ease' }} />
+            <div style={{ fontSize: 9, color: colors.muted, whiteSpace: 'nowrap' }}>{data.labels[i]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MrrBreakdown({ byPlan }) {
+  if (!byPlan) return null;
+  const plans = [
+    { key: 'starter', label: 'Starter', color: '#93c5fd' },
+    { key: 'pro', label: 'Pro', color: '#3b82f6' },
+    { key: 'enterprise', label: 'Enterprise', color: '#1e3a8a' },
+  ];
+  const maxVal = Math.max(byPlan.starter || 0, byPlan.pro || 0, byPlan.enterprise || 0, 1);
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>MRR por Plano</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {plans.map(p => {
+          const val = byPlan[p.key] || 0;
+          return (
+            <div key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 80, fontSize: 13, fontWeight: 600, color: colors.earth }}>{p.label}</div>
+              <div style={{ flex: 1, height: 10, background: 'rgba(60,61,55,0.05)', borderRadius: 5, overflow: 'hidden' }}>
+                <div style={{ width: `${(val / maxVal) * 100}%`, height: '100%', background: p.color, borderRadius: 5, transition: 'width 0.5s ease' }} />
+              </div>
+              <div style={{ width: 90, textAlign: 'right', fontSize: 13, fontWeight: 700, color: colors.earth }}>{formatCurrency(val)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AlertCard({ title, icon, count, children }) {
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 16, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        {icon && <span style={{ width: 16, height: 16, display: 'flex', color: colors.muted }}>{icon}</span>}
+        <span style={{ fontSize: 13, fontWeight: 700, color: colors.earth, flex: 1 }}>{title}</span>
+        {count != null && (
+          <span className="badge" style={{ background: count > 0 ? '#fee2e2' : '#dcfce7', color: count > 0 ? '#991b1b' : '#166534', fontSize: 10 }}>{count}</span>
+        )}
+      </div>
+      <div style={{ maxHeight: 180, overflowY: 'auto' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ActivityFeed({ items }) {
+  const typeColors = {
+    org_created: colors.green,
+    deal_paid: colors.blue,
+    support_ticket: colors.warning,
+    automation_error: colors.danger,
+  };
+  const displayItems = (items || []).slice(0, 30);
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 16 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Atividade Recente</div>
+      <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+        {displayItems.length === 0 ? (
+          <div style={{ textAlign: 'center', color: colors.muted, fontSize: 12, padding: '20px 0' }}>Sem atividades recentes</div>
+        ) : displayItems.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < displayItems.length - 1 ? '1px solid rgba(60,61,55,0.04)' : 'none' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: typeColors[item.type] || colors.muted, flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: colors.earth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+              <div style={{ fontSize: 11, color: colors.muted }}>{item.orgName}</div>
+            </div>
+            <div style={{ fontSize: 11, color: colors.muted, whiteSpace: 'nowrap', flexShrink: 0 }}>{timeAgo(item.timestamp)}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -305,6 +445,118 @@ function GrowthChart({ orgs }) {
   );
 }
 
+// ─── Overview Panel ───
+function OverviewPanel() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    callFn('admin-dashboard').then(d => {
+      setData(d);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ textAlign: 'center', padding: 80, color: colors.muted, fontSize: 14 }}>Carregando...</div>;
+  if (!data) return <div style={{ textAlign: 'center', padding: 80, color: colors.muted, fontSize: 14 }}>Erro ao carregar dados</div>;
+
+  const kpis = data.kpis || {};
+  const growth = data.growth || {};
+  const trialHealth = data.trialHealth || {};
+  const orgRisk = data.orgRisk || {};
+  const automations = data.automations || {};
+  const activity = data.activity || [];
+
+  return (
+    <div className="fade-in">
+      {/* ROW 1: KPI StatCards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 28 }}>
+        <StatCard label="Orgs Ativas" value={`${(kpis.orgs?.active || 0)}/${(kpis.orgs?.total || 0)}`} icon={Icons.building} />
+        <StatCard label="Online Agora" value={kpis.users?.onlineNow || 0} icon={Icons.users} accent={colors.cyan} />
+        <StatCard label="MRR" value={formatCurrency(kpis.mrr?.total)} icon={Icons.chart} accent={colors.green} />
+        <StatCard label="Deals Mês" value={kpis.deals?.thisMonth || 0} icon={Icons.chat} accent={colors.warning} />
+        <StatCard label="Volume Mês" value={formatCurrency(kpis.volume?.total)} icon={Icons.chart} accent={colors.blue} />
+      </div>
+
+      {/* ROW 2: Two columns */}
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20 }}>
+        {/* LEFT column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <MrrBreakdown byPlan={kpis.mrr?.byPlan} />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <MiniBarChart
+              data={growth.orgSignups}
+              color={colors.green}
+              label="Org Signups"
+            />
+            <MiniBarChart
+              data={growth.mrr}
+              color={colors.blue}
+              label="MRR"
+            />
+            <MiniBarChart
+              data={growth.deals}
+              color={colors.cyan}
+              label="Deals"
+            />
+          </div>
+
+          <ActivityFeed items={activity} />
+        </div>
+
+        {/* RIGHT column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <AlertCard title="Trials Expirando" icon={Icons.chart} count={(trialHealth.expiringTrials || []).length}>
+            {(trialHealth.expiringTrials || []).length === 0 ? (
+              <div style={{ fontSize: 12, color: colors.muted, padding: '8px 0' }}>Nenhum trial expirando</div>
+            ) : (trialHealth.expiringTrials || []).map((t, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(60,61,55,0.04)', fontSize: 13 }}>
+                <span style={{ fontWeight: 600, color: colors.earth }}>{t.orgName}</span>
+                <span style={{ color: colors.warning, fontWeight: 600 }}>{t.daysLeft} dias</span>
+              </div>
+            ))}
+          </AlertCard>
+
+          <AlertCard title="Orgs Inativas (7d+)" icon={Icons.building} count={(orgRisk.inactiveOrgs || []).length}>
+            {(orgRisk.inactiveOrgs || []).length === 0 ? (
+              <div style={{ fontSize: 12, color: colors.muted, padding: '8px 0' }}>Nenhuma org inativa</div>
+            ) : (orgRisk.inactiveOrgs || []).map((o, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(60,61,55,0.04)', fontSize: 13 }}>
+                <span style={{ fontWeight: 600, color: colors.earth }}>{o.orgName}</span>
+                <span style={{ color: colors.danger, fontWeight: 600 }}>{o.daysSinceLogin} dias sem login</span>
+              </div>
+            ))}
+          </AlertCard>
+
+          <AlertCard title="Automações" icon={Icons.chart} count={automations.totalErrors7d || 0}>
+            <div style={{ fontSize: 13, color: colors.earth, padding: '4px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ color: colors.muted }}>Taxa de erro global</span>
+                <span style={{ fontWeight: 700 }}>{automations.globalErrorRate != null ? `${(automations.globalErrorRate * 100).toFixed(1)}%` : '—'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: colors.muted }}>Erros / Logs (7d)</span>
+                <span style={{ fontWeight: 700 }}>{automations.totalErrors7d || 0} / {automations.totalLogs7d || 0}</span>
+              </div>
+            </div>
+          </AlertCard>
+
+          <AlertCard title="WhatsApp Offline" icon={Icons.whatsapp} count={(orgRisk.disconnectedWhatsapp || []).length}>
+            {(orgRisk.disconnectedWhatsapp || []).length === 0 ? (
+              <div style={{ fontSize: 12, color: colors.muted, padding: '8px 0' }}>Todos conectados</div>
+            ) : (orgRisk.disconnectedWhatsapp || []).map((o, i) => (
+              <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(60,61,55,0.04)', fontSize: 13, fontWeight: 600, color: colors.earth }}>
+                {o.orgName}
+              </div>
+            ))}
+          </AlertCard>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Org Detail Panel ───
 function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const [users, setUsers] = useState([]);
@@ -417,7 +669,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
         <Toast msg={msg} onClear={() => setMsg(null)} />
 
         {/* Metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           <div className="glass-solid" style={{ borderRadius: 14, padding: 14 }}>
             <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Último Login Admin</div>
             <div style={{ fontSize: 13, fontWeight: 700, color: colors.earth }}>{lastLogin}</div>
@@ -427,6 +679,19 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <div style={{ fontSize: 13, fontWeight: 700, color: org.zapiConnected ? colors.green : colors.muted }}>
               {org.zapiConnected ? 'Conectado' : 'Desconectado'}
             </div>
+          </div>
+          <div className="glass-solid" style={{ borderRadius: 14, padding: 14 }}>
+            <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Deals 30d</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: colors.earth }}>{org.deals30d || 0} <span style={{ fontWeight: 400, fontSize: 11, color: colors.muted }}>({org.dealsPaid30d || 0} pagos)</span></div>
+          </div>
+          <div className="glass-solid" style={{ borderRadius: 14, padding: 14 }}>
+            <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Mensagens 30d</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: colors.earth }}>{org.messages30d || 0}</div>
+          </div>
+          <div className="glass-solid" style={{ borderRadius: 14, padding: 14 }}>
+            <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Automações</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: colors.earth }}>{org.activeAutomations || 0} <span style={{ fontWeight: 400, fontSize: 11, color: colors.muted }}>ativas</span></div>
+            <div style={{ fontSize: 11, color: colors.danger, marginTop: 2 }}>{org.automationErrors7d || 0} erros</div>
           </div>
         </div>
 
@@ -737,7 +1002,9 @@ function Dashboard({ session }) {
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('orgs');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sortField, setSortField] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
 
   const loadOrgs = async () => {
     setLoading(true);
@@ -768,13 +1035,69 @@ function Dashboard({ session }) {
     loadOrgs();
   };
 
-  const filtered = orgs.filter(o => o.name.toLowerCase().includes(search.toLowerCase()) || o.slug.toLowerCase().includes(search.toLowerCase()));
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const sortArrow = (field) => {
+    if (sortField !== field) return '';
+    return sortDir === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  const filtered = orgs
+    .filter(o => o.name.toLowerCase().includes(search.toLowerCase()) || o.slug.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      let aVal, bVal;
+      switch (sortField) {
+        case 'name':
+          aVal = (a.name || '').toLowerCase();
+          bVal = (b.name || '').toLowerCase();
+          break;
+        case 'plan':
+          aVal = (a.subscription?.plan?.name || '').toLowerCase();
+          bVal = (b.subscription?.plan?.name || '').toLowerCase();
+          break;
+        case 'status':
+          aVal = (a.subscription?.status || '').toLowerCase();
+          bVal = (b.subscription?.status || '').toLowerCase();
+          break;
+        case 'health':
+          aVal = a.healthScore || 0;
+          bVal = b.healthScore || 0;
+          break;
+        case 'deals30d':
+          aVal = a.deals30d || a.metrics?.deals || 0;
+          bVal = b.deals30d || b.metrics?.deals || 0;
+          break;
+        case 'lastActivity':
+          aVal = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+          bVal = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+          break;
+        case 'users':
+          aVal = a.metrics?.users || 0;
+          bVal = b.metrics?.users || 0;
+          break;
+        default:
+          aVal = (a.name || '').toLowerCase();
+          bVal = (b.name || '').toLowerCase();
+      }
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
   const activeOrgs = orgs.filter(o => o.isActive).length;
   const totalUsers = orgs.reduce((s, o) => s + (o.metrics?.users || 0), 0);
   const mrr = orgs.reduce((s, o) => s + (o.subscription?.plan?.price_monthly || 0), 0);
   const totalDeals = orgs.reduce((s, o) => s + (o.metrics?.deals || 0), 0);
 
   const navItems = [
+    { key: 'overview', label: 'Visão Geral', icon: Icons.overview },
     { key: 'orgs', label: 'Organizações', icon: Icons.building },
     { key: 'leads', label: 'Leads', icon: Icons.leads },
     { key: 'suporte', label: 'Suporte & NPS', icon: Icons.ticket },
@@ -828,6 +1151,7 @@ function Dashboard({ session }) {
         <div style={{ padding: '20px 32px 32px' }}>
           <Toast msg={msg} onClear={() => setMsg(null)} />
 
+          {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'suporte' && <SupportPanel />}
           {activeTab === 'leads' && <LeadsPanel />}
           {activeTab === 'orgs' && (
@@ -862,12 +1186,12 @@ function Dashboard({ session }) {
                   <thead>
                     <tr>
                       <th>Organização</th>
-                      <th>Plano</th>
-                      <th>Status</th>
-                      <th style={{ textAlign: 'center' }}>Usuários</th>
-                      <th style={{ textAlign: 'center' }}>Deals</th>
-                      <th style={{ textAlign: 'center' }}>Clientes</th>
-                      <th style={{ textAlign: 'center' }}>Chats</th>
+                      <th className="sortable" onClick={() => handleSort('plan')}>Plano{sortArrow('plan')}</th>
+                      <th className="sortable" onClick={() => handleSort('status')}>Status{sortArrow('status')}</th>
+                      <th className="sortable" onClick={() => handleSort('health')} style={{ textAlign: 'center' }}>Saúde{sortArrow('health')}</th>
+                      <th className="sortable" onClick={() => handleSort('deals30d')} style={{ textAlign: 'center' }}>Deals 30d{sortArrow('deals30d')}</th>
+                      <th className="sortable" onClick={() => handleSort('lastActivity')}>Últ. Atividade{sortArrow('lastActivity')}</th>
+                      <th className="sortable" onClick={() => handleSort('users')} style={{ textAlign: 'center' }}>Usuários{sortArrow('users')}</th>
                       <th style={{ textAlign: 'right' }}>Ações</th>
                     </tr>
                   </thead>
@@ -891,10 +1215,10 @@ function Dashboard({ session }) {
                         </td>
                         <td style={{ fontWeight: 600 }}>{org.subscription?.plan?.name || '—'}</td>
                         <td><Badge status={org.subscription?.status} /></td>
+                        <td style={{ textAlign: 'center' }}><HealthBadge score={org.healthScore} /></td>
+                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{org.deals30d !== undefined ? org.deals30d : (org.metrics?.deals || 0)}</td>
+                        <td style={{ fontSize: 12, color: colors.muted }}>{timeAgo(org.lastActivity)}</td>
                         <td style={{ textAlign: 'center', fontWeight: 600 }}>{org.metrics?.users || 0}</td>
-                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{org.metrics?.deals || 0}</td>
-                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{org.metrics?.clients || 0}</td>
-                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{org.metrics?.chats || 0}</td>
                         <td style={{ textAlign: 'right' }}>
                           <button onClick={(e) => { e.stopPropagation(); toggleOrg(org.id, org.isActive); }} style={{ padding: '6px 14px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: 'transparent', fontSize: 12, fontWeight: 700, cursor: 'pointer', color: org.isActive ? colors.danger : colors.green, transition: 'all 0.2s' }}>
                             {org.isActive ? 'Desativar' : 'Ativar'}
