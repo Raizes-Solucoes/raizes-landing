@@ -475,7 +475,7 @@
                 }
 
                 // Sucesso! Redirecionar para o login do CRM com mensagem
-                window.location.href = `${result.loginUrl}?signup=success&org=${encodeURIComponent(result.org.name)}`;
+                window.location.href = `${result.loginUrl}/#/login?signup=success&org=${encodeURIComponent(result.org.name)}`;
             } catch (error) {
                 errorEl.textContent = error.message;
                 errorEl.classList.remove('hidden');
