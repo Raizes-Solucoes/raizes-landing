@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       const { data: magicLinkData, error: magicError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email: authUser.email,
-        options: { redirectTo: 'https://multibank.raizesolucoes.com.br' }
+        options: { redirectTo: Deno.env.get('APP_URL') || 'https://app.raizesolucoes.com.br' }
       })
 
       if (magicError) throw magicError
