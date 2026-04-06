@@ -735,6 +735,50 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
           </button>
         </div>
 
+        {/* Subscription Management */}
+        <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+          <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 12 }}>GESTÃO DE SUBSCRIPTION</div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={async () => {
+              const days = prompt('Quantos dias deseja estender o trial?', '14');
+              if (!days || isNaN(Number(days))) return;
+              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ orgId: org.id, action: 'extend_trial', days: Number(days) })
+              });
+              const data = await res.json();
+              if (data.ok) { setMsg({ type: 'success', text: `Trial estendido por ${days} dias` }); onRefreshOrgs(); }
+              else setMsg({ type: 'error', text: data.error || 'Erro' });
+            }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(57,77,250,0.06)', color: colors.blue, border: '1px solid rgba(57,77,250,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              Estender Trial
+            </button>
+            <button onClick={async () => {
+              if (!confirm('Ativar esta organização como cliente ativo?')) return;
+              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ orgId: org.id, action: 'activate' })
+              });
+              const data = await res.json();
+              if (data.ok) { setMsg({ type: 'success', text: 'Organização ativada!' }); onRefreshOrgs(); }
+              else setMsg({ type: 'error', text: data.error || 'Erro' });
+            }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(22,163,74,0.06)', color: colors.green, border: '1px solid rgba(22,163,74,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              Ativar
+            </button>
+            <button onClick={async () => {
+              if (!confirm('Suspender esta organização? Os usuários verão a tela de expiração.')) return;
+              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ orgId: org.id, action: 'suspend' })
+              });
+              const data = await res.json();
+              if (data.ok) { setMsg({ type: 'success', text: 'Organização suspensa' }); onRefreshOrgs(); }
+              else setMsg({ type: 'error', text: data.error || 'Erro' });
+            }} style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.06)', color: colors.danger, border: '1px solid rgba(239,68,68,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              Suspender
+            </button>
+          </div>
+        </div>
+
         {/* Users */}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
