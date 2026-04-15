@@ -2,6 +2,9 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/pricing", "destination": "/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/admin/(.*)", "destination": "/admin/index.html" }
   ]
