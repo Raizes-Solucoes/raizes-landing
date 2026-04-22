@@ -427,6 +427,12 @@
     </div>
 
     <script>
+        // Ambiente: detecta se está em prod (raizesolucoes.com.br) ou STG (outro host)
+        const IS_PROD = /^(www\.)?raizesolucoes\.com\.br$/.test(location.hostname);
+        const SUPABASE_URL = IS_PROD
+          ? 'https://mselftsinxinawzsgfyx.supabase.co'
+          : 'https://wmeumpzgbkyqzhigrsak.supabase.co';
+
         function openSignup(plan) {
             document.getElementById('planSlug').value = plan;
             document.getElementById('signupModal').classList.add('active');
@@ -460,7 +466,7 @@
             };
 
             try {
-                const response = await fetch('https://mselftsinxinawzsgfyx.supabase.co/functions/v1/self-signup', {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/self-signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

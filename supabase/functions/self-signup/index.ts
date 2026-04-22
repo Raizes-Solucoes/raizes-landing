@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
 
     if (profileErr) throw profileErr;
 
-    // Retorna sucesso com a URL de login
-    const loginUrl = `https://app.raizesolucoes.com.br`;
+    // Retorna sucesso com a URL de login (APP_URL é setado por ambiente — STG aponta pra sandbox)
+    const loginUrl = Deno.env.get("APP_URL") || "https://app.raizesolucoes.com.br";
 
     return new Response(
       JSON.stringify({

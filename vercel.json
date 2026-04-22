@@ -3,7 +3,12 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/pricing", "destination": "/", "permanent": false }
+    {
+      "source": "/pricing",
+      "destination": "/",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "(www\\.)?raizesolucoes\\.com\\.br" }]
+    }
   ],
   "rewrites": [
     { "source": "/admin/(.*)", "destination": "/admin/index.html" }
