@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial grátis | Raízes Soluções</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+        .feature-check { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; }
+        .glass-card {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.1);
+            border-radius: 24px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-creme/95 backdrop-blur-md border-b border-brand-earth/5 h-20 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">
+                raízes<span class="text-brand-blue">.</span>
+            </a>
+            <div class="hidden md:flex gap-10 text-sm font-medium uppercase tracking-widest text-brand-earth/60">
+                <a href="/#manifesto" class="hover:text-brand-blue transition-colors">Manifesto</a>
+                <a href="/#servicos" class="hover:text-brand-blue transition-colors">Serviços</a>
+                <a href="/#processo" class="hover:text-brand-blue transition-colors">Processo</a>
+                <a href="/#contato" class="hover:text-brand-blue transition-colors">Contato</a>
+            </div>
+            <a href="/#contato" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg">
+                Falar com a equipe
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO + FORM -->
+    <section class="pt-32 pb-24 px-4 sm:px-6">
+        <div class="container mx-auto max-w-6xl grid lg:grid-cols-2 gap-16 items-center">
+
+            <!-- LEFT: copy + benefits -->
+            <div>
+                <div class="inline-block px-4 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-bold uppercase tracking-widest mb-6">
+                    14 dias grátis
+                </div>
+                <h1 class="serif-title text-5xl md:text-6xl font-bold text-brand-earth mb-6 leading-tight">
+                    Teste o Miller<br/>por 14 dias
+                </h1>
+                <p class="text-xl text-brand-earth/70 mb-10 leading-relaxed">
+                    CRM completo para corretores e consultores financeiros. Sem cartão de crédito, sem compromisso. Comece em menos de 2 minutos.
+                </p>
+
+                <ul class="space-y-5">
+                    <li class="flex items-start gap-4">
+                        <span class="feature-check mt-1">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        <div>
+                            <span class="font-semibold text-brand-earth">Pipeline de negócios</span>
+                            <p class="text-sm text-brand-earth/60">Gerencie financiamentos, seguros e consórcios num funil visual.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="feature-check mt-1">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        <div>
+                            <span class="font-semibold text-brand-earth">WhatsApp integrado</span>
+                            <p class="text-sm text-brand-earth/60">Conecte seu número e responda clientes de dentro do CRM.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="feature-check mt-1">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        <div>
+                            <span class="font-semibold text-brand-earth">Nina — assistente de IA</span>
+                            <p class="text-sm text-brand-earth/60">Sugere respostas pros seus clientes com base no histórico.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="feature-check mt-1">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        <div>
+                            <span class="font-semibold text-brand-earth">Automações e relatórios</span>
+                            <p class="text-sm text-brand-earth/60">Aniversário, NPS, follow-up e métricas em tempo real.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- RIGHT: form -->
+            <div class="glass-card p-8 md:p-10">
+                <h2 class="serif-title text-3xl font-bold text-brand-earth mb-2">Comece seu trial</h2>
+                <p class="text-brand-earth/60 mb-8">Preencha abaixo. Em 2 minutos você tá dentro.</p>
+
+                <div id="errorMessage" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+                <div id="loadingMessage" class="hidden mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                    Criando sua conta...
+                </div>
+
+                <form id="signupForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-brand-earth mb-2">Nome da empresa</label>
+                        <input type="text" id="companyName" required
+                            class="w-full px-4 py-3 border border-brand-earth/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                            placeholder="Minha Empresa">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-brand-earth mb-2">Seu nome completo</label>
+                        <input type="text" id="adminName" required
+                            class="w-full px-4 py-3 border border-brand-earth/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                            placeholder="João Silva">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-brand-earth mb-2">Email</label>
+                        <input type="email" id="adminEmail" required
+                            class="w-full px-4 py-3 border border-brand-earth/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                            placeholder="joao@minhaempresa.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-brand-earth mb-2">Telefone</label>
+                        <input type="tel" id="adminPhone" required
+                            class="w-full px-4 py-3 border border-brand-earth/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                            placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-brand-earth mb-2">Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="adminPassword" required minlength="6"
+                            class="w-full px-4 py-3 border border-brand-earth/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                            placeholder="••••••">
+                    </div>
+
+                    <button type="submit"
+                        class="w-full btn-gradient text-white px-6 py-4 rounded-full font-bold shadow-lg mt-4 text-lg">
+                        Começar trial grátis
+                    </button>
+                </form>
+
+                <p class="text-center text-xs text-brand-earth/50 mt-6">
+                    14 dias grátis. Sem cartão de crédito. Sem compromisso.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Ambiente: detecta se está em prod (raizesolucoes.com.br) ou STG (outro host)
+        const IS_PROD = /^(www\.)?raizesolucoes\.com\.br$/.test(location.hostname);
+        const SUPABASE_URL = IS_PROD
+          ? 'https://mselftsinxinawzsgfyx.supabase.co'
+          : 'https://wmeumpzgbkyqzhigrsak.supabase.co';
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const errorEl = document.getElementById('errorMessage');
+            const loadingEl = document.getElementById('loadingMessage');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            errorEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            submitBtn.disabled = true;
+
+            const formData = {
+                companyName: document.getElementById('companyName').value,
+                adminName: document.getElementById('adminName').value,
+                adminEmail: document.getElementById('adminEmail').value,
+                adminPhone: document.getElementById('adminPhone').value,
+                adminPassword: document.getElementById('adminPassword').value,
+                planSlug: 'starter'
+            };
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/self-signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Erro ao criar conta');
+
+                window.location.href = `${result.loginUrl}/#/login?signup=success&org=${encodeURIComponent(result.org.name)}`;
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('hidden');
+                loadingEl.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

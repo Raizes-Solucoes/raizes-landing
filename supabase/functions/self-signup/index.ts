@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 1. Cria a organização
+    // 1. Cria a organização (com features opt-in habilitadas durante o trial)
     const { data: org, error: orgErr } = await adminClient
       .from("organizations")
       .insert({
@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
         logo_url: null,
         is_active: true,
         settings: {
-          onboarding_completed: false
+          onboarding_completed: false,
+          features: {
+            nina: true,
+          },
         },
       })
       .select()
