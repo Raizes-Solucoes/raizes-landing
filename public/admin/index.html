@@ -176,13 +176,22 @@ function Badge({ status, styles = statusStyles }) {
   return <span className="badge" style={{ background: s.bg, color: s.fg }}>{s.label}</span>;
 }
 
+const HEALTH_TOOLTIP = `Score 0-100 calculado a partir de:
+• Login recente (até 30pts): <1d=30, <3d=25, <7d=15, <14d=5
+• Negócios criados em 30d (até 25pts): ≥10=25, ≥5=20, ≥1=10
+• Mensagens em 30d (até 25pts): ≥100=25, ≥30=20, ≥1=10
+• WhatsApp conectado (10pts)
+• Sem erros de automação em 7d (até 10pts): 0 erros=10, ≤3=5
+
+Cor: ≥70 verde · 40-69 amarelo · <40 vermelho.`;
+
 function HealthBadge({ score }) {
   const s = score != null ? score : 0;
   let bg = '#ef4444';
   if (s >= 70) bg = '#10b981';
   else if (s >= 40) bg = '#f59e0b';
   return (
-    <div style={{ width: 32, height: 32, borderRadius: '50%', background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>
+    <div title={HEALTH_TOOLTIP} style={{ width: 32, height: 32, borderRadius: '50%', background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, cursor: 'help' }}>
       {s}
     </div>
   );
@@ -557,6 +566,128 @@ function OverviewPanel() {
   );
 }
 
+// ─── Catálogo de módulos ───
+// Cada módulo: key (= settings.features[key]), label, description, default (true=opt-out, false=opt-in)
+const MODULE_CATALOG = [
+  {
+    category: 'Menu lateral (módulos do CRM)',
+    items: [
+      { key: 'chat',       label: 'Chat',        description: 'Conversas WhatsApp / Instagram / Messenger', default: true },
+      { key: 'pipeline',   label: 'Negócios',    description: 'Pipeline de financiamento, seguro, consórcio', default: true },
+      { key: 'clientes',   label: 'Clientes',    description: 'Cadastro e gestão de clientes', default: true },
+      { key: 'parceiros',  label: 'Parceiros',   description: 'Cadastro de parceiros e indicações', default: true },
+      { key: 'tarefas',    label: 'Tarefas',     description: 'Tarefas e lembretes', default: true },
+      { key: 'relatorios', label: 'Relatórios',  description: 'Métricas e dashboards', default: true },
+      { key: 'automacoes', label: 'Automações',  description: 'Automações de aniversário, NPS, follow-up etc.', default: true },
+      { key: 'whatsapp',   label: 'WhatsApp',    description: 'Integração com WhatsApp (sem isso, chat WA fica desabilitado)', default: true },
+    ],
+  },
+  {
+    category: 'IA e assistentes',
+    items: [
+      { key: 'nina',       label: 'Nina (IA)',   description: 'Assistente que sugere respostas durante conversas', default: false },
+    ],
+  },
+  {
+    category: 'Outras integrações',
+    items: [
+      { key: 'mimuu',      label: 'Mimuu',       description: 'Integração com plataforma Mimuu (widget AI)', default: true },
+      { key: 'instagram',  label: 'Instagram DMs', description: 'Receber/enviar DMs Instagram (requer Meta App aprovado)', default: false },
+      { key: 'messenger',  label: 'Messenger FB', description: 'Receber/enviar Facebook Messenger (requer Meta App aprovado)', default: false },
+    ],
+  },
+];
+
+function ModulesPanel({ org, onSaved, setMsg }) {
+  const orgFeatures = (org.settings?.features) || {};
+  const [pending, setPending] = React.useState({});
+  const [saving, setSaving] = React.useState(false);
+
+  // Estado efetivo: pending sobrepõe atual
+  const isEnabled = (mod) => {
+    if (pending[mod.key] !== undefined) return pending[mod.key];
+    if (orgFeatures[mod.key] !== undefined) return orgFeatures[mod.key];
+    return mod.default;
+  };
+
+  const toggle = (mod) => {
+    setPending(prev => ({ ...prev, [mod.key]: !isEnabled(mod) }));
+  };
+
+  const hasChanges = Object.keys(pending).length > 0;
+
+  const save = async () => {
+    setSaving(true);
+    const data = await callFn('admin-update-org-settings', { orgId: org.id, features: pending });
+    if (data.ok) {
+      setMsg && setMsg({ type: 'success', text: 'Módulos atualizados.' });
+      setPending({});
+      onSaved && onSaved();
+    } else {
+      setMsg && setMsg({ type: 'error', text: data.error || 'Erro ao salvar' });
+    }
+    setSaving(false);
+  };
+
+  const reset = () => setPending({});
+
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div>
+          <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>MÓDULOS</span>
+          <div style={{ fontSize: 14, fontWeight: 700, color: colors.earth, marginTop: 2 }}>
+            Personalização da org
+          </div>
+          <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
+            Itens desabilitados somem do menu do cliente. Mudanças só afetam esta org.
+          </div>
+        </div>
+        {hasChanges && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={reset} disabled={saving} style={{ padding: '6px 12px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, color: colors.muted }}>
+              Cancelar
+            </button>
+            <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: colors.blue, color: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, fontWeight: 700 }}>
+              {saving ? 'Salvando...' : 'Salvar mudanças'}
+            </button>
+          </div>
+        )}
+      </div>
+      {MODULE_CATALOG.map(group => (
+        <div key={group.category} style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 10, color: colors.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+            {group.category}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {group.items.map(mod => {
+              const enabled = isEnabled(mod);
+              const changed = pending[mod.key] !== undefined;
+              return (
+                <label key={mod.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', background: changed ? 'rgba(57,77,250,0.04)' : 'transparent', border: changed ? '1px solid rgba(57,77,250,0.18)' : '1px solid transparent' }}>
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={() => toggle(mod)}
+                    style={{ width: 16, height: 16, cursor: 'pointer', accentColor: colors.blue }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: colors.earth }}>{mod.label}</div>
+                    <div style={{ fontSize: 11, color: colors.muted }}>{mod.description}</div>
+                  </div>
+                  <span style={{ fontSize: 10, color: enabled ? colors.green : colors.muted, fontWeight: 700 }}>
+                    {enabled ? 'ATIVADO' : 'DESATIVADO'}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Org Detail Panel ───
 function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const [users, setUsers] = useState([]);
@@ -778,6 +909,9 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             </button>
           </div>
         </div>
+
+        {/* Módulos */}
+        <ModulesPanel org={org} onSaved={onUpdate} setMsg={setMsg} />
 
         {/* Users */}
         <div style={{ flex: 1 }}>
@@ -1232,7 +1366,7 @@ function Dashboard({ session }) {
                       <th>Organização</th>
                       <th className="sortable" onClick={() => handleSort('plan')}>Plano{sortArrow('plan')}</th>
                       <th className="sortable" onClick={() => handleSort('status')}>Status{sortArrow('status')}</th>
-                      <th className="sortable" onClick={() => handleSort('health')} style={{ textAlign: 'center' }}>Saúde{sortArrow('health')}</th>
+                      <th className="sortable" onClick={() => handleSort('health')} style={{ textAlign: 'center' }} title={HEALTH_TOOLTIP}>Saúde{sortArrow('health')}</th>
                       <th className="sortable" onClick={() => handleSort('deals30d')} style={{ textAlign: 'center' }}>Deals 30d{sortArrow('deals30d')}</th>
                       <th className="sortable" onClick={() => handleSort('lastActivity')}>Últ. Atividade{sortArrow('lastActivity')}</th>
                       <th className="sortable" onClick={() => handleSort('users')} style={{ textAlign: 'center' }}>Usuários{sortArrow('users')}</th>
