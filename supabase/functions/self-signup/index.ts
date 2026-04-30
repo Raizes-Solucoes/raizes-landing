@@ -143,8 +143,11 @@ Deno.serve(async (req) => {
 
     if (profileErr) throw profileErr;
 
-    // Retorna sucesso com a URL de login
-    const loginUrl = `https://app.raizesolucoes.com.br`;
+    // URL personalizada por slug — {slug}.raizesolucoes.com.br
+    const baseDomain = Deno.env.get('APP_BASE_DOMAIN');
+    const loginUrl = baseDomain
+      ? `https://${slug}.${baseDomain}`
+      : `https://app.raizesolucoes.com.br`;
 
     return new Response(
       JSON.stringify({
