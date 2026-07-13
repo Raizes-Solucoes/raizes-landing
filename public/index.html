@@ -67,8 +67,13 @@
         .process-line { position: relative; }
         .process-line::before { content: ''; position: absolute; left: 28px; top: 56px; bottom: 0; width: 2px; background: linear-gradient(to bottom, #394dfa, #10b981); opacity: 0.2; }
 
-        /* NAVBAR */
-        .nav-scrolled { background: rgba(249,247,242,0.92) !important; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(60,61,55,0.05); height: 70px !important; }
+        /* NAVBAR — liquid glass SEMPRE (destaca os botões sobre a aquarela do hero) */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
 
         /* STAT CARD */
         .stat-number { font-family: 'Lora', serif; font-weight: 700; }
@@ -81,7 +86,7 @@
 <body class="antialiased">
 
     <!-- NAVBAR -->
-    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center bg-transparent">
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
         <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
             <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
             <div class="hidden md:flex gap-10 text-sm font-medium uppercase tracking-widest text-brand-earth/60">
@@ -91,9 +96,9 @@
                 <a href="#contato" class="hover:text-brand-blue transition-colors">Contato</a>
             </div>
             <div class="flex items-center gap-3">
-                <a href="#contato" class="hidden sm:inline-block btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg">Falar com a equipe</a>
+                <a href="#contato" class="hidden sm:inline-block btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Falar com a equipe</a>
                 <!-- Acesso ao sistema: porta única do Miller; o front que abre depende do org do login. -->
-                <a href="https://app.raizesolucoes.com.br" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold shadow-lg">Entrar</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
             </div>
         </div>
     </nav>
