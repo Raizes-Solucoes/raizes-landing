@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     if (profile?.role !== "super_admin") return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json();
-    const { orgName, adminName, adminUsername, adminPassword, planSlug, trialDays, primaryColor, logoUrl } = body;
+    const { orgName, adminName, adminUsername, adminPassword, planSlug, trialDays, primaryColor, secondaryColor, logoUrl, faviconUrl, vertical, features } = body;
 
     if (!orgName || !adminName || !adminUsername || !adminPassword) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios: orgName, adminName, adminUsername, adminPassword" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -43,13 +43,23 @@ Deno.serve(async (req) => {
     if (!plan) return new Response(JSON.stringify({ error: `Plano "${planSlug}" não encontrado` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // 1. Create org
+    // settings personalizado: vertical (ex.: 'atendimento') e/ou features (ex.:
+    // { renvix_ui: true, custom_skin: true }) permitem criar uma org JÁ no vertical
+    // certo em 1 chamada — sem passo manual no admin depois. Ausentes → org default
+    // (Miller), comportamento antigo preservado.
+    const settings: Record<string, unknown> = {};
+    if (vertical) settings.vertical = vertical;
+    if (features && typeof features === "object") settings.features = features;
+
     const { data: org, error: orgErr } = await adminClient.from("organizations").insert({
       name: orgName,
       slug,
       primary_color: primaryColor || "#2D5A3D",
+      secondary_color: secondaryColor || null,
       logo_url: logoUrl || null,
+      favicon_url: faviconUrl || null,
       is_active: true,
-      settings: {},
+      settings,
     }).select().single();
     if (orgErr) throw orgErr;
 
