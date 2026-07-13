@@ -109,6 +109,30 @@
     text-decoration: none;
   }
   .nav-cta:hover { background: var(--green-accent); color: var(--black); }
+  .nav-actions { display: flex; align-items: center; gap: 0.9rem; }
+  /* Botão de login (ação primária) → app único do Miller; o front que abre depende
+     do org do usuário logado. */
+  .nav-login {
+    background: var(--green-accent);
+    border: 1px solid var(--green-accent);
+    color: var(--black);
+    padding: 0.6rem 1.6rem;
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.3s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-login:hover { background: transparent; color: var(--green-accent); }
+  @media (max-width: 640px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-cta { display: none; }
+  }
 
   /* ─── HERO ─── */
   #hero {
@@ -702,7 +726,10 @@
     <li><a href="#process">Processo</a></li>
     <li><a href="#cta">Contato</a></li>
   </ul>
-  <a href="mailto:contato@raizesagencia.com.br" class="nav-cta">Falar Conosco</a>
+  <div class="nav-actions">
+    <a href="mailto:contato@raizesagencia.com.br" class="nav-cta">Falar Conosco</a>
+    <a href="https://app.raizesolucoes.com.br" class="nav-login">Entrar</a>
+  </div>
 </nav>
 
 <!-- HERO -->
