@@ -567,59 +567,124 @@ function OverviewPanel() {
 }
 
 // ─── Catálogo de módulos ───
-// Cada módulo: key (= settings.features[key]), label, description, default (true=opt-out, false=opt-in)
+// Cada módulo: key (= settings.features[key]), label, description, default (true=opt-out,
+// false=opt-in) e status: como a flag se comporta no app do cliente HOJE (auditado no código):
+//   viva     = gateia rota + item de menu
+//   inline   = efeito pontual dentro de uma tela
+//   so-menu  = esconde o item de menu, mas a rota abre por URL
+//   fantasma = sem consumo no código — ligar/desligar não muda NADA
+// Mantido em sincronia com src/hooks/useOrgFeatures.ts do miller-crm-frontend (37 flags).
+const STATUS_META = {
+  viva:     { label: 'Viva',      bg: '#dcfce7', fg: '#166534', hint: 'Gateia rota + item de menu' },
+  inline:   { label: 'Inline',    bg: '#dbeafe', fg: '#1e40af', hint: 'Efeito pontual dentro de uma tela' },
+  'so-menu':{ label: 'Só menu',   bg: '#fef3c7', fg: '#92400e', hint: 'Esconde o menu, mas a rota abre por URL' },
+  fantasma: { label: 'Sem efeito',bg: '#f1f5f9', fg: '#475569', hint: 'Nenhum consumo no código — ligar não muda nada' },
+};
+
 const MODULE_CATALOG = [
   {
     category: 'Menu lateral (módulos do CRM)',
     items: [
-      { key: 'painel',     label: 'Painel',      description: 'Dashboard com visão geral, metas e atividade', default: true },
-      { key: 'chat',       label: 'Chat',        description: 'Conversas WhatsApp / Instagram / Messenger', default: true },
-      { key: 'pipeline',   label: 'Negócios',    description: 'Pipeline de financiamento, seguro, consórcio', default: true },
-      { key: 'clientes',   label: 'Clientes',    description: 'Cadastro e gestão de clientes', default: true },
-      { key: 'parceiros',  label: 'Parceiros',   description: 'Cadastro de parceiros e indicações', default: true },
-      { key: 'tarefas',    label: 'Tarefas',     description: 'Tarefas e lembretes', default: true },
-      { key: 'relatorios', label: 'Relatórios',  description: 'Métricas e dashboards', default: true },
-      { key: 'automacoes', label: 'Automações',  description: 'Automações de aniversário, NPS, follow-up etc.', default: true },
-      { key: 'whatsapp',   label: 'WhatsApp',    description: 'Integração com WhatsApp (sem isso, chat WA fica desabilitado)', default: true },
+      { key: 'painel',     label: 'Painel',      description: 'Dashboard com visão geral, metas e atividade', default: true, status: 'so-menu' },
+      { key: 'chat',       label: 'Chat',        description: 'Conversas WhatsApp / Instagram / Messenger', default: true, status: 'viva' },
+      { key: 'pipeline',   label: 'Negócios',    description: 'Pipeline de financiamento, seguro, consórcio', default: true, status: 'viva' },
+      { key: 'clientes',   label: 'Clientes',    description: 'Cadastro e gestão de clientes', default: true, status: 'viva' },
+      { key: 'parceiros',  label: 'Parceiros',   description: 'Cadastro de parceiros e indicações', default: true, status: 'viva' },
+      { key: 'tarefas',    label: 'Tarefas',     description: 'Tarefas e lembretes', default: true, status: 'viva' },
+      { key: 'relatorios', label: 'Relatórios',  description: 'Métricas e dashboards', default: true, status: 'viva' },
+      { key: 'automacoes', label: 'Automações',  description: 'Aba Automação dentro de Configurações (aniversário/NPS/follow-up)', default: true, status: 'inline' },
+      { key: 'whatsapp',   label: 'WhatsApp (flag)', description: 'Flag sem consumo. O canal é gateado por permissão, não por esta flag', default: true, status: 'fantasma' },
+      { key: 'mimuu',      label: 'Mimuu (flag)', description: 'Flag sem consumo. O widget é gateado por mimuu_config.enabled, não por esta flag', default: true, status: 'fantasma' },
     ],
   },
   {
-    category: 'IA e assistentes',
+    category: 'IA e assistentes (Nina)',
     items: [
-      { key: 'nina',       label: 'Nina (IA)',   description: 'Assistente que sugere respostas durante conversas', default: false },
+      { key: 'nina',            label: 'Nina (copiloto)',      description: 'Sugestões da Nina no chat + base de conhecimento (paga)', default: false, status: 'inline' },
+      { key: 'nina_prefetch',   label: 'Nina — pré-geração',   description: 'Gera sugestões em background ao abrir o chat (custa créditos)', default: false, status: 'inline' },
+      { key: 'nina_health',     label: 'Nina — health score',  description: 'Chip de saúde 0-100 no card do pipeline (heurístico)', default: false, status: 'inline' },
+      { key: 'nina_intel',      label: 'Nina — intel',         description: 'Painel de análise da conversa (resumo/objeções/sinais)', default: false, status: 'inline' },
+      { key: 'nina_funnel',     label: 'Nina — funil',         description: 'Insights de funil (gargalos, idade por estágio, conversão)', default: false, status: 'inline' },
+      { key: 'nina_proactive',  label: 'Nina — proativo',      description: 'Gatilhos da Nina (alertas/follow-ups)', default: false, status: 'inline' },
+      { key: 'nina_coach',      label: 'Nina — coaching',      description: 'Coaching do vendedor pós-conversa (read-only)', default: false, status: 'inline' },
+      { key: 'nina_hygiene',    label: 'Nina — higiene',       description: 'Aponta campos faltando no deal', default: false, status: 'inline' },
+      { key: 'nina_objection',  label: 'Nina — objeções',      description: 'Assist de objeção (rebuttal no composer)', default: false, status: 'inline' },
+      { key: 'nina_autofill',   label: 'Nina — auto-preencher', description: 'Preenche o card a partir da conversa (humano aprova)', default: false, status: 'inline' },
+      { key: 'nina_create_deal',label: 'Nina — criar negócio', description: 'Oferece abrir DealModal pré-preenchido (depende de intel + autofill)', default: false, status: 'inline' },
     ],
   },
   {
-    category: 'Domínios de produto (beta)',
+    category: 'Atendimento (vertical)',
     items: [
-      { key: 'consorcio',  label: 'Consórcio',   description: 'Funil + sidebar + métricas específicas de consórcio (RAI-159+) — beta interno', default: false },
-      { key: 'painel_v2',  label: 'Painel v2',   description: 'Novo dashboard redesenhado com 5 abas comerciais (RAI-179) — beta interno', default: false },
+      { key: 'nina_atendimento',    label: 'Nina — atendimento autônomo', description: 'Nina conduz o 1º atendimento (shadow→live). Habilita rota/menu Nina', default: false, status: 'viva' },
+      { key: 'nina_qa',             label: 'Nina — qualidade (QA)', description: 'Painel de supervisão: Nina avalia conversas 0-10. Rota /qualidade (admin)', default: false, status: 'viva' },
+      { key: 'atendimento_board_v2',label: 'Board Atendimento v2',  description: 'Renderiza o AtendimentoBoardV2 (redesign) no vertical atendimento', default: false, status: 'inline' },
     ],
   },
   {
-    category: 'Outras integrações',
+    category: 'Produtos FIDC / Renvix',
     items: [
-      { key: 'mimuu',      label: 'Mimuu',       description: 'Integração com plataforma Mimuu (widget AI)', default: true },
-      { key: 'instagram',  label: 'Instagram DMs', description: 'Receber/enviar DMs Instagram (requer Meta App aprovado)', default: false },
-      { key: 'messenger',  label: 'Messenger FB', description: 'Receber/enviar Facebook Messenger (requer Meta App aprovado)', default: false },
+      { key: 'fidc',         label: 'FIDC',            description: 'Produto FIDC: módulo Documentos + produto no picker + campos FIDC', default: false, status: 'viva' },
+      { key: 'credito',      label: 'Crédito',         description: 'Funil de crédito bancário (produto no picker). Vive dentro de /pipeline', default: false, status: 'inline' },
+      { key: 'financeiro',   label: 'Financeiro',      description: 'Módulo Financeiro (contas/NF/receita). Rota /financeiro', default: false, status: 'viva' },
+      { key: 'agenda',       label: 'Agenda',          description: 'Agenda + Google Calendar. Rota /agenda', default: false, status: 'viva' },
+      { key: 'fidc_report',  label: 'Relatório FIDC',  description: 'Dossiê de due diligence por operação. Rota /relatorios-fidc', default: false, status: 'viva' },
+      { key: 'renvix_ui',    label: 'Shell Renvix',    description: 'Substitui o shell do Miller pelo shell Renvix (preto & dourado). Estrutural', default: false, status: 'viva' },
+      { key: 'renvix_gmail', label: 'E-mail Renvix',   description: 'Cliente de e-mail (Gmail por usuário) no shell Renvix. Requer Shell Renvix', default: false, status: 'viva' },
+      { key: 'custom_skin',  label: 'Skin custom',     description: 'Aplica skin (cores/sidebar) no shell via data-skin', default: false, status: 'inline' },
+      { key: 'google_calendar', label: 'Google Calendar', description: 'Card de conexão e sync do Google Calendar dentro da Agenda', default: false, status: 'inline' },
+    ],
+  },
+  {
+    category: 'Domínios / beta',
+    items: [
+      { key: 'consorcio',  label: 'Consórcio',   description: 'Fluxos de consórcio no DealModal (RAI-159+)', default: false, status: 'inline' },
+      { key: 'painel_v2',  label: 'Painel v2 (flag)', description: 'Flag órfã — o dashboard v2 já virou o /painel default', default: false, status: 'fantasma' },
+    ],
+  },
+  {
+    category: 'Integrações Meta',
+    items: [
+      { key: 'instagram',  label: 'Instagram DMs', description: 'Card de conexão do Instagram (requer Meta App aprovado)', default: false, status: 'inline' },
+      { key: 'messenger',  label: 'Messenger FB',  description: 'Flag sem consumo hoje', default: false, status: 'fantasma' },
     ],
   },
 ];
 
+// Verticais reconhecidas (settings.vertical). '' limpa. 'atendimento' colapsa o app.
+const VERTICALS = [
+  { value: '', label: 'Nenhuma (Miller padrão)', description: 'App completo conforme as flags.' },
+  { value: 'atendimento', label: 'Atendimento', description: 'Colapsa o app para Chat + Pipeline + Nina. Sobrepõe as flags (whitelist).' },
+];
+// Flags que a vertical 'atendimento' força (whitelist), para a UI avisar.
+const ATENDIMENTO_FORCED = {
+  chat: true, pipeline: true, whatsapp: true, nina: true, nina_atendimento: true,
+  painel: false, clientes: false, parceiros: false, tarefas: false, relatorios: false,
+  automacoes: false, mimuu: false, instagram: false, messenger: false, consorcio: false, painel_v2: false,
+};
+
 function ModulesPanel({ org, onSaved, setMsg }) {
   const orgFeatures = (org.settings?.features) || {};
+  const currentVertical = org.settings?.vertical || '';
   const [pending, setPending] = React.useState({});
   const [saving, setSaving] = React.useState(false);
+  const [vertical, setVertical] = React.useState(currentVertical);
+  const [savingVertical, setSavingVertical] = React.useState(false);
 
-  // Estado efetivo: pending sobrepõe atual
-  const isEnabled = (mod) => {
+  const forced = vertical === 'atendimento' ? ATENDIMENTO_FORCED : null;
+
+  // Valor com que o toggle é editado (override manual): pending > override da org > default
+  const toggleValue = (mod) => {
     if (pending[mod.key] !== undefined) return pending[mod.key];
     if (orgFeatures[mod.key] !== undefined) return orgFeatures[mod.key];
     return mod.default;
   };
+  // Estado EFETIVO no app do cliente: a vertical sobrepõe o override manual.
+  const effective = (mod) => (forced && mod.key in forced) ? forced[mod.key] : toggleValue(mod);
 
   const toggle = (mod) => {
-    setPending(prev => ({ ...prev, [mod.key]: !isEnabled(mod) }));
+    if (forced && mod.key in forced) return; // forçado pela vertical
+    setPending(prev => ({ ...prev, [mod.key]: !toggleValue(mod) }));
   };
 
   const hasChanges = Object.keys(pending).length > 0;
@@ -628,7 +693,7 @@ function ModulesPanel({ org, onSaved, setMsg }) {
     setSaving(true);
     const data = await callFn('admin-update-org-settings', { orgId: org.id, features: pending });
     if (data.ok) {
-      setMsg && setMsg({ type: 'success', text: 'Módulos atualizados.' });
+      setMsg && setMsg({ type: 'success', text: 'Módulos atualizados. O cliente vê no próximo login (F5).' });
       setPending({});
       onSaved && onSaved();
     } else {
@@ -639,59 +704,321 @@ function ModulesPanel({ org, onSaved, setMsg }) {
 
   const reset = () => setPending({});
 
+  const saveVertical = async () => {
+    setSavingVertical(true);
+    const data = await callFn('admin-update-org-settings', { orgId: org.id, settings: { vertical } });
+    if (data.ok) {
+      setMsg && setMsg({ type: 'success', text: 'Vertical atualizada. O cliente vê no próximo login (F5).' });
+      onSaved && onSaved();
+    } else {
+      setMsg && setMsg({ type: 'error', text: data.error || 'Erro ao salvar vertical' });
+    }
+    setSavingVertical(false);
+  };
+
   return (
-    <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div>
-          <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>MÓDULOS</span>
-          <div style={{ fontSize: 14, fontWeight: 700, color: colors.earth, marginTop: 2 }}>
-            Personalização da org
-          </div>
-          <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
-            Itens desabilitados somem do menu do cliente. Mudanças só afetam esta org.
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Vertical do produto */}
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+        <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>VERTICAL DO PRODUTO</span>
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <select className="input" value={vertical} onChange={e => setVertical(e.target.value)} style={{ flex: 1 }}>
+            {VERTICALS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+          </select>
+          {vertical !== currentVertical && (
+            <button onClick={saveVertical} disabled={savingVertical} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13 }}>
+              {savingVertical ? 'Salvando...' : 'Salvar'}
+            </button>
+          )}
         </div>
-        {hasChanges && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={reset} disabled={saving} style={{ padding: '6px 12px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, color: colors.muted }}>
-              Cancelar
-            </button>
-            <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: colors.blue, color: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, fontWeight: 700 }}>
-              {saving ? 'Salvando...' : 'Salvar mudanças'}
-            </button>
+        <div style={{ fontSize: 11, color: colors.muted, marginTop: 6 }}>
+          {VERTICALS.find(v => v.value === vertical)?.description}
+        </div>
+        {forced && (
+          <div style={{ marginTop: 10, background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#92400e' }}>
+            A vertical <b>Atendimento</b> sobrepõe as flags abaixo (whitelist): as marcadas como <b>forçado</b> ignoram o toggle manual.
           </div>
         )}
       </div>
-      {MODULE_CATALOG.map(group => (
-        <div key={group.category} style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 10, color: colors.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-            {group.category}
+
+      {/* Feature flags */}
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <div>
+            <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>MÓDULOS & FEATURES</span>
+            <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
+              Mudanças só afetam esta org. Veja o <b>status</b> de cada flag (flags "sem efeito" não mudam nada).
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {group.items.map(mod => {
-              const enabled = isEnabled(mod);
-              const changed = pending[mod.key] !== undefined;
-              return (
-                <label key={mod.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', background: changed ? 'rgba(57,77,250,0.04)' : 'transparent', border: changed ? '1px solid rgba(57,77,250,0.18)' : '1px solid transparent' }}>
-                  <input
-                    type="checkbox"
-                    checked={enabled}
-                    onChange={() => toggle(mod)}
-                    style={{ width: 16, height: 16, cursor: 'pointer', accentColor: colors.blue }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: colors.earth }}>{mod.label}</div>
-                    <div style={{ fontSize: 11, color: colors.muted }}>{mod.description}</div>
-                  </div>
-                  <span style={{ fontSize: 10, color: enabled ? colors.green : colors.muted, fontWeight: 700 }}>
-                    {enabled ? 'ATIVADO' : 'DESATIVADO'}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+          {hasChanges && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={reset} disabled={saving} style={{ padding: '6px 12px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, color: colors.muted }}>
+                Cancelar
+              </button>
+              <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: colors.blue, color: '#fff', cursor: saving ? 'wait' : 'pointer', fontSize: 12, fontWeight: 700 }}>
+                {saving ? 'Salvando...' : `Salvar (${Object.keys(pending).length})`}
+              </button>
+            </div>
+          )}
         </div>
-      ))}
+        {MODULE_CATALOG.map(group => (
+          <div key={group.category} style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 10, color: colors.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+              {group.category}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {group.items.map(mod => {
+                const eff = effective(mod);
+                const isForced = !!(forced && mod.key in forced);
+                const changed = pending[mod.key] !== undefined;
+                const st = STATUS_META[mod.status] || STATUS_META.inline;
+                return (
+                  <label key={mod.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, cursor: isForced ? 'not-allowed' : 'pointer', background: changed ? 'rgba(57,77,250,0.04)' : 'transparent', border: changed ? '1px solid rgba(57,77,250,0.18)' : '1px solid transparent', opacity: isForced ? 0.7 : 1 }}>
+                    <input
+                      type="checkbox"
+                      checked={eff}
+                      disabled={isForced}
+                      onChange={() => toggle(mod)}
+                      style={{ width: 16, height: 16, cursor: isForced ? 'not-allowed' : 'pointer', accentColor: colors.blue }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: colors.earth }}>{mod.label}</span>
+                        <span className="badge" title={st.hint} style={{ background: st.bg, color: st.fg, padding: '1px 7px', fontSize: 9 }}>{st.label}</span>
+                        {isForced && <span className="badge" style={{ background: '#fef3c7', color: '#92400e', padding: '1px 7px', fontSize: 9 }}>forçado</span>}
+                        <code style={{ fontSize: 10, color: 'rgba(60,61,55,0.3)' }}>{mod.key}</code>
+                      </div>
+                      <div style={{ fontSize: 11, color: colors.muted }}>{mod.description}</div>
+                    </div>
+                    <span style={{ fontSize: 10, color: eff ? colors.green : colors.muted, fontWeight: 700 }}>
+                      {eff ? 'ATIVADO' : 'DESATIVADO'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Nina Atendimento (config cross-org) ───
+// Usa a edge nina-atendimento-config com targetOrgId (super_admin) para ler/gravar a
+// config da Nina de OUTRA org. Guard-rail: em LIVE bloqueia save com placeholders [X].
+function NinaConfigPanel({ org, setMsg }) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [cfg, setCfg] = useState({ mode: 'off', persona: '', greeting: '', tone: '', off_hours_message: '', turn_cap: 6, business_hours: '{}', handoff_rules: '[]', canned_answers: '[]' });
+
+  const load = async () => {
+    setLoading(true);
+    const data = await callFn('nina-atendimento-config', { action: 'get', targetOrgId: org.id });
+    const c = data?.config || {};
+    setCfg({
+      mode: ['off', 'shadow', 'live'].includes(c.mode) ? c.mode : 'off',
+      persona: c.persona || '', greeting: c.greeting || '', tone: c.tone || '',
+      off_hours_message: c.off_hours_message || '',
+      turn_cap: Number.isFinite(c.turn_cap) ? c.turn_cap : 6,
+      business_hours: JSON.stringify(c.business_hours ?? {}, null, 2),
+      handoff_rules: JSON.stringify(c.handoff_rules ?? [], null, 2),
+      canned_answers: JSON.stringify(c.canned_answers ?? [], null, 2),
+    });
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, [org.id]);
+
+  const set = (k, v) => setCfg(prev => ({ ...prev, [k]: v }));
+
+  const save = async () => {
+    let business_hours, handoff_rules, canned_answers;
+    try { business_hours = JSON.parse(cfg.business_hours); } catch { return setMsg({ type: 'error', text: 'business_hours: JSON inválido' }); }
+    if (typeof business_hours !== 'object' || Array.isArray(business_hours)) return setMsg({ type: 'error', text: 'business_hours deve ser um objeto' });
+    try { handoff_rules = JSON.parse(cfg.handoff_rules); } catch { return setMsg({ type: 'error', text: 'handoff_rules: JSON inválido' }); }
+    if (!Array.isArray(handoff_rules)) return setMsg({ type: 'error', text: 'handoff_rules deve ser um array' });
+    try { canned_answers = JSON.parse(cfg.canned_answers); } catch { return setMsg({ type: 'error', text: 'canned_answers: JSON inválido' }); }
+    if (!Array.isArray(canned_answers) || !canned_answers.every(c => c && typeof c.q === 'string' && typeof c.a === 'string')) return setMsg({ type: 'error', text: 'canned_answers deve ser array de {q, a}' });
+    const cap = Number(cfg.turn_cap);
+    if (!Number.isInteger(cap) || cap <= 0) return setMsg({ type: 'error', text: 'turn_cap deve ser inteiro > 0' });
+    if (cfg.mode === 'live') {
+      const texts = [cfg.persona, cfg.greeting, cfg.off_hours_message, ...canned_answers.flatMap(c => [c.q, c.a])];
+      if (texts.some(t => typeof t === 'string' && t.includes('[') && t.includes(']'))) return setMsg({ type: 'error', text: 'Remova placeholders [X] antes de ir a LIVE' });
+    }
+    setSaving(true);
+    const data = await callFn('nina-atendimento-config', { action: 'save', targetOrgId: org.id, mode: cfg.mode, persona: cfg.persona, greeting: cfg.greeting, tone: cfg.tone, off_hours_message: cfg.off_hours_message, turn_cap: cap, business_hours, handoff_rules, canned_answers });
+    if (data.ok) setMsg({ type: 'success', text: 'Config da Nina salva.' });
+    else setMsg({ type: 'error', text: data.error || 'Erro ao salvar' });
+    setSaving(false);
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', color: colors.muted, padding: 32, fontSize: 13 }}>Carregando config da Nina...</div>;
+
+  const ta = { width: '100%', padding: '10px 14px', border: '1px solid rgba(60,61,55,0.12)', borderRadius: 12, fontSize: 13, fontFamily: 'DM Sans, sans-serif', background: '#fff', color: colors.earth, outline: 'none', resize: 'vertical' };
+  const mono = { ...ta, fontFamily: 'monospace', fontSize: 12 };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+        <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>MODO DE OPERAÇÃO</span>
+        <select className="input" value={cfg.mode} onChange={e => set('mode', e.target.value)} style={{ marginTop: 8 }}>
+          <option value="off">Desligada (off)</option>
+          <option value="shadow">Sombra (shadow) — roda mas não responde o cliente</option>
+          <option value="live">Ao vivo (live) — responde clientes reais</option>
+        </select>
+        {cfg.mode === 'live' && (
+          <div style={{ marginTop: 10, background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#92400e' }}>
+            <b>LIVE responde clientes reais citando o conteúdo VERBATIM.</b> Nunca deixe placeholders (ex.: [NOME]) — o save é bloqueado se algum texto contiver [ ].
+          </div>
+        )}
+      </div>
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div><div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Persona</div><textarea style={ta} rows={2} value={cfg.persona} onChange={e => set('persona', e.target.value)} /></div>
+        <div><div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Saudação inicial</div><textarea style={ta} rows={2} value={cfg.greeting} onChange={e => set('greeting', e.target.value)} /></div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Tom de voz</div><input className="input" value={cfg.tone} onChange={e => set('tone', e.target.value)} /></div>
+          <div style={{ width: 120 }}><div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Turn cap</div><input className="input" type="number" min={1} value={cfg.turn_cap} onChange={e => set('turn_cap', e.target.value)} /></div>
+        </div>
+        <div><div style={{ fontSize: 11, color: colors.muted, fontWeight: 600, marginBottom: 4 }}>Mensagem fora do horário</div><textarea style={ta} rows={2} value={cfg.off_hours_message} onChange={e => set('off_hours_message', e.target.value)} /></div>
+      </div>
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>AVANÇADO (JSON — validado no salvar)</div>
+        <div><div style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>business_hours (objeto)</div><textarea style={mono} rows={5} spellCheck={false} value={cfg.business_hours} onChange={e => set('business_hours', e.target.value)} /></div>
+        <div><div style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>handoff_rules (array)</div><textarea style={mono} rows={4} spellCheck={false} value={cfg.handoff_rules} onChange={e => set('handoff_rules', e.target.value)} /></div>
+        <div><div style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>canned_answers (array de {'{q, a}'})</div><textarea style={mono} rows={5} spellCheck={false} value={cfg.canned_answers} onChange={e => set('canned_answers', e.target.value)} /></div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <button onClick={load} disabled={saving} style={{ padding: '10px 16px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.muted }}>Recarregar</button>
+        <button onClick={save} disabled={saving} className="btn-gradient" style={{ padding: '10px 22px', borderRadius: 12, fontSize: 13 }}>{saving ? 'Salvando...' : 'Salvar Nina'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Canais WhatsApp (visão + provider) ───
+function ChannelsPanel({ org, setMsg, onRefreshOrgs }) {
+  const currentProvider = org.settings?.whatsapp_provider || 'evolution';
+  const [provider, setProvider] = useState(currentProvider);
+  const [instances, setInstances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const PROVIDER_LABEL = { evolution: 'Evolution (não-oficial)', zapi: 'Z-API (não-oficial)', cloud: 'WhatsApp Cloud API (oficial Meta)' };
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    callFn('instance-manage', { action: 'list', orgId: org.id })
+      .then(res => { if (alive) { const arr = res?.instances ?? (Array.isArray(res) ? res : []); setInstances(arr); } })
+      .catch(() => { if (alive) setInstances([]); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [org.id]);
+
+  const applyProvider = async () => {
+    setSaving(true);
+    const data = await callFn('admin-update-org-settings', { orgId: org.id, settings: { whatsapp_provider: provider } });
+    if (data.ok) { setMsg({ type: 'success', text: `Provider alterado para "${provider}".` }); onRefreshOrgs && onRefreshOrgs(); }
+    else setMsg({ type: 'error', text: data.error || 'Erro ao trocar provider' });
+    setSaving(false);
+    setConfirming(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ background: 'rgba(57,77,250,0.05)', border: '1px solid rgba(57,77,250,0.12)', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: colors.earth }}>
+        O QR e a conexão são feitos pelo cliente na tela de Configurações. Aqui é só visão/administração.
+      </div>
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>PROVIDER ATIVO:</span>
+          <span className="badge" style={{ background: '#dbeafe', color: '#1e40af' }}>{currentProvider}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <select className="input" value={provider} onChange={e => setProvider(e.target.value)} style={{ flex: 1 }}>
+            {Object.keys(PROVIDER_LABEL).map(p => <option key={p} value={p}>{PROVIDER_LABEL[p]}</option>)}
+          </select>
+          <button onClick={() => setConfirming(true)} disabled={provider === currentProvider} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13, opacity: provider === currentProvider ? 0.4 : 1 }}>Trocar</button>
+        </div>
+      </div>
+      <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+        <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>INSTÂNCIAS</span>
+        {loading ? (
+          <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Carregando...</div>
+        ) : instances.length === 0 ? (
+          <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Nenhuma instância — o cliente conecta pela própria tela de Configurações.</div>
+        ) : (
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {instances.map((inst, i) => (
+              <div key={inst.id || inst.instance_name || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(60,61,55,0.04)' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: colors.earth }}>{inst.display_name || inst.instance_name || '—'}</div>
+                  <div style={{ fontSize: 11, color: colors.muted }}>{inst.phone_number || 'sem número'}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {inst.is_default && <span className="badge" style={{ background: '#dbeafe', color: '#1e40af' }}>padrão</span>}
+                  <span className="badge" style={{ background: inst.is_connected ? '#dcfce7' : '#f1f5f9', color: inst.is_connected ? '#166534' : '#475569' }}>{inst.is_connected ? 'conectada' : 'desconectada'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {confirming && (
+        <ConfirmModal
+          title="Trocar provider de WhatsApp"
+          message={`Alterar de "${currentProvider}" para "${provider}". Atenção: trocar para 'evolution' faz o webhook Z-API DESCARTAR mensagens do canal Z-API (gate de migração). Confirme só se entende o impacto.`}
+          confirmLabel={saving ? 'Trocando...' : `Trocar para ${provider}`}
+          confirmColor={colors.blue}
+          onConfirm={applyProvider}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Auditoria (admin_audit_log) ───
+function AuditPanel({ org }) {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    sb.from('admin_audit_log').select('*').eq('target_org_id', org.id).order('created_at', { ascending: false }).limit(50)
+      .then(({ data, error }) => {
+        if (!alive) return;
+        if (error) setErr(error.message);
+        else setRows(data || []);
+      })
+      .then(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [org.id]);
+
+  return (
+    <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+      <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>TRILHA DE AUDITORIA</span>
+      {loading ? (
+        <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Carregando...</div>
+      ) : err ? (
+        <div style={{ marginTop: 10, background: '#f1f5f9', borderRadius: 10, padding: '10px 12px', fontSize: 12, color: colors.muted }}>Sem registros (a tabela admin_audit_log é criada com o deploy do backend).</div>
+      ) : rows.length === 0 ? (
+        <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Sem registros para esta org.</div>
+      ) : (
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rows.map(r => (
+            <div key={r.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(60,61,55,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span className="badge" style={{ background: '#e0e7ff', color: '#4338ca' }}>{r.action}</span>
+                <span style={{ fontSize: 11, color: colors.muted }}>{formatDateTime(r.created_at)}</span>
+              </div>
+              <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>{r.actor_email || '—'} · <code style={{ fontSize: 10 }}>{JSON.stringify(r.details || {}).slice(0, 120)}</code></div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -709,6 +1036,28 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const [confirmAction, setConfirmAction] = useState(null);
   const [resetTarget, setResetTarget] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [tab, setTab] = useState('geral');
+  const [verifyResult, setVerifyResult] = useState(null);
+
+  const runVerify = () => {
+    const items = [];
+    const activeAdmin = users.some(u => u.is_active && (u.role === 'admin' || u.role === 'super_admin'));
+    items.push(users.length === 0
+      ? { tone: 'warn', text: 'Usuários ainda não carregados — abra a aba e tente de novo' }
+      : activeAdmin ? { tone: 'ok', text: `Admin ativo presente (${users.filter(u => u.is_active).length} usuário(s) ativo(s))` }
+      : { tone: 'fail', text: 'Sem admin ativo → RLS esconde tudo para o cliente' });
+    items.push(org.subscription
+      ? { tone: 'ok', text: `Assinatura presente (status: ${org.subscription.status})` }
+      : { tone: 'fail', text: 'Sem assinatura → cliente cai em TrialExpired' });
+    items.push(org.zapiConnected
+      ? { tone: 'ok', text: 'WhatsApp conectado' }
+      : { tone: 'warn', text: 'WhatsApp não conectado' });
+    items.push(org.settings?.onboarding_completed
+      ? { tone: 'ok', text: 'Onboarding concluído' }
+      : { tone: 'warn', text: 'Onboarding não concluído (settings.onboarding_completed ausente)' });
+    items.push({ tone: 'ok', text: `Vertical: ${org.settings?.vertical || 'nenhuma'} · ${Object.keys(org.settings?.features || {}).length} flag(s) override` });
+    setVerifyResult(items);
+  };
 
   const loadUsers = async () => {
     setLoading(true);
@@ -752,15 +1101,17 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   };
 
   const updatePlan = async () => {
-    const { error } = await sb.from('organizations')
-      .update({ 'subscription.plan.slug': selectedPlan, 'subscription.plan.name': planNames[selectedPlan], 'subscription.plan.price_monthly': planPrices[selectedPlan] })
-      .eq('id', org.id);
-    if (!error) {
+    // Plano vive na tabela `subscriptions`, não em `organizations`. A versão anterior
+    // gravava colunas inexistentes (`subscription.plan.slug`) em organizations e não
+    // mudava nada. Agora usa a edge manage-subscription (action change_plan).
+    const data = await callFn('manage-subscription', { orgId: org.id, action: 'change_plan', planSlug: selectedPlan });
+    if (data.ok) {
       setMsg({ type: 'success', text: 'Plano atualizado!' });
       setEditPlan(false);
       onUpdate();
+      onRefreshOrgs && onRefreshOrgs();
     } else {
-      setMsg({ type: 'error', text: 'Erro ao atualizar plano' });
+      setMsg({ type: 'error', text: data.error || 'Erro ao atualizar plano' });
     }
   };
 
@@ -804,8 +1155,22 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
         <button onClick={onClose} style={{ width: 36, height: 36, border: 'none', background: 'rgba(60,61,55,0.04)', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, padding: 8 }}>{Icons.close}</button>
       </div>
 
+      {/* Abas */}
+      <div style={{ display: 'flex', gap: 4, padding: '0 24px', background: '#fff', borderBottom: '1px solid rgba(60,61,55,0.06)', overflowX: 'auto' }}>
+        {[{ k: 'geral', l: 'Geral' }, { k: 'modulos', l: 'Módulos & Vertical' }, { k: 'nina', l: 'Nina' }, { k: 'canais', l: 'Canais' }, { k: 'auditoria', l: 'Auditoria' }].map(t => (
+          <button key={t.k} onClick={() => setTab(t.k)} style={{ padding: '12px 12px', border: 'none', background: 'transparent', borderBottom: tab === t.k ? '2px solid ' + colors.blue : '2px solid transparent', color: tab === t.k ? colors.blue : colors.muted, fontWeight: tab === t.k ? 700 : 500, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{t.l}</button>
+        ))}
+      </div>
+
       <div style={{ flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 20, overflow: 'auto' }}>
         <Toast msg={msg} onClear={() => setMsg(null)} />
+
+        {tab === 'modulos' && <ModulesPanel org={org} onSaved={onUpdate} setMsg={setMsg} />}
+        {tab === 'nina' && <NinaConfigPanel org={org} setMsg={setMsg} />}
+        {tab === 'canais' && <ChannelsPanel org={org} setMsg={setMsg} onRefreshOrgs={onRefreshOrgs} />}
+        {tab === 'auditoria' && <AuditPanel org={org} />}
+
+        {tab === 'geral' && (<React.Fragment>
 
         {/* Metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
@@ -881,11 +1246,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <button onClick={async () => {
               const days = prompt('Quantos dias deseja estender o trial?', '14');
               if (!days || isNaN(Number(days))) return;
-              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ orgId: org.id, action: 'extend_trial', days: Number(days) })
-              });
-              const data = await res.json();
+              const data = await callFn('manage-subscription', { orgId: org.id, action: 'extend_trial', days: Number(days) });
               if (data.ok) { setMsg({ type: 'success', text: `Trial estendido por ${days} dias` }); onRefreshOrgs(); }
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(57,77,250,0.06)', color: colors.blue, border: '1px solid rgba(57,77,250,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
@@ -893,11 +1254,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             </button>
             <button onClick={async () => {
               if (!confirm('Ativar esta organização como cliente ativo?')) return;
-              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ orgId: org.id, action: 'activate' })
-              });
-              const data = await res.json();
+              const data = await callFn('manage-subscription', { orgId: org.id, action: 'activate' });
               if (data.ok) { setMsg({ type: 'success', text: 'Organização ativada!' }); onRefreshOrgs(); }
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(22,163,74,0.06)', color: colors.green, border: '1px solid rgba(22,163,74,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
@@ -905,11 +1262,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             </button>
             <button onClick={async () => {
               if (!confirm('Suspender esta organização? Os usuários verão a tela de expiração.')) return;
-              const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-subscription`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ orgId: org.id, action: 'suspend' })
-              });
-              const data = await res.json();
+              const data = await callFn('manage-subscription', { orgId: org.id, action: 'suspend' });
               if (data.ok) { setMsg({ type: 'success', text: 'Organização suspensa' }); onRefreshOrgs(); }
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.06)', color: colors.danger, border: '1px solid rgba(239,68,68,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
@@ -918,8 +1271,26 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
           </div>
         </div>
 
-        {/* Módulos */}
-        <ModulesPanel org={org} onSaved={onUpdate} setMsg={setMsg} />
+        {/* Verificar org */}
+        <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>VERIFICAÇÃO DE ONBOARDING</span>
+              <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>Checa as armadilhas conhecidas (admin ativo, assinatura, WhatsApp, onboarding).</div>
+            </div>
+            <button onClick={runVerify} style={{ padding: '7px 14px', border: '1px solid rgba(57,77,250,0.2)', borderRadius: 10, background: 'rgba(57,77,250,0.06)', color: colors.blue, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Verificar org</button>
+          </div>
+          {verifyResult && (
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {verifyResult.map((c, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: colors.earth }}>
+                  <span style={{ fontWeight: 700, color: c.tone === 'ok' ? colors.green : c.tone === 'fail' ? colors.danger : colors.warning }}>{c.tone === 'ok' ? '✓' : c.tone === 'fail' ? '✕' : '!'}</span>
+                  <span>{c.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Users */}
         <div style={{ flex: 1 }}>
@@ -954,6 +1325,8 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             </div>
           )}
         </div>
+
+        </React.Fragment>)}
       </div>
 
       {/* Reset Password Modal */}
