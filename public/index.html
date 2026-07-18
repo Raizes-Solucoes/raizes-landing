@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raízes Soluções | Tecnologia com Raízes Profundas</title>
+    <title>Raízes Soluções | CRM com WhatsApp, agentes de IA e software sob medida</title>
+    <meta name="description" content="Criamos a tecnologia que se adapta ao seu negócio: Miller CRM com WhatsApp oficial, Nina — atendimento com IA, agentes de IA corporativos e software sob medida. Protótipo funcional em ~2 semanas.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Raízes Soluções | Tecnologia com raízes profundas">
+    <meta property="og:description" content="Não vendemos software. Entendemos o problema, construímos a solução certa — e ficamos ao lado até ela dar frutos.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Raízes Soluções Tecnológicas",
+      "url": "https://www.raizesolucoes.com.br",
+      "logo": "https://www.raizesolucoes.com.br/favicon.png",
+      "email": "contato@raizesolucoes.com.br",
+      "description": "Estúdio brasileiro de tecnologia: plataformas próprias, software sob medida e agentes de IA."
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
     <script>
@@ -36,6 +59,7 @@
         /* HERO */
         .hero-bg {
             background-image: url('/raizes_aquarela_final.jpg');
+            background-image: image-set(url('/raizes_aquarela.webp') type('image/webp'), url('/raizes_aquarela_final.jpg') type('image/jpeg'));
             background-size: cover;
             background-position: 62% 30%;
             height: 100svh; min-height: 600px; width: 100%; position: relative;
@@ -75,8 +99,34 @@
         .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
         .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
 
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
         /* STAT CARD */
         .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* MOCKUP KANBAN (ilustrativo, dados fictícios) */
+        .mockup-shell { background: #FFFFFF; border: 1px solid rgba(60,61,55,0.08); border-radius: 18px; box-shadow: 0 30px 60px rgba(22,19,13,0.14); overflow: hidden; }
+        .mockup-topbar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(60,61,55,0.07); }
+        .mockup-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(60,61,55,0.12); }
+        .mockup-col-title { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(60,61,55,0.45); padding: 0 2px 6px; display: flex; justify-content: space-between; }
+        .mockup-card { background: #FFFFFF; border: 1px solid rgba(60,61,55,0.09); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(60,61,55,0.05); }
+        .mockup-card p { font-size: 0.66rem; font-weight: 700; color: #3C3D37; }
+        .mockup-card small { font-size: 0.58rem; color: rgba(60,61,55,0.5); display: flex; align-items: center; gap: 4px; }
+        .mockup-tag { display: inline-block; font-size: 0.52rem; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-top: 5px; }
+        .wa-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
 
         /* SCROLL ANIMATIONS */
         .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
@@ -88,20 +138,58 @@
     <!-- NAVBAR -->
     <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
         <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
-            <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
-            <div class="hidden md:flex gap-10 text-sm font-medium uppercase tracking-widest text-brand-earth/60">
-                <a href="#manifesto" class="hover:text-brand-blue transition-colors">Manifesto</a>
-                <a href="#servicos" class="hover:text-brand-blue transition-colors">Serviços</a>
-                <a href="#processo" class="hover:text-brand-blue transition-colors">Processo</a>
-                <a href="#contato" class="hover:text-brand-blue transition-colors">Contato</a>
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller">Miller CRM<span>O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/nina">Nina — Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/agentes-de-ia">Agentes de IA corporativos<span>Um funcionário digital para cada colaborador</span></a>
+                        <a href="/sob-medida">Software sob medida<span>Construído do zero para o seu processo</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="hover:text-brand-blue transition-colors">Método</a>
+                <a href="/#manifesto" class="hover:text-brand-blue transition-colors">Manifesto</a>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="#contato" class="hidden sm:inline-block btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Falar com a equipe</a>
-                <!-- Acesso ao sistema: porta única do Miller; o front que abre depende do org do login. -->
+            <div class="hidden md:flex items-center gap-3">
+                <a href="#contato" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Diagnóstico gratuito</a>
                 <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
             </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
         </div>
     </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller CRM</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Nina — Atendimento com IA</a>
+            <a href="/agentes-de-ia" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Agentes de IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Software sob medida</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Método</a>
+            <a href="/#manifesto" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Manifesto</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="#contato" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Diagnóstico gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
 
     <!-- HERO -->
     <section class="hero-bg">
@@ -116,8 +204,8 @@
                     Não vendemos software. Entendemos o problema, construímos a solução certa — e ficamos ao lado até ela dar frutos.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-2 justify-center">
-                    <a href="#servicos" class="btn-gradient text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Conhecer Soluções</a>
-                    <a href="#manifesto" class="bg-white border-2 border-brand-earth text-brand-earth px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Ver Manifesto</a>
+                    <a href="#servicos" class="btn-gradient text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Conhecer as soluções</a>
+                    <a href="#contato" class="bg-white border-2 border-brand-earth text-brand-earth px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Diagnóstico gratuito</a>
                 </div>
             </div>
         </div>
@@ -147,7 +235,7 @@
                             Só então construímos. Não existe template. Não existe solução pronta. Cada projeto nasce do zero, moldado à realidade de quem nos contratou.
                         </p>
                         <p class="text-xl font-bold text-brand-earth leading-relaxed">
-                            O resultado são sistemas que crescem com a empresa, resistem ao tempo e formam a base sobre a qual o negócio pode escalar com segurança.
+                            A solução se adapta a você. Nunca o contrário.
                         </p>
                         <div class="pt-4 border-l-4 border-brand-blue pl-6">
                             <p class="text-brand-earth/50 text-sm font-bold uppercase tracking-widest">Nossa missão</p>
@@ -172,8 +260,8 @@
                     <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Projetos aprovados no POC</p>
                 </div>
                 <div class="text-center px-8 space-y-2">
-                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">3<span class="text-brand-cyan text-3xl">x</span></p>
-                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Mais rápido que a média do mercado</p>
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">~50</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Agentes de IA em produção</p>
                 </div>
                 <div class="text-center px-8 space-y-2">
                     <p class="stat-number text-5xl md:text-6xl font-bold text-white">0<span class="text-brand-cyan text-3xl">.</span></p>
@@ -184,53 +272,53 @@
         <div class="absolute -left-40 top-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px]"></div>
     </section>
 
-    <!-- SERVIÇOS -->
+    <!-- SERVIÇOS — 3 FRENTES -->
     <section id="servicos" class="py-24 md:py-40 bg-brand-creme relative z-10">
         <div class="container mx-auto px-4 sm:px-6">
             <div class="max-w-xl mb-16 space-y-4 reveal">
                 <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">O que fazemos</span>
-                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Três frentes. <br/><span class="italic text-brand-leaf">Um único foco.</span></h2>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Três frentes. <br/><span class="italic text-brand-leaf">Uma obsessão: o seu processo.</span></h2>
                 <p class="text-brand-earth/50 text-lg">Cada solução é escolhida a dedo para atacar o problema certo.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 reveal">
-                <!-- Miller CRM — Grande -->
+                <!-- Plataformas próprias — Grande -->
                 <div class="md:col-span-7 glass-card light p-8 md:p-12 flex flex-col justify-between group overflow-hidden relative shadow-2xl shadow-brand-earth/5">
                     <div class="space-y-5 relative z-10">
                         <div class="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center">
                             <svg class="w-7 h-7 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.658-2.658c.19.012.38.022.57.032Z"/></svg>
                         </div>
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-blue mb-2">Produto Próprio</p>
-                            <h3 class="serif-title text-3xl md:text-4xl font-bold">Miller CRM</h3>
-                            <p class="text-brand-earth/60 mt-3 text-lg leading-relaxed max-w-md">O CRM desenhado para quem vive no WhatsApp. Centraliza atendimentos, organiza leads e dá à sua equipe inteira uma única linha de frente — sem caos, sem mensagem perdida.</p>
+                            <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-blue mb-2">Plataformas Próprias</p>
+                            <h3 class="serif-title text-3xl md:text-4xl font-bold">Miller CRM <span class="text-brand-earth/30">&amp;</span> Nina</h3>
+                            <p class="text-brand-earth/60 mt-3 text-lg leading-relaxed max-w-md">CRM, atendimento e prospecção que se configuram ao seu processo, ao seu setor e à sua marca — com a equipe que as molda a você. Velocidade de produto, profundidade de sob medida.</p>
                         </div>
                         <div class="flex flex-wrap gap-3 pt-2">
-                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">WhatsApp Nativo</span>
-                            <span class="px-4 py-2 bg-brand-leaf/10 text-brand-leaf text-xs font-bold rounded-full">Multi-usuário</span>
-                            <span class="px-4 py-2 bg-brand-earth/8 text-brand-earth text-xs font-bold rounded-full">100% Nuvem</span>
-                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">IA Integrada</span>
+                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">WhatsApp Oficial</span>
+                            <span class="px-4 py-2 bg-brand-leaf/10 text-brand-leaf text-xs font-bold rounded-full">Funil visual</span>
+                            <span class="px-4 py-2 bg-brand-earth/8 text-brand-earth text-xs font-bold rounded-full">Sua marca</span>
+                            <span class="px-4 py-2 bg-brand-blue/8 text-brand-blue text-xs font-bold rounded-full">IA integrada</span>
                         </div>
                     </div>
-                    <div class="mt-8 flex items-center gap-4">
-                        <a href="#contato" class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-sm shadow-lg">Quero conhecer</a>
-                        <span class="text-brand-earth/30 text-sm font-medium">Demo disponível</span>
+                    <div class="mt-8 flex flex-wrap items-center gap-4">
+                        <a href="/miller" class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-sm shadow-lg">Conhecer o Miller</a>
+                        <a href="/nina" class="text-brand-leaf text-sm font-bold hover:text-brand-blue transition-colors">Nina — atendimento com IA →</a>
                     </div>
                     <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl group-hover:bg-brand-blue/10 transition-all duration-700"></div>
                 </div>
 
                 <!-- Coluna direita -->
                 <div class="md:col-span-5 flex flex-col gap-6">
-                    <!-- Software Personalizado -->
+                    <!-- Software sob medida -->
                     <div class="glass-card p-8 bg-brand-earth text-white flex-1 flex flex-col justify-between shadow-xl">
                         <div class="space-y-4">
                             <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
                                 <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
                             </div>
-                            <h3 class="serif-title text-2xl font-bold">Software <span class="italic text-brand-green">personalizado.</span></h3>
-                            <p class="text-white/55 text-sm leading-relaxed">Nenhum negócio é igual ao outro. Desenvolvemos do zero — do backend escalável ao frontend que seus clientes vão amar — arquitetado para crescer com você.</p>
+                            <h3 class="serif-title text-2xl font-bold">Software <span class="italic text-brand-green">sob medida.</span></h3>
+                            <p class="text-white/55 text-sm leading-relaxed">Nenhum negócio é igual ao outro. Desenvolvemos do zero, arquitetado para crescer com você — validado em protótipo antes de qualquer construção pesada.</p>
                         </div>
-                        <a href="#contato" class="mt-6 inline-block py-3 px-6 border border-white/20 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-earth transition-all text-center">Contar meu projeto</a>
+                        <a href="/sob-medida" class="mt-6 inline-block py-3 px-6 border border-white/20 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-earth transition-all text-center">Ver como construímos</a>
                     </div>
 
                     <!-- Agentes de IA -->
@@ -240,9 +328,111 @@
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/></svg>
                             </div>
                             <h3 class="serif-title text-2xl font-bold">Agentes de <span class="italic">Inteligência Artificial.</span></h3>
-                            <p class="text-white/70 text-sm leading-relaxed">Automações que aprendem, decidem e agem. Atendimento autônomo, extração de dados, qualificação de leads — IA que trabalha enquanto você dorme.</p>
+                            <p class="text-white/70 text-sm leading-relaxed">Atendimento 24/7, atas de reunião prontas, tarefas repetitivas executadas sozinhas. Sempre com limites que você define e humano no comando das decisões sensíveis.</p>
                         </div>
-                        <a href="#contato" class="mt-6 inline-block py-3 px-6 border border-white/30 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-leaf transition-all text-center">Explorar possibilidades</a>
+                        <a href="/agentes-de-ia" class="mt-6 inline-block py-3 px-6 border border-white/30 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-brand-leaf transition-all text-center">Conhecer os agentes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MILLER — PRODUTO DESTAQUE -->
+    <section id="miller" class="py-24 md:py-40 bg-white relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+                <div class="space-y-6 reveal">
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Plataforma · Gestão Comercial</span>
+                    <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Miller — o CRM de quem vive no <span class="italic text-brand-leaf">WhatsApp.</span></h2>
+                    <p class="text-brand-earth/60 text-lg leading-relaxed">WhatsApp, funil de vendas, automações e IA num só lugar — com a cara da sua empresa e moldado ao seu processo comercial.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">WhatsApp centralizado</strong> — vários números, distribuição automática de conversas, histórico completo. Nada fica preso no celular do vendedor.</p></li>
+                        <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Funil visual por produto</strong> — cada linha do seu negócio com suas próprias etapas.</p></li>
+                        <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Automações que rodam sozinhas</strong> — aniversário, pesquisa de satisfação, alerta de negócio parado.</p></li>
+                        <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Sua marca e suas regras</strong> — login com a sua cara, e cada consultor vê só o que deve.</p></li>
+                    </ul>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <a href="/miller" class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-sm shadow-lg">Conhecer o Miller</a>
+                        <a href="/trial" class="bg-white border-2 border-brand-earth/15 text-brand-earth px-8 py-4 rounded-xl font-bold text-sm hover:border-brand-blue hover:text-brand-blue transition-all">Testar grátis 14 dias</a>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <!-- Mockup ilustrativo — dados fictícios -->
+                    <div class="mockup-shell">
+                        <div class="mockup-topbar">
+                            <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+                            <span class="ml-2 text-[10px] font-bold uppercase tracking-widest text-brand-earth/30">Funil · Ilustrativo</span>
+                            <span class="ml-auto flex items-center gap-1.5 text-[9px] font-bold text-brand-earth/40"><span class="wa-dot"></span>WhatsApp ativo</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 p-4 bg-brand-creme/60">
+                            <div>
+                                <p class="mockup-col-title"><span>Novos leads</span><span>4</span></p>
+                                <div class="mockup-card"><p>Mariana S.</p><small><span class="wa-dot"></span>agora mesmo</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Consórcio</span></div>
+                                <div class="mockup-card"><p>Carlos A.</p><small><span class="wa-dot"></span>há 12 min</small><span class="mockup-tag bg-brand-leaf/10 text-brand-leaf">Seguro</span></div>
+                            </div>
+                            <div>
+                                <p class="mockup-col-title"><span>Em negociação</span><span>3</span></p>
+                                <div class="mockup-card"><p>Ana Paula R.</p><small>proposta enviada</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Financiamento</span></div>
+                                <div class="mockup-card"><p>João V.</p><small>retorno amanhã</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Consórcio</span></div>
+                            </div>
+                            <div>
+                                <p class="mockup-col-title"><span>Fechados</span><span>2</span></p>
+                                <div class="mockup-card"><p>Beatriz L.</p><small class="!text-brand-green font-bold">✓ ganho hoje</small><span class="mockup-tag bg-brand-green/10 text-brand-green">Seguro</span></div>
+                                <div class="mockup-card"><p>Pedro M.</p><small class="!text-brand-green font-bold">✓ ganho ontem</small><span class="mockup-tag bg-brand-green/10 text-brand-green">Financiamento</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Em produção, com operação comercial real todos os dias · 4 verticais no mesmo produto · canal oficial da Meta</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- IA — NOSSO JEITO -->
+    <section id="ia" class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Inteligência Artificial</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">IA que encanta é IA que <span class="italic text-brand-leaf">não inventa.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Quatro princípios inegociáveis, nos nossos produtos e nos agentes que construímos para empresas.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Verdade acima de fluidez</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">A IA só afirma o que está na sua base oficial. Números que não conferem simplesmente não saem.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Humano no comando</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Ações sensíveis viram rascunho para aprovação. Passar para uma pessoa é recurso de primeira classe, não plano B.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">LGPD por design</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Dados pessoais mascarados antes de qualquer IA e provedores sob contrato de não-uso para treinamento.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Custo sob controle</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Consumo medido, teto de gasto e o modelo certo para cada tarefa. IA que escala sem susto na fatura.</p>
+                </div>
+            </div>
+            <div class="max-w-4xl mt-10 reveal">
+                <div class="rounded-2xl border border-brand-earth/8 bg-white/60 px-6 py-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                    <p class="text-sm text-brand-earth/60 leading-relaxed flex-1"><strong class="text-brand-earth">Na prática:</strong> ~50 agentes de IA em produção num grande player de infraestrutura do mercado financeiro — automação em mais de 70% das interações, no setor mais regulado do país.</p>
+                    <div class="flex flex-wrap gap-4 flex-none items-center">
+                        <a href="/agentes-de-ia" class="btn-gradient text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg whitespace-nowrap">Ver como fazemos IA</a>
+                        <a href="/nina" class="text-brand-leaf text-sm font-bold hover:text-brand-blue transition-colors whitespace-nowrap">Conhecer a Nina →</a>
                     </div>
                 </div>
             </div>
@@ -291,6 +481,9 @@
                         <p class="text-brand-earth/60 text-lg leading-relaxed">Com o caminho validado, construímos o produto final sem atalhos. Pode ser mais trabalhoso — mas o resultado é um sistema robusto, escalável e que o seu time vai querer usar. Não apenas mais um software abandonado.</p>
                     </div>
                 </div>
+            </div>
+            <div class="max-w-3xl mt-12 reveal">
+                <a href="/metodo" class="text-brand-blue font-bold text-sm hover:text-brand-cyan transition-colors">Ver o método completo — do diagnóstico gratuito ao piloto →</a>
             </div>
         </div>
     </section>
@@ -423,25 +616,38 @@
 
     <!-- FOOTER -->
     <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
-        <div class="container mx-auto px-4 sm:px-6 grid md:grid-cols-3 items-center gap-8 text-center md:text-left">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
             <div class="space-y-3">
                 <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
                 <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
                 <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
             </div>
-            <div class="text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
-                &copy; 2026. Todos os direitos reservados. <br/>Feito para durar.
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina — Atendimento com IA</a>
+                <a href="/agentes-de-ia" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Agentes de IA corporativos</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
             </div>
-            <div class="flex justify-center md:justify-end gap-8">
-                <a href="#" class="text-xs font-bold text-brand-earth/35 hover:text-brand-blue uppercase tracking-widest transition-colors">LinkedIn</a>
-                <a href="#" class="text-xs font-bold text-brand-earth/35 hover:text-brand-green uppercase tracking-widest transition-colors">Instagram</a>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/#manifesto" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Manifesto</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Diagnóstico gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
             </div>
         </div>
-        <div class="container mx-auto px-4 sm:px-6 mt-8 pt-6 border-t border-brand-earth/10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] font-bold uppercase tracking-widest text-brand-earth/30">
-            <a href="/privacidade" class="hover:text-brand-blue transition-colors">Privacidade</a>
-            <a href="/termos" class="hover:text-brand-blue transition-colors">Termos</a>
-            <a href="/excluir-dados" class="hover:text-brand-blue transition-colors">Excluir dados</a>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.
         </div>
     </footer>
 
@@ -451,6 +657,22 @@
         window.addEventListener('scroll', () => {
             navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
         });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
 
         // Reveal on scroll
         const reveals = document.querySelectorAll('.reveal');
@@ -469,6 +691,12 @@
         let chatStarted = false;
         let leadCollected = false;
         let contactData = null;
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
 
         function showPreChat() {
             document.getElementById('cta-intro').classList.add('hidden');
@@ -500,12 +728,13 @@
         function addMessage(role, text) {
             const div = document.getElementById('chat-messages');
             const isUser = role === 'user';
+            const safe = escapeHtml(text);
             const bubble = document.createElement('div');
             bubble.className = `flex gap-2 items-end ${isUser ? 'justify-end' : 'justify-start'}`;
             bubble.innerHTML = isUser
-                ? `<div class="max-w-xs md:max-w-sm bg-brand-blue/80 text-white rounded-2xl rounded-br-sm px-5 py-3 text-sm leading-relaxed">${text}</div>`
+                ? `<div class="max-w-xs md:max-w-sm bg-brand-blue/80 text-white rounded-2xl rounded-br-sm px-5 py-3 text-sm leading-relaxed">${safe}</div>`
                 : `<div class="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center text-sm flex-none">🌱</div>
-                   <div class="max-w-xs md:max-w-sm bg-white/8 text-white/90 rounded-2xl rounded-bl-sm px-5 py-3 text-sm leading-relaxed">${text}</div>`;
+                   <div class="max-w-xs md:max-w-sm bg-white/8 text-white/90 rounded-2xl rounded-bl-sm px-5 py-3 text-sm leading-relaxed">${safe}</div>`;
             div.appendChild(bubble);
             div.scrollTop = div.scrollHeight;
         }
@@ -572,6 +801,12 @@
             if (!text || leadCollected) return;
             input.value = '';
             sendToAgent(text);
+        }
+
+        // Deep-link: /#diagnostico abre o pré-chat direto (usado pelas subpáginas)
+        if (location.hash === '#diagnostico') {
+            document.getElementById('contato').scrollIntoView();
+            showPreChat();
         }
     </script>
 

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software sob medida que nasce do seu processo | Raízes</title>
+    <meta name="description" content="Software sob medida que nasce do seu processo: protótipo navegável em ~2 semanas, validação antes de qualquer construção pesada e uma plataforma que cresce com a sua empresa.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/sob-medida">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Software sob medida que nasce do seu processo | Raízes">
+    <meta property="og:description" content="Nenhum negócio é igual ao outro. Desenvolvemos do zero, arquitetado para crescer com você — e validado em protótipo antes de qualquer construção pesada.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/sob-medida">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Qual é o prazo típico de um projeto sob medida?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O protótipo funcional fica pronto em cerca de 2 semanas. O restante depende do escopo — que é definido por escrito, com você, antes de qualquer construção pesada."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como funciona o orçamento?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ele vem depois do diagnóstico gratuito, sempre com escopo e critérios de sucesso por escrito. Você sabe exatamente o que está contratando antes de qualquer compromisso."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "E depois da entrega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A parceria continua: você mantém canal direto com o time que construiu a solução — sem tickets, sem fila de suporte."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Vocês atendem o meu porte e o meu setor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Atendemos de escolas a players do mercado financeiro. O diagnóstico gratuito existe justamente para isso: em uma conversa, dizemos com honestidade se fazemos sentido para você."
+          }
+        }
+      ]
+    }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .glass-card.light:hover { background: rgba(255,255,255,0.98); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* NAVBAR — liquid glass */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* FAQ */
+        .faq-item summary { list-style: none; cursor: pointer; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item .faq-chevron { transition: transform 0.3s ease; }
+        .faq-item[open] .faq-chevron { transform: rotate(180deg); }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller">Miller CRM<span>O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/nina">Nina — Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/agentes-de-ia">Agentes de IA corporativos<span>Um funcionário digital para cada colaborador</span></a>
+                        <a href="/sob-medida" class="text-brand-blue">Software sob medida<span class="!text-brand-blue/60">Construído do zero para o seu processo</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="hover:text-brand-blue transition-colors">Método</a>
+                <a href="/#manifesto" class="hover:text-brand-blue transition-colors">Manifesto</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/#diagnostico" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Diagnóstico gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller CRM</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Nina — Atendimento com IA</a>
+            <a href="/agentes-de-ia" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Agentes de IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5 text-brand-blue">Software sob medida</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Método</a>
+            <a href="/#manifesto" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Manifesto</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Diagnóstico gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="bg-brand-creme pt-36 md:pt-44 pb-20 md:pb-28 relative overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 relative z-10">
+            <div class="max-w-3xl mx-auto text-center space-y-6">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Sob medida</span>
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    Nenhum negócio é <br class="hidden sm:block"/><span class="italic text-brand-leaf">igual ao outro.</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-brand-earth/70 font-medium max-w-2xl mx-auto leading-snug">
+                    Por isso desenvolvemos do zero, arquitetado para crescer com você — e validado em protótipo antes de qualquer construção pesada.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2 justify-center">
+                    <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Iniciar Diagnóstico com IA</a>
+                    <a href="/metodo" class="bg-white border-2 border-brand-earth text-brand-earth px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Ver o método →</a>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 -top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+        <div class="absolute -left-40 bottom-0 w-96 h-96 bg-brand-leaf/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- O PREÇO INVISÍVEL DA FERRAMENTA GENÉRICA -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-14 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Por que isso importa</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Ferramenta genérica cobra um preço <span class="italic text-brand-leaf">invisível.</span></h2>
+                <p class="text-brand-earth/50 text-lg">O problema não é ferramenta pronta em si — é ferramenta sem dono, que ninguém adapta a você.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl reveal">
+                <!-- Coluna: ferramenta genérica -->
+                <div class="space-y-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-brand-earth/40 pb-1">Com ferramenta genérica</p>
+                    <div class="glass-card p-6 flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-brand-earth/5 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-earth/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </span>
+                        <p class="text-brand-earth/65 leading-relaxed">Sua equipe muda o processo para caber na ferramenta.</p>
+                    </div>
+                    <div class="glass-card p-6 flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-brand-earth/5 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-earth/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </span>
+                        <p class="text-brand-earth/65 leading-relaxed">Metade das funções pagas, nunca usadas.</p>
+                    </div>
+                    <div class="glass-card p-6 flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-brand-earth/5 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-earth/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </span>
+                        <p class="text-brand-earth/65 leading-relaxed">A função que você precisa "está no roadmap".</p>
+                    </div>
+                    <div class="glass-card p-6 flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-brand-earth/5 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-earth/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </span>
+                        <p class="text-brand-earth/65 leading-relaxed">Cada necessidade nova vira mais um sistema avulso.</p>
+                    </div>
+                </div>
+
+                <!-- Coluna: com a Raízes (acento azul) -->
+                <div class="space-y-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-brand-blue pb-1">Com a Raízes</p>
+                    <div class="glass-card light p-6 flex items-start gap-4 !border-brand-blue/20 shadow-lg shadow-brand-blue/5">
+                        <span class="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                        </span>
+                        <p class="text-brand-earth font-medium leading-relaxed">A ferramenta nasce do seu processo.</p>
+                    </div>
+                    <div class="glass-card light p-6 flex items-start gap-4 !border-brand-blue/20 shadow-lg shadow-brand-blue/5">
+                        <span class="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                        </span>
+                        <p class="text-brand-earth font-medium leading-relaxed">Só o que o seu negócio precisa.</p>
+                    </div>
+                    <div class="glass-card light p-6 flex items-start gap-4 !border-brand-blue/20 shadow-lg shadow-brand-blue/5">
+                        <span class="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                        </span>
+                        <p class="text-brand-earth font-medium leading-relaxed">Pediu? Entra no produto em semanas.</p>
+                    </div>
+                    <div class="glass-card light p-6 flex items-start gap-4 !border-brand-blue/20 shadow-lg shadow-brand-blue/5">
+                        <span class="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center flex-none mt-0.5">
+                            <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                        </span>
+                        <p class="text-brand-earth font-medium leading-relaxed">Tudo num lugar só, conversando entre si.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEU SETOR VIRA UMA VERTICAL — CASO FIDC -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mb-14 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-[#C4A254]">Metodologia na prática</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Software que fala a língua do <span class="italic text-brand-leaf">seu setor.</span></h2>
+                <p class="text-brand-earth/60 text-lg leading-relaxed">Quando o setor tem regras próprias, não adaptamos campos genéricos: construímos uma vertical inteira dentro da plataforma. É o que estamos fazendo agora com crédito estruturado (FIDC) — cada tela desenhada e validada lado a lado com quem opera no dia a dia.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-6 max-w-4xl reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Funil próprio</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Com as etapas reais da operação — do lead à cessão.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Regras do setor embutidas</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Controle de limite de cessão com alerta de estouro, concentração de sacado, inadimplência por faixa de atraso.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Envio a múltiplos fundos</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Com status e prazo de retorno por fundo.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Dossiê em um clique</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Dossiê de due diligence gerado em um clique (PDF/Word), no padrão que o mercado já aceita.</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- FAIXA DE PROVA — FIDC -->
+    <section class="py-16 bg-brand-earth relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-white/10 reveal">
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-3xl md:text-4xl font-bold text-white leading-tight pt-2">Protótipo navegável</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Completo, validado com quem opera FIDC todos os dias</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">~90<span class="text-brand-cyan text-3xl">%</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Da plataforma reaproveitada no desenho</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-3xl md:text-4xl font-bold text-white leading-tight pt-2">Em integração</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">À plataforma, agora</p>
+                </div>
+            </div>
+            <div class="max-w-3xl mx-auto mt-12 pt-10 border-t border-white/10 reveal">
+                <p class="serif-title text-2xl md:text-3xl font-bold text-white text-center leading-snug">Primeiro provamos na tela. Depois construímos. <span class="italic text-brand-green">É assim que o seu setor entra.</span></p>
+            </div>
+        </div>
+        <div class="absolute -left-40 top-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- MÉTODO RESUMIDO -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-14 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Como trabalhamos</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Sem surpresas. <span class="italic text-brand-leaf">Só resultados.</span></h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-blue/30">1</div>
+                    <h3 class="serif-title text-xl font-bold">Diagnóstico profundo</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Antes de escrever uma linha de código, sentamos com você. Entrevistamos, mapeamos processos, entendemos as dores reais — e não as que você acha que tem.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-blue/30">2</div>
+                    <h3 class="serif-title text-xl font-bold">POC em até 2 semanas</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Construímos um protótipo funcional — real, não um mockup bonito. Em até duas semanas você coloca as mãos na solução, com contato diário garantido.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-green/30">3</div>
+                    <h3 class="serif-title text-xl font-bold">Validação e aprovação</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Você testa, quebra, questiona e aprova. Nenhuma linha de desenvolvimento final começa antes do POC estar perfeito.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-full bg-brand-earth flex items-center justify-center text-white font-bold text-lg shadow-lg">4</div>
+                    <h3 class="serif-title text-xl font-bold">Produto final que supera expectativas</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Com o caminho validado, construímos o produto final sem atalhos: um sistema robusto, escalável e que o seu time vai querer usar.</p>
+                </div>
+            </div>
+            <div class="mt-10 reveal">
+                <a href="/metodo" class="text-brand-blue font-bold text-sm hover:text-brand-cyan transition-colors">Ver o método completo →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- GARANTIA DE CONTINUIDADE -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto reveal">
+                <div class="glass-card light p-10 md:p-14 text-center space-y-5 !border-brand-blue/15 shadow-xl shadow-brand-blue/5">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center mx-auto">
+                        <svg class="w-7 h-7 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                    </div>
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Garantia de continuidade</span>
+                    <h2 class="serif-title text-3xl md:text-4xl font-bold leading-tight">Plataforma <span class="italic text-brand-leaf">sempre atual.</span></h2>
+                    <p class="text-brand-earth/60 text-lg leading-relaxed max-w-xl mx-auto">Quando a sua solução nasce das nossas plataformas, você nunca fica preso numa versão velha: cada atualização chega sem custo nem projeto de upgrade.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-14 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Perguntas frequentes</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Antes de perguntar, <span class="italic text-brand-leaf">já respondemos.</span></h2>
+            </div>
+
+            <div class="max-w-3xl space-y-4 reveal">
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="flex items-center justify-between gap-4">
+                        <h3 class="serif-title text-lg md:text-xl font-bold">Qual é o prazo típico de um projeto sob medida?</h3>
+                        <svg class="faq-chevron w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 leading-relaxed pt-4">O protótipo funcional fica pronto em cerca de 2 semanas. O restante depende do escopo — que é definido por escrito, com você, antes de qualquer construção pesada.</p>
+                </details>
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="flex items-center justify-between gap-4">
+                        <h3 class="serif-title text-lg md:text-xl font-bold">Como funciona o orçamento?</h3>
+                        <svg class="faq-chevron w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 leading-relaxed pt-4">Ele vem depois do diagnóstico gratuito, sempre com escopo e critérios de sucesso por escrito. Você sabe exatamente o que está contratando antes de qualquer compromisso.</p>
+                </details>
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="flex items-center justify-between gap-4">
+                        <h3 class="serif-title text-lg md:text-xl font-bold">E depois da entrega?</h3>
+                        <svg class="faq-chevron w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 leading-relaxed pt-4">A parceria continua: você mantém canal direto com o time que construiu a solução — sem tickets, sem fila de suporte.</p>
+                </details>
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="flex items-center justify-between gap-4">
+                        <h3 class="serif-title text-lg md:text-xl font-bold">Vocês atendem o meu porte e o meu setor?</h3>
+                        <svg class="faq-chevron w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 leading-relaxed pt-4">Atendemos de escolas a players do mercado financeiro. O diagnóstico gratuito existe justamente para isso: em uma conversa, dizemos com honestidade se fazemos sentido para você.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-5xl mx-auto rounded-[40px] bg-brand-earth p-10 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative overflow-hidden">
+                <div class="relative z-10 text-center space-y-8 py-8">
+                    <div class="space-y-4">
+                        <h2 class="serif-title text-4xl md:text-6xl font-bold text-white leading-tight">Traga o problema. <br class="hidden md:block"/>A solução a gente constrói junto.</h2>
+                        <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">Comece pelo diagnóstico gratuito: uma conversa de ~45 minutos sobre o seu processo. Sem custo, sem compromisso.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/#diagnostico" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all inline-block">💬 Iniciar Diagnóstico com IA</a>
+                    </div>
+                    <p class="serif-title italic text-brand-green text-xl">Feito para durar.</p>
+                </div>
+                <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-blue/20 blur-[120px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-green/10 blur-[120px] rounded-full pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina — Atendimento com IA</a>
+                <a href="/agentes-de-ia" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Agentes de IA corporativos</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/#manifesto" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Manifesto</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Diagnóstico gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
