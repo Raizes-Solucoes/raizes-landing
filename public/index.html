@@ -131,6 +131,40 @@
         /* SCROLL ANIMATIONS */
         .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ─── TOUR INTERATIVO (telas reais) ─── */
+        .tour-shell { background:#FFFFFF; border:1px solid rgba(60,61,55,0.08); border-radius:16px; box-shadow:0 30px 60px rgba(22,19,13,0.14); overflow:hidden; }
+        .tour-chrome { display:flex; align-items:center; gap:6px; padding:10px 14px; border-bottom:1px solid rgba(60,61,55,0.07); background:rgba(60,61,55,0.02); }
+        .tour-url { margin-left:10px; font-size:11px; color:rgba(60,61,55,0.4); background:rgba(60,61,55,0.05); padding:2px 12px; border-radius:99px; font-weight:500; }
+        .tour-live { margin-left:auto; display:flex; align-items:center; gap:5px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(60,61,55,0.4); }
+        .tour-tabs { display:flex; gap:4px; padding:8px 10px 0; background:rgba(60,61,55,0.02); }
+        .tour-tab { font-size:12px; font-weight:700; color:rgba(60,61,55,0.45); padding:8px 16px; border-radius:10px 10px 0 0; transition:all 0.25s ease; position:relative; }
+        .tour-tab:hover { color:#394dfa; }
+        .tour-tab.active { color:#394dfa; background:#fff; box-shadow:0 -1px 0 rgba(57,77,250,0.12); }
+        .tour-tab.active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:linear-gradient(90deg,#394dfa,#009bfa); }
+        .tour-viewport { position:relative; aspect-ratio:1440/900; background:#F9F7F2; }
+        .tour-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top left; opacity:0; transform:scale(1.01); transition:opacity 0.5s ease, transform 0.5s ease; pointer-events:none; }
+        .tour-img.active { opacity:1; transform:scale(1); }
+
+        /* ─── SELETOR DE SETOR ─── */
+        .sector-chip { font-size:0.85rem; font-weight:700; padding:0.7rem 1.4rem; border-radius:99px; border:1.5px solid rgba(60,61,55,0.12); color:#3C3D37; background:#fff; transition:all 0.25s ease; }
+        .sector-chip:hover { border-color:rgba(57,77,250,0.4); color:#394dfa; }
+        .sector-chip.active { background:linear-gradient(135deg,#394dfa,#009bfa); color:#fff; border-color:transparent; box-shadow:0 8px 20px rgba(57,77,250,0.22); }
+        .sector-stage { flex:1; min-width:0; background:#fff; border:1px solid rgba(60,61,55,0.08); border-radius:12px; padding:0.9rem 0.8rem; text-align:center; opacity:0; transform:translateY(10px); animation:sectorIn 0.45s ease forwards; }
+        .sector-stage .s-num { font-family:'Lora',serif; font-size:1.6rem; font-weight:700; color:#394dfa; line-height:1; }
+        .sector-stage .s-name { font-size:0.72rem; font-weight:600; color:#3C3D37; margin-top:0.35rem; line-height:1.2; }
+        .sector-stage .s-arrow { color:rgba(60,61,55,0.25); }
+        @keyframes sectorIn { to { opacity:1; transform:translateY(0); } }
+
+        /* ─── SIMULADOR ANTES/DEPOIS ─── */
+        .sim-slider { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:99px; background:rgba(60,61,55,0.12); outline:none; }
+        .sim-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#394dfa; cursor:pointer; box-shadow:0 3px 10px rgba(57,77,250,0.35); border:3px solid #fff; }
+        .sim-slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:#394dfa; cursor:pointer; border:3px solid #fff; }
+        .sim-ch { font-size:0.78rem; font-weight:700; padding:0.5rem 1rem; border-radius:99px; border:1.5px solid rgba(60,61,55,0.12); background:#fff; color:#3C3D37; transition:all 0.2s ease; }
+        .sim-ch.on { background:rgba(57,77,250,0.08); border-color:rgba(57,77,250,0.35); color:#394dfa; }
+        .sim-node { position:absolute; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 4px 12px rgba(60,61,55,0.14); transition:all 0.7s cubic-bezier(0.65,0,0.35,1); }
+        .sim-line { position:absolute; height:2px; transform-origin:left center; transition:all 0.7s cubic-bezier(0.65,0,0.35,1); }
+        .sim-hub { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:64px; height:64px; border-radius:18px; display:flex; align-items:center; justify-content:center; transition:all 0.7s ease; }
     </style>
 </head>
 <body class="antialiased">
@@ -357,36 +391,100 @@
                     </div>
                 </div>
                 <div class="reveal">
-                    <!-- Mockup ilustrativo — dados fictícios -->
-                    <div class="mockup-shell">
-                        <div class="mockup-topbar">
-                            <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
-                            <span class="ml-2 text-[10px] font-bold uppercase tracking-widest text-brand-earth/30">Funil · Ilustrativo</span>
-                            <span class="ml-auto flex items-center gap-1.5 text-[9px] font-bold text-brand-earth/40"><span class="wa-dot"></span>WhatsApp ativo</span>
+                    <!-- TOUR INTERATIVO — telas REAIS do Miller (dados fictícios) -->
+                    <div class="tour-shell" id="miller-tour">
+                        <div class="tour-chrome">
+                            <span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span>
+                            <span class="tour-url">app.raizesolucoes.com.br</span>
+                            <span class="tour-live"><span class="wa-dot"></span>ao vivo</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 bg-brand-creme/60">
-                            <div>
-                                <p class="mockup-col-title"><span>Novos leads</span><span>4</span></p>
-                                <div class="mockup-card"><p>Mariana S.</p><small><span class="wa-dot"></span>agora mesmo</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Consórcio</span></div>
-                                <div class="mockup-card"><p>Carlos A.</p><small><span class="wa-dot"></span>há 12 min</small><span class="mockup-tag bg-brand-leaf/10 text-brand-leaf">Seguro</span></div>
-                            </div>
-                            <div>
-                                <p class="mockup-col-title"><span>Em negociação</span><span>3</span></p>
-                                <div class="mockup-card"><p>Ana Paula R.</p><small>proposta enviada</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Financiamento</span></div>
-                                <div class="mockup-card"><p>João V.</p><small>retorno amanhã</small><span class="mockup-tag bg-brand-blue/8 text-brand-blue">Consórcio</span></div>
-                            </div>
-                            <div>
-                                <p class="mockup-col-title"><span>Fechados</span><span>2</span></p>
-                                <div class="mockup-card"><p>Beatriz L.</p><small class="!text-brand-green font-bold">✓ ganho hoje</small><span class="mockup-tag bg-brand-green/10 text-brand-green">Seguro</span></div>
-                                <div class="mockup-card"><p>Pedro M.</p><small class="!text-brand-green font-bold">✓ ganho ontem</small><span class="mockup-tag bg-brand-green/10 text-brand-green">Financiamento</span></div>
-                            </div>
+                        <div class="tour-tabs">
+                            <button type="button" class="tour-tab active" data-shot="funil">Funil</button>
+                            <button type="button" class="tour-tab" data-shot="painel">Painel</button>
+                            <button type="button" class="tour-tab" data-shot="clientes">Clientes</button>
+                        </div>
+                        <div class="tour-viewport">
+                            <img class="tour-img active" data-shot="funil" src="/shots/miller-funil.webp" alt="Funil de vendas do Miller CRM" loading="lazy" width="1440" height="900">
+                            <img class="tour-img" data-shot="painel" src="/shots/miller-painel.webp" alt="Painel de indicadores do Miller CRM" loading="lazy" width="1440" height="900">
+                            <img class="tour-img" data-shot="clientes" src="/shots/miller-clientes.webp" alt="Lista de clientes do Miller CRM" loading="lazy" width="1440" height="900">
                         </div>
                     </div>
-                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Em produção, com operação comercial real todos os dias · 4 verticais no mesmo produto · canal oficial da Meta</p>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Telas reais do Miller · dados fictícios · clique nas abas para navegar</p>
                 </div>
             </div>
         </div>
         <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- SELETOR DE SETOR (interativo) -->
+    <section id="setor" class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-10 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Feito pro seu processo</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">A solução se adapta ao <span class="italic text-brand-leaf">seu setor.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Escolha um setor e veja o funil se remontar com as etapas reais daquela operação — não campos genéricos.</p>
+            </div>
+            <div class="flex flex-wrap gap-3 mb-10 reveal" id="sector-chips">
+                <button type="button" class="sector-chip active" data-sector="financiamento">Financiamento</button>
+                <button type="button" class="sector-chip" data-sector="seguros">Seguros</button>
+                <button type="button" class="sector-chip" data-sector="consorcio">Consórcio</button>
+                <button type="button" class="sector-chip" data-sector="imobiliario">Crédito imobiliário</button>
+            </div>
+            <div class="reveal">
+                <div class="bg-white rounded-2xl border border-brand-earth/8 shadow-xl shadow-brand-earth/5 p-5 md:p-8">
+                    <div class="flex items-center justify-between mb-5">
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-earth/40">Funil de <span id="sector-label" class="text-brand-blue">Financiamento</span></p>
+                        <span class="text-[11px] font-bold text-brand-earth/35">exemplo ilustrativo</span>
+                    </div>
+                    <div class="flex items-stretch gap-2 md:gap-3 overflow-x-auto pb-1" id="sector-funnel"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SIMULADOR ANTES/DEPOIS (interativo) -->
+    <section id="simulador" class="py-24 md:py-32 bg-white relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-12 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Veja a diferença</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Do caos à ordem, <span class="italic text-brand-leaf">num lugar só.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Monte a sua operação e veja o antes e o depois do Miller — arraste o time e ligue seus canais.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center reveal">
+                <!-- controles -->
+                <div class="space-y-8">
+                    <div>
+                        <div class="flex justify-between items-baseline mb-3">
+                            <label class="text-sm font-bold text-brand-earth">Tamanho do time</label>
+                            <span class="serif-title text-2xl font-bold text-brand-blue"><span id="sim-team-n">6</span> <span class="text-brand-earth/40 text-base font-sans font-medium">pessoas</span></span>
+                        </div>
+                        <input type="range" id="sim-team" class="sim-slider" min="1" max="30" value="6">
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-brand-earth block mb-3">Canais de atendimento</label>
+                        <div class="flex flex-wrap gap-2" id="sim-channels">
+                            <button type="button" class="sim-ch on" data-ch="whatsapp">💬 WhatsApp</button>
+                            <button type="button" class="sim-ch on" data-ch="instagram">📸 Instagram</button>
+                            <button type="button" class="sim-ch" data-ch="email">✉️ E-mail</button>
+                            <button type="button" class="sim-ch" data-ch="ligacao">📞 Ligações</button>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 p-1 bg-brand-earth/5 rounded-full w-max">
+                        <button type="button" id="sim-antes" class="px-6 py-2.5 rounded-full text-sm font-bold text-brand-earth/60 transition-all">Antes</button>
+                        <button type="button" id="sim-depois" class="px-6 py-2.5 rounded-full text-sm font-bold bg-white text-brand-blue shadow-sm transition-all">Com o Miller</button>
+                    </div>
+                    <div id="sim-caption" class="rounded-2xl border border-brand-earth/8 bg-brand-creme/60 px-5 py-4 text-sm text-brand-earth/70 leading-relaxed min-h-[64px]"></div>
+                </div>
+                <!-- visual -->
+                <div>
+                    <div class="relative w-full mx-auto" style="max-width:420px;aspect-ratio:1/1" id="sim-stage">
+                        <div class="sim-hub" id="sim-hub" style="background:linear-gradient(135deg,#394dfa,#009bfa);color:#fff;font-family:'Lora',serif;font-weight:700;font-size:13px;">Miller</div>
+                    </div>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-2 font-medium">representação ilustrativa</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 bottom-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-[110px]"></div>
     </section>
 
     <!-- IA — NOSSO JEITO -->
@@ -677,6 +775,150 @@
             entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
         }, { threshold: 0.12 });
         reveals.forEach(el => observer.observe(el));
+    </script>
+
+    <script>
+        // ─── 1) TOUR INTERATIVO (troca de tela real) ───
+        (function () {
+            const tour = document.getElementById('miller-tour');
+            if (!tour) return;
+            const tabs = tour.querySelectorAll('.tour-tab');
+            const imgs = tour.querySelectorAll('.tour-img');
+            tabs.forEach(tab => tab.addEventListener('click', () => {
+                const shot = tab.dataset.shot;
+                tabs.forEach(t => t.classList.toggle('active', t === tab));
+                imgs.forEach(i => i.classList.toggle('active', i.dataset.shot === shot));
+            }));
+        })();
+
+        // ─── 2) SELETOR DE SETOR (funil se remonta) ───
+        (function () {
+            const chips = document.getElementById('sector-chips');
+            const funnel = document.getElementById('sector-funnel');
+            const label = document.getElementById('sector-label');
+            if (!chips || !funnel) return;
+            const DATA = {
+                financiamento: { label: 'Financiamento', stages: [['12','Lead'],['8','Pré-aprovado'],['5','Análise'],['3','Aprovado'],['2','Pago']] },
+                seguros:       { label: 'Seguros',       stages: [['15','Cotação'],['9','Proposta'],['6','Emissão'],['20','Vigente'],['4','Renovação']] },
+                consorcio:     { label: 'Consórcio',     stages: [['18','Interesse'],['10','Simulação'],['6','Adesão'],['3','Contemplação'],['5','Faturado']] },
+                imobiliario:   { label: 'Crédito imobiliário', stages: [['9','Lead'],['6','Documentação'],['4','Avaliação'],['2','Aprovado'],['1','Registro']] }
+            };
+            function render(key) {
+                const d = DATA[key]; if (!d) return;
+                label.textContent = d.label;
+                funnel.innerHTML = d.stages.map((s, i) => `
+                    <div class="sector-stage" style="animation-delay:${i * 60}ms">
+                        <div class="s-num">${s[0]}</div>
+                        <div class="s-name">${s[1]}</div>
+                    </div>${i < d.stages.length - 1 ? '<div class="flex items-center s-arrow px-0.5"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></div>' : ''}
+                `).join('');
+            }
+            chips.addEventListener('click', e => {
+                const btn = e.target.closest('.sector-chip'); if (!btn) return;
+                chips.querySelectorAll('.sector-chip').forEach(c => c.classList.toggle('active', c === btn));
+                render(btn.dataset.sector);
+            });
+            render('financiamento');
+        })();
+
+        // ─── 3) SIMULADOR ANTES/DEPOIS ───
+        (function () {
+            const stage = document.getElementById('sim-stage');
+            const hub = document.getElementById('sim-hub');
+            const teamInput = document.getElementById('sim-team');
+            const teamN = document.getElementById('sim-team-n');
+            const channelsWrap = document.getElementById('sim-channels');
+            const caption = document.getElementById('sim-caption');
+            const btnAntes = document.getElementById('sim-antes');
+            const btnDepois = document.getElementById('sim-depois');
+            if (!stage || !hub) return;
+
+            const CH = {
+                whatsapp:  { emoji: '💬', color: '#10b981' },
+                instagram: { emoji: '📸', color: '#d6336c' },
+                email:     { emoji: '✉️', color: '#394dfa' },
+                ligacao:   { emoji: '📞', color: '#4A5D4E' }
+            };
+            let mode = 'depois';
+            let team = 6;
+            const channelState = { whatsapp: true, instagram: true, email: false, ligacao: false };
+
+            function activeChannels() { return Object.keys(channelState).filter(k => channelState[k]); }
+
+            function layout() {
+                // remove nós/linhas antigos
+                stage.querySelectorAll('.sim-node, .sim-line').forEach(n => n.remove());
+                const chs = activeChannels();
+                const R = 42; // % do raio
+                const cx = 50, cy = 50;
+                hub.style.opacity = mode === 'depois' ? '1' : '0.25';
+                hub.style.boxShadow = mode === 'depois' ? '0 12px 30px rgba(57,77,250,0.35)' : 'none';
+                chs.forEach((key, i) => {
+                    const c = CH[key];
+                    const ang = (-90 + (360 / chs.length) * i) * Math.PI / 180;
+                    // posição: no "depois" em círculo organizado ligado ao hub; no "antes" espalhado e solto
+                    let x, y;
+                    if (mode === 'depois') { x = cx + Math.cos(ang) * R; y = cy + Math.sin(ang) * R; }
+                    else { const jx = ((i * 53) % 60) - 30, jy = ((i * 37) % 60) - 30; x = cx + jx + (i%2?12:-12); y = cy + jy; }
+
+                    // linha (só no depois)
+                    const line = document.createElement('div');
+                    line.className = 'sim-line';
+                    const dx = (x - cx), dy = (y - cy);
+                    const len = Math.sqrt(dx*dx + dy*dy);
+                    line.style.left = cx + '%'; line.style.top = cy + '%';
+                    line.style.width = (mode === 'depois' ? len : 0) + '%';
+                    line.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+                    line.style.background = mode === 'depois' ? `linear-gradient(90deg, rgba(57,77,250,0.35), ${c.color}66)` : 'transparent';
+                    stage.appendChild(line);
+
+                    const node = document.createElement('div');
+                    node.className = 'sim-node';
+                    node.textContent = c.emoji;
+                    node.style.left = x + '%'; node.style.top = y + '%';
+                    node.style.transform = 'translate(-50%,-50%)';
+                    node.style.background = '#fff';
+                    node.style.border = `2px solid ${mode === 'depois' ? c.color : 'rgba(60,61,55,0.15)'}`;
+                    node.style.opacity = mode === 'depois' ? '1' : '0.7';
+                    stage.appendChild(node);
+                });
+                setCaption(chs.length);
+            }
+
+            function setCaption(nCh) {
+                if (mode === 'antes') {
+                    caption.innerHTML = `<strong class="text-brand-earth">Antes:</strong> ${nCh} cana${nCh>1?'is':'l'} espalhado${nCh>1?'s':''} entre <strong class="text-brand-earth">${team}</strong> ${team>1?'pessoas':'pessoa'} e vários celulares. Mensagem que chega no aparelho de quem saiu de férias fica sem resposta.`;
+                } else {
+                    caption.innerHTML = `<strong class="text-brand-earth">Com o Miller:</strong> os ${nCh} cana${nCh>1?'is':'l'} caem numa <strong class="text-brand-blue">única tela</strong>, distribuídos entre as <strong class="text-brand-earth">${team}</strong> ${team>1?'pessoas':'pessoa'} do time — com histórico completo e nada preso no celular de ninguém.`;
+                }
+            }
+
+            function setMode(m) {
+                mode = m;
+                btnDepois.classList.toggle('bg-white', m === 'depois');
+                btnDepois.classList.toggle('text-brand-blue', m === 'depois');
+                btnDepois.classList.toggle('shadow-sm', m === 'depois');
+                btnDepois.classList.toggle('text-brand-earth/60', m !== 'depois');
+                btnAntes.classList.toggle('bg-white', m === 'antes');
+                btnAntes.classList.toggle('text-brand-blue', m === 'antes');
+                btnAntes.classList.toggle('shadow-sm', m === 'antes');
+                btnAntes.classList.toggle('text-brand-earth/60', m !== 'antes');
+                layout();
+            }
+
+            teamInput.addEventListener('input', () => { team = +teamInput.value; teamN.textContent = team; setCaption(activeChannels().length); });
+            channelsWrap.addEventListener('click', e => {
+                const b = e.target.closest('.sim-ch'); if (!b) return;
+                const k = b.dataset.ch;
+                if (channelState[k] && activeChannels().length === 1) return; // mantém ao menos 1
+                channelState[k] = !channelState[k];
+                b.classList.toggle('on', channelState[k]);
+                layout();
+            });
+            btnAntes.addEventListener('click', () => setMode('antes'));
+            btnDepois.addEventListener('click', () => setMode('depois'));
+            setMode('depois');
+        })();
     </script>
 
     <script>
