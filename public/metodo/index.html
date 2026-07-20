@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Como trabalhamos: diagnóstico e protótipo gratuitos, depois o projeto | Raízes</title>
+    <meta name="description" content="O método da Raízes Soluções: diagnóstico e protótipo navegável sem custo nenhum, protótipo funcional em ~2 semanas, piloto com critérios de sucesso por escrito e escala com migração de dados e treinamento. Sem fidelidade.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/metodo">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Como trabalhamos | Raízes Soluções">
+    <meta property="og:description" content="Você valida antes. Nós ficamos depois. Do primeiro contato ao produto em produção. Um processo próximo, transparente e iterativo.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/metodo">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Quanto custa um piloto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende do escopo — e é exatamente por isso que começamos pelo diagnóstico gratuito. Nele, definimos juntos o tamanho do piloto, os critérios de sucesso e o valor, tudo por escrito antes de qualquer início. Sem taxa escondida."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "E se não der certo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Você fica com o relatório, os aprendizados e a decisão. Sem fidelidade, sem projeto empurrado. O piloto existe para você comprar a prova — não a promessa."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Vocês atendem meu porte?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Atendemos empresas de todos os portes — de escolas a players do mercado financeiro. O que muda é o escopo do piloto, nunca a profundidade do diagnóstico ou a proximidade com a equipe."
+          }
+        }
+      ]
+    }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .glass-card.light:hover { background: rgba(255,255,255,0.98); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* PROCESSO — LINHA */
+        .process-line { position: relative; }
+        .process-line::before { content: ''; position: absolute; left: 28px; top: 56px; bottom: 0; width: 2px; background: linear-gradient(to bottom, #394dfa, #10b981); opacity: 0.2; }
+
+        /* PASSOS DE INÍCIO — LINHA HORIZONTAL (desktop) */
+        .steps-line { position: relative; }
+        @media (min-width: 768px) {
+            .steps-line::before { content: ''; position: absolute; top: 28px; left: 12%; right: 12%; height: 2px; background: linear-gradient(to right, #394dfa, #10b981); opacity: 0.25; }
+        }
+
+        /* NAVBAR — liquid glass SEMPRE */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* FAQ */
+        .faq-item summary { list-style: none; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item .faq-arrow { transition: transform 0.3s ease; }
+        .faq-item[open] .faq-arrow { transform: rotate(180deg); }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller">Miller CRM<span>O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/nina">Nina · Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/sob-medida">Software sob medida<span>Construído do zero para o seu processo</span></a>
+                        <a href="/prospeccao">Prospecção B2B<span>Do CNPJ ao WhatsApp do decisor</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="text-brand-blue transition-colors">Método</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/#diagnostico" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <a href="/" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Home</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller CRM</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Nina · Atendimento com IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Software sob medida</a>
+            <a href="/prospeccao" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Prospecção B2B</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5 text-brand-blue">Método</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="bg-brand-creme pt-36 md:pt-44 pb-20 md:pb-28 relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 relative z-10">
+            <div class="max-w-3xl mx-auto text-center space-y-6">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Como trabalhamos</span>
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    Você valida antes. <br class="hidden sm:block"/> Nós ficamos <span class="italic text-brand-leaf">depois.</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-brand-earth/70 font-medium max-w-xl mx-auto leading-snug">
+                    Do primeiro contato ao produto em produção. Um processo próximo, transparente e iterativo.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2 justify-center">
+                    <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Começar pelo diagnóstico</a>
+                    <a href="#passos" class="bg-white border-2 border-brand-earth/15 text-brand-earth px-6 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:border-brand-blue hover:text-brand-blue transition-all shadow-lg">Ver os 4 passos</a>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 -top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- OS 4 PASSOS -->
+    <section id="passos" class="py-24 md:py-40 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-20 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue mb-4">O método</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Sem surpresas. <br/><span class="italic text-brand-leaf">Só resultados.</span></h2>
+                <p class="text-brand-earth/50 text-lg mt-4">Quatro passos, sempre na mesma ordem — e você no comando de cada um.</p>
+            </div>
+
+            <div class="process-line max-w-3xl space-y-0 reveal">
+                <!-- Passo 1 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10">1</div>
+                    <div class="pt-2 space-y-3">
+                        <h3 class="serif-title text-2xl font-bold">Diagnóstico profundo</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Antes de escrever uma linha de código, sentamos com você. Entrevistamos, mapeamos processos, entendemos as dores reais — e não as que você acha que tem. O problema verdadeiro raramente é o que aparece na superfície.</p>
+                        <p class="border-l-2 border-brand-leaf/30 pl-4 text-sm text-brand-earth/55 leading-relaxed"><strong class="text-brand-leaf">Na prática:</strong> imersão com quem opera o negócio no dia a dia — mapeamos o processo real, não o ideal.</p>
+                    </div>
+                </div>
+                <!-- Passo 2 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10">2</div>
+                    <div class="pt-2 space-y-3">
+                        <h3 class="serif-title text-2xl font-bold">Protótipo em até 2 semanas</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Construímos um protótipo funcional — real, não um mockup bonito. Em até duas semanas você coloca as mãos na solução e valida se ela resolve cada dor levantada. Contato diário garantido nessa fase.</p>
+                        <p class="border-l-2 border-brand-leaf/30 pl-4 text-sm text-brand-earth/55 leading-relaxed"><strong class="text-brand-leaf">Na prática:</strong> desenho conjunto — o protótipo é validado com você antes de qualquer construção pesada.</p>
+                    </div>
+                </div>
+                <!-- Passo 3 -->
+                <div class="flex gap-8 pb-12">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-green/30 z-10">3</div>
+                    <div class="pt-2 space-y-3">
+                        <h3 class="serif-title text-2xl font-bold">Validação e aprovação</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Você testa, quebra, questiona e aprova. Nenhuma linha de desenvolvimento final começa antes do protótipo estar aprovado. Esse passo existe para uma razão simples: você sabe o que quer, e nós precisamos provar que entendemos.</p>
+                    </div>
+                </div>
+                <!-- Passo 4 -->
+                <div class="flex gap-8">
+                    <div class="flex-none w-14 h-14 rounded-full bg-brand-earth flex items-center justify-center text-white font-bold text-xl shadow-lg z-10">4</div>
+                    <div class="pt-2 space-y-3">
+                        <h3 class="serif-title text-2xl font-bold">Produto final que supera expectativas</h3>
+                        <p class="text-brand-earth/60 text-lg leading-relaxed">Com o caminho validado, construímos o produto final sem atalhos. Pode ser mais trabalhoso — mas o resultado é um sistema robusto, escalável e que o seu time vai querer usar. Não apenas mais um software abandonado.</p>
+                        <p class="border-l-2 border-brand-leaf/30 pl-4 text-sm text-brand-earth/55 leading-relaxed"><strong class="text-brand-leaf">Na prática:</strong> entregas curtas, funcionando desde as primeiras semanas. E, na implantação, treinamento da sua equipe e canal direto com o time que construiu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAIXA DE NÚMEROS -->
+    <section class="py-16 bg-brand-earth relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-0 sm:divide-x divide-white/10 reveal">
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">2<span class="text-brand-cyan text-3xl">sem</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Da ideia ao protótipo funcional</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">100<span class="text-brand-cyan text-3xl">%</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Projetos aprovados no protótipo</p>
+                </div>
+                <div class="text-center px-8 space-y-2">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">0<span class="text-brand-cyan text-3xl">.</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Projetos abandonados no meio</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 top-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- COMO É COMEÇAR -->
+    <section id="comecar" class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Primeiro passo</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Como é <span class="italic text-brand-leaf">começar.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Um caminho leve, desenhado para você decidir com segurança em cada etapa.</p>
+            </div>
+
+            <div class="steps-line grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 reveal">
+                <!-- 1. Diagnóstico -->
+                <div class="flex flex-col items-start md:items-center">
+                    <div class="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10 mb-6">1</div>
+                    <div class="glass-card light p-8 space-y-3 w-full flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
+                        </div>
+                        <h3 class="serif-title text-2xl font-bold">Diagnóstico</h3>
+                        <p class="text-brand-earth/60 text-sm leading-relaxed">Uma conversa de ~45 minutos sobre o seu processo. Sem custo, sem compromisso.</p>
+                    </div>
+                </div>
+                <!-- 2. Piloto enxuto -->
+                <div class="flex flex-col items-start md:items-center">
+                    <div class="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-blue/30 z-10 mb-6">2</div>
+                    <div class="glass-card light p-8 space-y-3 w-full flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                        </div>
+                        <h3 class="serif-title text-2xl font-bold">Piloto enxuto</h3>
+                        <p class="text-brand-earth/60 text-sm leading-relaxed">Escopo pequeno, semanas — não meses —, com critérios de sucesso definidos <strong class="text-brand-earth">com você, por escrito</strong>, antes de começar. Você compra a prova, não a promessa.</p>
+                        <p class="text-brand-earth/60 text-sm leading-relaxed">Não bateu a meta? Você fica com o relatório, os aprendizados e a decisão — sem fidelidade.</p>
+                    </div>
+                </div>
+                <!-- 3. Escala -->
+                <div class="flex flex-col items-start md:items-center">
+                    <div class="w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-green/30 z-10 mb-6">3</div>
+                    <div class="glass-card light p-8 space-y-3 w-full flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"/></svg>
+                        </div>
+                        <h3 class="serif-title text-2xl font-bold">Escala</h3>
+                        <p class="text-brand-earth/60 text-sm leading-relaxed">Aprovou? A operação completa entra no ar — incluindo a migração dos seus dados atuais e o treinamento do time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-12 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Perguntas frequentes</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">O que todo mundo <span class="italic text-brand-leaf">pergunta.</span></h2>
+            </div>
+            <div class="max-w-3xl space-y-4 reveal">
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="cursor-pointer flex items-center justify-between gap-4">
+                        <span class="serif-title font-bold text-lg md:text-xl">Quanto custa um piloto?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 text-base leading-relaxed pt-4">Depende do escopo — e é exatamente por isso que começamos pelo diagnóstico gratuito. Nele, definimos juntos o tamanho do piloto, os critérios de sucesso e o valor, tudo por escrito antes de qualquer início. Sem taxa escondida.</p>
+                </details>
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="cursor-pointer flex items-center justify-between gap-4">
+                        <span class="serif-title font-bold text-lg md:text-xl">E se não der certo?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 text-base leading-relaxed pt-4">Você fica com o relatório, os aprendizados e a decisão. Sem fidelidade, sem projeto empurrado. O piloto existe para você comprar a prova — não a promessa.</p>
+                </details>
+                <details class="faq-item glass-card light p-6 md:p-8">
+                    <summary class="cursor-pointer flex items-center justify-between gap-4">
+                        <span class="serif-title font-bold text-lg md:text-xl">Vocês atendem meu porte?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="text-brand-earth/60 text-base leading-relaxed pt-4">Atendemos empresas de todos os portes — de escolas a players do mercado financeiro. O que muda é o escopo do piloto, nunca a profundidade do diagnóstico ou a proximidade com a equipe.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-5xl mx-auto rounded-[40px] bg-brand-earth p-10 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative overflow-hidden reveal">
+                <div class="relative z-10 text-center space-y-8 py-8">
+                    <div class="space-y-4">
+                        <h2 class="serif-title text-4xl md:text-6xl font-bold text-white leading-tight">Começar é leve. <br class="hidden md:block"/> Crescer é natural.</h2>
+                        <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">O primeiro passo é uma conversa de ~45 minutos sobre o seu processo. Sem custo, sem compromisso — e o retorno da equipe chega em até 24h.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/#diagnostico" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all inline-block">💬 Iniciar Diagnóstico com IA</a>
+                    </div>
+                    <p class="serif-title italic text-brand-green text-lg">Feito para durar.</p>
+                </div>
+                <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-blue/20 blur-[120px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-green/10 blur-[120px] rounded-full pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina · Atendimento com IA</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/prospeccao" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Prospecção B2B</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
