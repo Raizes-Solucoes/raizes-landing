@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40" role="img" aria-label="Cliente 01">
+  <circle cx="18" cy="20" r="11" fill="none" stroke="#2563eb" stroke-width="3"/>
+  <circle cx="18" cy="20" r="4" fill="#2563eb"/>
+  <text x="38" y="26" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-weight="700" fill="#1e293b" letter-spacing="0.5">Cliente</text>
+  <text x="112" y="26" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-weight="400" fill="#2563eb">01</text>
+</svg>
