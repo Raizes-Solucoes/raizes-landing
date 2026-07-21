@@ -483,7 +483,20 @@
         .wa-badge.lite { background:#e7f9ec; color:#0f8a45; }
         .wa-badge.oficial { background:rgba(5,12,81,.09); color:#050C51; }
 
+        /* A barra fechada tem 1002px e só cabe inteira a partir de ~1066px de tela.
+           Abaixo disso ela virava um rolo horizontal: pra chegar em Estoque, Notas e
+           Financeiro era preciso arrastar 644px numa faixa de 47px de altura, e nessa
+           altura o navegador resolve quase todo gesto como rolagem vertical da página —
+           as três últimas abas ficavam inalcançáveis no celular.
+           Quebrando em linhas o gesto deixa de existir e as 8 abas aparecem de uma vez.
+           O limite é 1065px e não 900px de propósito: tablet em paisagem também não cabe. */
+        @media (max-width:1065px){
+            .app-tabs { flex-wrap:wrap; justify-content:center; width:100%; max-width:none; overflow:visible; gap:3px; }
+        }
         @media (max-width:900px){
+            .app-tab { padding:.5rem .72rem; }
+            .app-tab .t-nome { font-size:.78rem; }
+
             .ch-lista { display:none; }
             .app-side { display:none; }
             .app-kpis { grid-template-columns:repeat(2,1fr); }
@@ -1346,7 +1359,9 @@
                 </div>
             </div>
         </div>
-        <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+        <!-- pointer-events-none é obrigatório: este círculo é só enfeite, mas tem 384px e fica
+             por cima da barra de abas. Sem isso ele engolia o toque de 5 das 8 abas no celular. -->
+        <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
     </section>
 
 
