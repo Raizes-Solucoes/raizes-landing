@@ -572,13 +572,16 @@ function OverviewPanel() {
 //   viva     = gateia rota + item de menu
 //   inline   = efeito pontual dentro de uma tela
 //   so-menu  = esconde o item de menu, mas a rota abre por URL
-//   fantasma = sem consumo no código — ligar/desligar não muda NADA
-// Mantido em sincronia com src/hooks/useOrgFeatures.ts do miller-crm-frontend (37 flags).
+// Mantido em sincronia com src/hooks/useOrgFeatures.ts do miller-crm-frontend.
+// FLAGS FANTASMA NÃO ENTRAM AQUI: em 24/07/2026 auditamos o consumo real de cada flag
+// no src/ (hasFeature / RequireFeature / feature: no nav) e removemos as 4 com ZERO
+// consumo — whatsapp, mimuu, painel_v2 e messenger — que só confundiam quem configura
+// (apareciam como ligáveis sem mudar nada). Antes de adicionar uma flag, confirme que
+// existe código lendo ela.
 const STATUS_META = {
   viva:     { label: 'Viva',      bg: '#dcfce7', fg: '#166534', hint: 'Gateia rota + item de menu' },
   inline:   { label: 'Inline',    bg: '#dbeafe', fg: '#1e40af', hint: 'Efeito pontual dentro de uma tela' },
   'so-menu':{ label: 'Só menu',   bg: '#fef3c7', fg: '#92400e', hint: 'Esconde o menu, mas a rota abre por URL' },
-  fantasma: { label: 'Sem efeito',bg: '#f1f5f9', fg: '#475569', hint: 'Nenhum consumo no código — ligar não muda nada' },
 };
 
 const MODULE_CATALOG = [
@@ -593,8 +596,6 @@ const MODULE_CATALOG = [
       { key: 'tarefas',    label: 'Tarefas',     description: 'Tarefas e lembretes', default: true, status: 'viva' },
       { key: 'relatorios', label: 'Relatórios',  description: 'Métricas e dashboards', default: true, status: 'viva' },
       { key: 'automacoes', label: 'Automações',  description: 'Aba Automação dentro de Configurações (aniversário/NPS/follow-up)', default: true, status: 'inline' },
-      { key: 'whatsapp',   label: 'WhatsApp (flag)', description: 'Flag sem consumo. O canal é gateado por permissão, não por esta flag', default: true, status: 'fantasma' },
-      { key: 'mimuu',      label: 'Mimuu (flag)', description: 'Flag sem consumo. O widget é gateado por mimuu_config.enabled, não por esta flag', default: true, status: 'fantasma' },
     ],
   },
   {
@@ -639,14 +640,12 @@ const MODULE_CATALOG = [
     category: 'Domínios / beta',
     items: [
       { key: 'consorcio',  label: 'Consórcio',   description: 'Fluxos de consórcio no DealModal (RAI-159+)', default: false, status: 'inline' },
-      { key: 'painel_v2',  label: 'Painel v2 (flag)', description: 'Flag órfã — o dashboard v2 já virou o /painel default', default: false, status: 'fantasma' },
     ],
   },
   {
     category: 'Integrações Meta',
     items: [
       { key: 'instagram',  label: 'Instagram DMs', description: 'Card de conexão do Instagram (requer Meta App aprovado)', default: false, status: 'inline' },
-      { key: 'messenger',  label: 'Messenger FB',  description: 'Flag sem consumo hoje', default: false, status: 'fantasma' },
     ],
   },
 ];
