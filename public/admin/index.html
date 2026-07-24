@@ -676,6 +676,17 @@ const CREATE_PRESETS = [
   { key: 'fidc',        label: 'FIDC / Renvix', desc: 'FIDC, Crédito, Financeiro, Agenda e Relatório gerencial.', vertical: '', features: { fidc: true, credito: true, financeiro: true, fidc_report: true, agenda: true } },
 ];
 
+// Rótulos renomeáveis por org (settings.labels). Espelho de src/hooks/useOrgLabels.ts
+// (RENAMABLE_LABELS) do miller-crm-frontend — manter em sincronia. Vazio = nome padrão.
+const LABEL_CATALOG = [
+  { key: 'painel', label: 'Painel' }, { key: 'chat', label: 'Chat' },
+  { key: 'pipeline', label: 'Negócios' }, { key: 'clientes', label: 'Clientes' },
+  { key: 'parceiros', label: 'Parceiros' }, { key: 'tarefas', label: 'Tarefas' },
+  { key: 'relatorios', label: 'Relatórios' }, { key: 'financeiro', label: 'Financeiro' },
+  { key: 'agenda', label: 'Agenda' }, { key: 'documentos', label: 'Documentos' },
+  { key: 'alunos', label: 'Alunos' }, { key: 'usuarios', label: 'Usuários' },
+];
+
 // Grid compacto de módulos p/ o form de criação — fine-tune sobre o preset. Respeita
 // a whitelist da vertical (flags forçadas ficam travadas + 🔒), espelhando ModulesPanel.
 function CreateModulesGrid({ features, vertical, onToggle }) {
@@ -1606,9 +1617,10 @@ function Dashboard({ session }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
-  const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '', vertical: '', features: {} });
+  const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} });
   const [presetKey, setPresetKey] = useState('crm');
   const [showMods, setShowMods] = useState(false);
+  const [showLabels, setShowLabels] = useState(false);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
@@ -1628,17 +1640,21 @@ function Dashboard({ session }) {
   // Preset → aplica vertical + features (overrides). Fine-tune manual limpa o highlight.
   const applyPreset = (p) => { setPresetKey(p.key); setForm(f => ({ ...f, vertical: p.vertical, features: { ...p.features } })); };
   const toggleCreateModule = (key, value) => { setPresetKey(null); setForm(f => ({ ...f, features: { ...f.features, [key]: value } })); };
-  const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '', vertical: '', features: {} }); setPresetKey('crm'); setShowMods(false); };
+  const setLabelField = (key, value) => setForm(f => ({ ...f, labels: { ...f.labels, [key]: value } }));
+  const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} }); setPresetKey('crm'); setShowMods(false); setShowLabels(false); };
 
   const handleCreate = async () => {
     if (!form.orgName || !form.adminName || !form.adminUsername || !form.adminPassword) { setMsg({ type: 'error', text: 'Preencha todos os campos obrigatórios' }); return; }
     setCreating(true);
-    // Envia vertical/features só quando há algo — sem eles a org nasce como hoje (o
-    // edge só grava settings.features/vertical se vierem). Payload mínimo = intenção clara.
-    const { vertical, features, ...rest } = form;
+    // Envia vertical/features/labels só quando há algo — sem eles a org nasce como hoje
+    // (o edge só grava settings.* se vierem). Payload mínimo = intenção clara.
+    const { vertical, features, labels, ...rest } = form;
     const payload = { ...rest };
     if (features && Object.keys(features).length > 0) payload.features = features;
     if (vertical) payload.vertical = vertical;
+    const cleanLabels = {};
+    for (const [k, v] of Object.entries(labels || {})) if (typeof v === 'string' && v.trim()) cleanLabels[k] = v.trim();
+    if (Object.keys(cleanLabels).length > 0) payload.labels = cleanLabels;
     const data = await callFn('provision-org', payload);
     if (data.ok) {
       setMsg({ type: 'success', text: `"${data.org.name}" criada com sucesso!` });
@@ -1924,14 +1940,49 @@ function Dashboard({ session }) {
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Cor</label>
-                <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
+            {/* Rótulos (nomenclatura) — opcional; a org nasce já com o vocabulário do cliente. Vazio = nome padrão. */}
+            <div>
+              <button type="button" onClick={() => setShowLabels(s => !s)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: colors.blue, padding: 0 }}>
+                {showLabels ? '▾ Ocultar rótulos' : '▸ Renomear módulos (opcional)'}
+              </button>
+              {showLabels && (
+                <div style={{ marginTop: 10, border: '1px solid rgba(60,61,55,0.08)', borderRadius: 12, padding: 12, background: 'rgba(60,61,55,0.015)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px' }}>
+                  {LABEL_CATALOG.map(l => (
+                    <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11, color: colors.muted, width: 66, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={l.label}>{l.label}</span>
+                      <input className="input" type="text" value={form.labels[l.key] || ''} onChange={e => setLabelField(l.key, e.target.value)} placeholder={l.label} style={{ padding: '7px 10px', fontSize: 12 }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Marca */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Marca</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Logo (URL)</span>
+                  <input className="input" type="url" value={form.logoUrl} onChange={e => setForm({...form, logoUrl: e.target.value})} placeholder="https://…/logo.svg" />
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Favicon (URL)</span>
+                  <input className="input" type="url" value={form.faviconUrl} onChange={e => setForm({...form, faviconUrl: e.target.value})} placeholder="https://…/favicon.png" />
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Trial (dias)</label>
-                <input className="input" type="number" value={form.trialDays} onChange={e => setForm({...form, trialDays: parseInt(e.target.value) || 0})} min={0} max={90} style={{ width: 100 }} />
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
+                <div>
+                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor primária</span>
+                  <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor secundária</span>
+                  <input type="color" value={form.secondaryColor || '#3c3d37'} onChange={e => setForm({...form, secondaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Trial (dias)</label>
+                  <input className="input" type="number" value={form.trialDays} onChange={e => setForm({...form, trialDays: parseInt(e.target.value) || 0})} min={0} max={90} style={{ width: 100 }} />
+                </div>
               </div>
             </div>
           </div>
