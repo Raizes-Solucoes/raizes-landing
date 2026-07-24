@@ -663,6 +663,55 @@ const ATENDIMENTO_FORCED = {
   automacoes: false, mimuu: false, instagram: false, messenger: false, consorcio: false, painel_v2: false,
 };
 
+// ─── Presets de criação (espinha de onboarding) ───
+// Bundles de vertical + módulos p/ a org NASCER configurada, sem SQL depois. Cada
+// preset define só OVERRIDES (settings.features): o que ele não cita fica no default
+// do app. 'crm' = features {} + vertical '' → org nasce EXATAMENTE como hoje. Presets
+// de produto ligam só flags de dados/seguras (não o shell estrutural renvix_ui, que
+// exige shell codado). O João refina com o grid abaixo antes de criar.
+const CREATE_PRESETS = [
+  { key: 'crm',         label: 'CRM completo',  desc: 'Padrão Miller: módulos base. Sem produto/vertical.', vertical: '', features: {} },
+  { key: 'nina',        label: 'CRM + Nina',    desc: 'CRM completo com o copiloto Nina (intel, health, funil).', vertical: '', features: { nina: true, nina_intel: true, nina_health: true, nina_funnel: true } },
+  { key: 'atendimento', label: 'Atendimento',   desc: 'Escola/serviços: colapsa p/ Chat + Pipeline + Nina.', vertical: 'atendimento', features: { nina: true } },
+  { key: 'fidc',        label: 'FIDC / Renvix', desc: 'FIDC, Crédito, Financeiro, Agenda e Relatório gerencial.', vertical: '', features: { fidc: true, credito: true, financeiro: true, fidc_report: true, agenda: true } },
+];
+
+// Grid compacto de módulos p/ o form de criação — fine-tune sobre o preset. Respeita
+// a whitelist da vertical (flags forçadas ficam travadas + 🔒), espelhando ModulesPanel.
+function CreateModulesGrid({ features, vertical, onToggle }) {
+  const forced = vertical === 'atendimento' ? ATENDIMENTO_FORCED : null;
+  const effective = (mod) => {
+    if (forced && mod.key in forced) return forced[mod.key];
+    if (features[mod.key] !== undefined) return features[mod.key];
+    return mod.default;
+  };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 300, overflowY: 'auto', padding: '2px 2px' }}>
+      {MODULE_CATALOG.map(cat => (
+        <div key={cat.category}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>{cat.category}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 10px' }}>
+            {cat.items.map(mod => {
+              const on = effective(mod);
+              const locked = !!(forced && mod.key in forced);
+              return (
+                <button key={mod.key} type="button" disabled={locked} onClick={() => onToggle(mod.key, !on)}
+                  title={mod.description + (locked ? ' — forçado pela vertical' : '')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px', border: 'none', background: 'transparent', cursor: locked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: locked ? 0.55 : 1 }}>
+                  <span style={{ position: 'relative', width: 28, height: 16, borderRadius: 999, background: on ? colors.blue : 'rgba(60,61,55,0.2)', flexShrink: 0, transition: 'background 0.15s' }}>
+                    <span style={{ position: 'absolute', top: 2, left: on ? 14 : 2, width: 12, height: 12, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                  </span>
+                  <span style={{ fontSize: 12, color: colors.earth, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mod.label}{locked ? ' 🔒' : ''}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ModulesPanel({ org, onSaved, setMsg }) {
   const orgFeatures = (org.settings?.features) || {};
   const currentVertical = org.settings?.vertical || '';
@@ -1557,7 +1606,9 @@ function Dashboard({ session }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
-  const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '' });
+  const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '', vertical: '', features: {} });
+  const [presetKey, setPresetKey] = useState('crm');
+  const [showMods, setShowMods] = useState(false);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
@@ -1574,14 +1625,25 @@ function Dashboard({ session }) {
 
   useEffect(() => { loadOrgs(); }, []);
 
+  // Preset → aplica vertical + features (overrides). Fine-tune manual limpa o highlight.
+  const applyPreset = (p) => { setPresetKey(p.key); setForm(f => ({ ...f, vertical: p.vertical, features: { ...p.features } })); };
+  const toggleCreateModule = (key, value) => { setPresetKey(null); setForm(f => ({ ...f, features: { ...f.features, [key]: value } })); };
+  const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '', vertical: '', features: {} }); setPresetKey('crm'); setShowMods(false); };
+
   const handleCreate = async () => {
     if (!form.orgName || !form.adminName || !form.adminUsername || !form.adminPassword) { setMsg({ type: 'error', text: 'Preencha todos os campos obrigatórios' }); return; }
     setCreating(true);
-    const data = await callFn('provision-org', form);
+    // Envia vertical/features só quando há algo — sem eles a org nasce como hoje (o
+    // edge só grava settings.features/vertical se vierem). Payload mínimo = intenção clara.
+    const { vertical, features, ...rest } = form;
+    const payload = { ...rest };
+    if (features && Object.keys(features).length > 0) payload.features = features;
+    if (vertical) payload.vertical = vertical;
+    const data = await callFn('provision-org', payload);
     if (data.ok) {
       setMsg({ type: 'success', text: `"${data.org.name}" criada com sucesso!` });
       setShowModal(false);
-      setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', logoUrl: '' });
+      resetForm();
       loadOrgs();
     } else {
       setMsg({ type: 'error', text: data.error });
@@ -1798,7 +1860,7 @@ function Dashboard({ session }) {
 
       {/* Create Org Modal */}
       {showModal && (
-        <Modal title="Nova Organização" subtitle="Provisione um novo cliente Miller CRM" onClose={() => setShowModal(false)}>
+        <Modal title="Nova Organização" subtitle="Provisione um novo cliente Miller CRM" onClose={() => setShowModal(false)} width={560}>
           <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Empresa</label>
@@ -1829,6 +1891,37 @@ function Dashboard({ session }) {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Produto</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {CREATE_PRESETS.map(p => (
+                  <button key={p.key} type="button" onClick={() => applyPreset(p)} style={{ padding: '10px 12px', border: presetKey === p.key ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === p.key ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === p.key ? colors.blue : colors.earth }}>{p.label}</div>
+                    <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{p.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Vertical</label>
+              <select className="input" value={form.vertical} onChange={e => { setPresetKey(null); setForm({ ...form, vertical: e.target.value }); }}>
+                {VERTICALS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+              </select>
+              <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>{VERTICALS.find(v => v.value === form.vertical)?.description}</div>
+            </div>
+
+            <div>
+              <button type="button" onClick={() => setShowMods(s => !s)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: colors.blue, padding: 0 }}>
+                {showMods ? '▾ Ocultar módulos' : '▸ Ajustar módulos'}
+              </button>
+              {showMods && (
+                <div style={{ marginTop: 10, border: '1px solid rgba(60,61,55,0.08)', borderRadius: 12, padding: 12, background: 'rgba(60,61,55,0.015)' }}>
+                  <CreateModulesGrid features={form.features} vertical={form.vertical} onToggle={toggleCreateModule} />
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
