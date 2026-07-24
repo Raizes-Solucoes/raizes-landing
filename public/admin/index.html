@@ -1621,6 +1621,7 @@ function Dashboard({ session }) {
   const [presetKey, setPresetKey] = useState('crm');
   const [showMods, setShowMods] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
+  const [dbTemplates, setDbTemplates] = useState([]);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
@@ -1635,10 +1636,54 @@ function Dashboard({ session }) {
     setLoading(false);
   };
 
-  useEffect(() => { loadOrgs(); }, []);
+  useEffect(() => { loadOrgs(); loadTemplates(); }, []);
 
-  // Preset → aplica vertical + features (overrides). Fine-tune manual limpa o highlight.
-  const applyPreset = (p) => { setPresetKey(p.key); setForm(f => ({ ...f, vertical: p.vertical, features: { ...p.features } })); };
+  // Templates salvos (org_templates via edge admin-org-templates). Falha silenciosa →
+  // lista vazia → só os presets embutidos aparecem (fallback à prova de falha).
+  const loadTemplates = async () => {
+    try { const data = await callFn('admin-org-templates', { action: 'list' }); if (data && data.templates) setDbTemplates(data.templates); }
+    catch (_) { /* mantém só os embutidos */ }
+  };
+
+  // Preset → aplica vertical + features (sempre) e labels/branding (só se o template
+  // define — os embutidos não têm, então não mexem nesses). Fine-tune manual limpa o highlight.
+  const applyPreset = (p) => {
+    setPresetKey(p.key || p.id);
+    setForm(f => {
+      const next = { ...f, vertical: p.vertical || '', features: { ...(p.features || {}) } };
+      if (p.labels && typeof p.labels === 'object') next.labels = { ...p.labels };
+      const b = p.branding;
+      if (b && typeof b === 'object') {
+        if (b.primaryColor) next.primaryColor = b.primaryColor;
+        if (b.secondaryColor) next.secondaryColor = b.secondaryColor;
+        if (typeof b.logoUrl === 'string') next.logoUrl = b.logoUrl;
+        if (typeof b.faviconUrl === 'string') next.faviconUrl = b.faviconUrl;
+      }
+      return next;
+    });
+  };
+  const saveAsTemplate = async () => {
+    const name = window.prompt('Nome do template (ex.: "Escola", "Imobiliária"):');
+    if (!name || !name.trim()) return;
+    const cleanLabels = {};
+    for (const [k, v] of Object.entries(form.labels || {})) if (typeof v === 'string' && v.trim()) cleanLabels[k] = v.trim();
+    const template = {
+      name: name.trim(),
+      vertical: form.vertical,
+      features: form.features,
+      labels: cleanLabels,
+      branding: { primaryColor: form.primaryColor, secondaryColor: form.secondaryColor, logoUrl: form.logoUrl, faviconUrl: form.faviconUrl },
+    };
+    const data = await callFn('admin-org-templates', { action: 'create', template });
+    if (data && data.ok) { setMsg({ type: 'success', text: `Template "${name.trim()}" salvo!` }); loadTemplates(); }
+    else setMsg({ type: 'error', text: (data && data.error) || 'Erro ao salvar template' });
+  };
+  const deleteTemplate = async (id, name) => {
+    if (!window.confirm(`Excluir o template "${name}"?`)) return;
+    const data = await callFn('admin-org-templates', { action: 'delete', id });
+    if (data && data.ok) { if (presetKey === id) setPresetKey(null); loadTemplates(); }
+    else setMsg({ type: 'error', text: (data && data.error) || 'Erro ao excluir template' });
+  };
   const toggleCreateModule = (key, value) => { setPresetKey(null); setForm(f => ({ ...f, features: { ...f.features, [key]: value } })); };
   const setLabelField = (key, value) => setForm(f => ({ ...f, labels: { ...f.labels, [key]: value } }));
   const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} }); setPresetKey('crm'); setShowMods(false); setShowLabels(false); };
@@ -1918,7 +1963,19 @@ function Dashboard({ session }) {
                     <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{p.desc}</div>
                   </button>
                 ))}
+                {dbTemplates.map(t => (
+                  <div key={t.id} style={{ position: 'relative' }}>
+                    <button type="button" onClick={() => applyPreset(t)} style={{ width: '100%', padding: '10px 12px', paddingRight: 26, border: presetKey === t.id ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === t.id ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === t.id ? colors.blue : colors.earth }}>{t.name}</div>
+                      <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{t.description || 'Template salvo'}</div>
+                    </button>
+                    <button type="button" title="Excluir template" onClick={() => deleteTemplate(t.id, t.name)} style={{ position: 'absolute', top: 6, right: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: colors.muted, fontSize: 16, lineHeight: 1, padding: 2 }}>×</button>
+                  </div>
+                ))}
               </div>
+              <button type="button" onClick={saveAsTemplate} style={{ marginTop: 8, width: '100%', background: 'transparent', border: '1px dashed rgba(60,61,55,0.25)', borderRadius: 10, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.blue }}>
+                ＋ Salvar configuração atual como template
+              </button>
             </div>
 
             <div>
