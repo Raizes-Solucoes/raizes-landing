@@ -1620,8 +1620,11 @@ function Dashboard({ session }) {
   const [form, setForm] = useState({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} });
   const [presetKey, setPresetKey] = useState('crm');
   const [showMods, setShowMods] = useState(false);
-  const [showLabels, setShowLabels] = useState(false);
   const [dbTemplates, setDbTemplates] = useState([]);
+  const [step, setStep] = useState(1);          // wizard: passo atual (1..4)
+  const [showPwd, setShowPwd] = useState(false); // mostrar/ocultar senha do admin
+  const [touched, setTouched] = useState({});    // avisos touched-aware (advisory)
+  const [createError, setCreateError] = useState(null); // erro do provision-org (só no passo 4; separado do toast global)
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
@@ -1686,11 +1689,24 @@ function Dashboard({ session }) {
   };
   const toggleCreateModule = (key, value) => { setPresetKey(null); setForm(f => ({ ...f, features: { ...f.features, [key]: value } })); };
   const setLabelField = (key, value) => setForm(f => ({ ...f, labels: { ...f.labels, [key]: value } }));
-  const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} }); setPresetKey('crm'); setShowMods(false); setShowLabels(false); };
+  const resetForm = () => { setForm({ orgName: '', adminName: '', adminUsername: '', adminPassword: '', planSlug: 'starter', trialDays: 14, primaryColor: '#2D5A3D', secondaryColor: '', faviconUrl: '', logoUrl: '', vertical: '', features: {}, labels: {} }); setPresetKey('crm'); setShowMods(false); setStep(1); setTouched({}); setShowPwd(false); setCreateError(null); };
+
+  // Wizard — validação por passo. WIZARD_STRICT (self-service futuro) OFF hoje → trava
+  // IDÊNTICA à de hoje: só o passo 1 (os 4 obrigatórios) pode travar; passos 2-4 sempre ok.
+  const WIZARD_STRICT = false;
+  const step1Minimal = !!(form.orgName.trim() && form.adminName.trim() && form.adminUsername.trim() && form.adminPassword.trim());
+  const step1Strict = form.orgName.trim().length >= 2 && form.adminName.trim().length >= 2 && /^[a-z0-9_]{3,30}$/.test(form.adminUsername) && form.adminPassword.length >= 8;
+  const step1Valid = WIZARD_STRICT ? step1Strict : step1Minimal;
+  const canAdvance = (step === 1 ? step1Valid : true);
+  const markTouched = (k) => setTouched(t => ({ ...t, [k]: true }));
+  const goNext = () => { if (!canAdvance) { setTouched({ orgName: true, adminName: true, adminUsername: true, adminPassword: true }); return; } setStep(s => Math.min(4, s + 1)); };
+  const goBack = () => setStep(s => Math.max(1, s - 1));
+  const goToStep = (s) => { if (s < step || step1Valid) setStep(s); };
 
   const handleCreate = async () => {
-    if (!form.orgName || !form.adminName || !form.adminUsername || !form.adminPassword) { setMsg({ type: 'error', text: 'Preencha todos os campos obrigatórios' }); return; }
+    if (!form.orgName || !form.adminName || !form.adminUsername || !form.adminPassword) { setCreateError('Preencha os campos obrigatórios (passo 1).'); setStep(1); return; }
     setCreating(true);
+    setCreateError(null);
     // Envia vertical/features/labels só quando há algo — sem eles a org nasce como hoje
     // (o edge só grava settings.* se vierem). Payload mínimo = intenção clara.
     const { vertical, features, labels, ...rest } = form;
@@ -1707,7 +1723,7 @@ function Dashboard({ session }) {
       resetForm();
       loadOrgs();
     } else {
-      setMsg({ type: 'error', text: data.error });
+      setCreateError(data.error || 'Não foi possível criar a organização.');
     }
     setCreating(false);
   };
@@ -1823,7 +1839,7 @@ function Dashboard({ session }) {
             {navItems.find(n => n.key === activeTab)?.label}
           </h1>
           {activeTab === 'orgs' && (
-            <button onClick={() => setShowModal(true)} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: 14, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={() => { setStep(1); setTouched({}); setShowModal(true); }} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: 14, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 16, height: 16, display: 'flex' }}>{Icons.plus}</span>
               Nova Organização
             </button>
@@ -1921,134 +1937,228 @@ function Dashboard({ session }) {
 
       {/* Create Org Modal */}
       {showModal && (
-        <Modal title="Nova Organização" subtitle="Provisione um novo cliente Miller CRM" onClose={() => setShowModal(false)} width={560}>
-          <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Empresa</label>
-              <input className="input" type="text" value={form.orgName} onChange={e => setForm({...form, orgName: e.target.value})} placeholder="Nome da empresa" />
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Administrador</label>
-              <input className="input" type="text" value={form.adminName} onChange={e => setForm({...form, adminName: e.target.value})} placeholder="Nome do admin" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Username</label>
-                <input className="input" type="text" value={form.adminUsername} onChange={e => setForm({...form, adminUsername: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})} placeholder="username" />
-              </div>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Senha</label>
-                <input className="input" type="password" value={form.adminPassword} onChange={e => setForm({...form, adminPassword: e.target.value})} placeholder="Senha" />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Plano</label>
-              <div style={{ display: 'flex', gap: 10 }}>
-                {['starter', 'pro', 'enterprise'].map(p => (
-                  <button key={p} onClick={() => setForm({...form, planSlug: p})} style={{ flex: 1, padding: 14, border: form.planSlug === p ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 14, background: form.planSlug === p ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, textTransform: 'capitalize', color: form.planSlug === p ? colors.blue : colors.earth }}>{p}</div>
-                    <div style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>R$ {planPrices[p]}/mês</div>
+        <Modal title="Nova Organização" subtitle={`Passo ${step} de 4`} onClose={() => setShowModal(false)} width={600}>
+          {/* Stepper */}
+          <div style={{ padding: '16px 28px 2px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {['Empresa', 'Produto', 'Marca', 'Revisão'].map((lbl, i) => {
+              const n = i + 1;
+              const done = n < step, cur = n === step, clickable = n < step || step1Valid;
+              return (
+                <React.Fragment key={n}>
+                  {i > 0 && <div style={{ flex: 1, height: 2, background: n <= step ? colors.blue : 'rgba(60,61,55,0.12)' }} />}
+                  <button type="button" onClick={() => goToStep(n)} disabled={!clickable} style={{ display: 'flex', alignItems: 'center', gap: 6, border: 'none', background: 'transparent', cursor: clickable ? 'pointer' : 'default', padding: 2 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, background: cur ? colors.blue : done ? 'rgba(57,77,250,0.12)' : 'rgba(60,61,55,0.08)', color: cur ? '#fff' : done ? colors.blue : colors.muted }}>{done ? '✓' : n}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: cur ? colors.earth : colors.muted, whiteSpace: 'nowrap' }}>{lbl}</span>
                   </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Produto</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {CREATE_PRESETS.map(p => (
-                  <button key={p.key} type="button" onClick={() => applyPreset(p)} style={{ padding: '10px 12px', border: presetKey === p.key ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === p.key ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === p.key ? colors.blue : colors.earth }}>{p.label}</div>
-                    <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{p.desc}</div>
-                  </button>
-                ))}
-                {dbTemplates.map(t => (
-                  <div key={t.id} style={{ position: 'relative' }}>
-                    <button type="button" onClick={() => applyPreset(t)} style={{ width: '100%', padding: '10px 12px', paddingRight: 26, border: presetKey === t.id ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === t.id ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === t.id ? colors.blue : colors.earth }}>{t.name}</div>
-                      <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{t.description || 'Template salvo'}</div>
-                    </button>
-                    <button type="button" title="Excluir template" onClick={() => deleteTemplate(t.id, t.name)} style={{ position: 'absolute', top: 6, right: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: colors.muted, fontSize: 16, lineHeight: 1, padding: 2 }}>×</button>
-                  </div>
-                ))}
-              </div>
-              <button type="button" onClick={saveAsTemplate} style={{ marginTop: 8, width: '100%', background: 'transparent', border: '1px dashed rgba(60,61,55,0.25)', borderRadius: 10, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.blue }}>
-                ＋ Salvar configuração atual como template
-              </button>
-            </div>
-
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Vertical</label>
-              <select className="input" value={form.vertical} onChange={e => { setPresetKey(null); setForm({ ...form, vertical: e.target.value }); }}>
-                {VERTICALS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
-              </select>
-              <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>{VERTICALS.find(v => v.value === form.vertical)?.description}</div>
-            </div>
-
-            <div>
-              <button type="button" onClick={() => setShowMods(s => !s)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: colors.blue, padding: 0 }}>
-                {showMods ? '▾ Ocultar módulos' : '▸ Ajustar módulos'}
-              </button>
-              {showMods && (
-                <div style={{ marginTop: 10, border: '1px solid rgba(60,61,55,0.08)', borderRadius: 12, padding: 12, background: 'rgba(60,61,55,0.015)' }}>
-                  <CreateModulesGrid features={form.features} vertical={form.vertical} onToggle={toggleCreateModule} />
-                </div>
-              )}
-            </div>
-
-            {/* Rótulos (nomenclatura) — opcional; a org nasce já com o vocabulário do cliente. Vazio = nome padrão. */}
-            <div>
-              <button type="button" onClick={() => setShowLabels(s => !s)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: colors.blue, padding: 0 }}>
-                {showLabels ? '▾ Ocultar rótulos' : '▸ Renomear módulos (opcional)'}
-              </button>
-              {showLabels && (
-                <div style={{ marginTop: 10, border: '1px solid rgba(60,61,55,0.08)', borderRadius: 12, padding: 12, background: 'rgba(60,61,55,0.015)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px' }}>
-                  {LABEL_CATALOG.map(l => (
-                    <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 11, color: colors.muted, width: 66, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={l.label}>{l.label}</span>
-                      <input className="input" type="text" value={form.labels[l.key] || ''} onChange={e => setLabelField(l.key, e.target.value)} placeholder={l.label} style={{ padding: '7px 10px', fontSize: 12 }} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Marca */}
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Marca</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                <div>
-                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Logo (URL)</span>
-                  <input className="input" type="url" value={form.logoUrl} onChange={e => setForm({...form, logoUrl: e.target.value})} placeholder="https://…/logo.svg" />
-                </div>
-                <div>
-                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Favicon (URL)</span>
-                  <input className="input" type="url" value={form.faviconUrl} onChange={e => setForm({...form, faviconUrl: e.target.value})} placeholder="https://…/favicon.png" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
-                <div>
-                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor primária</span>
-                  <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
-                </div>
-                <div>
-                  <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor secundária</span>
-                  <input type="color" value={form.secondaryColor || '#3c3d37'} onChange={e => setForm({...form, secondaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Trial (dias)</label>
-                  <input className="input" type="number" value={form.trialDays} onChange={e => setForm({...form, trialDays: parseInt(e.target.value) || 0})} min={0} max={90} style={{ width: 100 }} />
-                </div>
-              </div>
-            </div>
+                </React.Fragment>
+              );
+            })}
           </div>
 
-          <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(60,61,55,0.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-            <button onClick={() => setShowModal(false)} className="input" style={{ width: 'auto', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>Cancelar</button>
-            <button onClick={handleCreate} disabled={creating} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: 14, fontSize: 14, opacity: creating ? 0.5 : 1 }}>
-              {creating ? 'Provisionando...' : 'Criar Organização'}
-            </button>
+          <div style={{ padding: '12px 28px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* ===== PASSO 1 — Empresa e acesso ===== */}
+            {step === 1 && (
+              <div onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); goNext(); } }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Empresa</label>
+                  <input className="input" type="text" autoFocus value={form.orgName} onChange={e => setForm({...form, orgName: e.target.value})} onBlur={() => markTouched('orgName')} placeholder="Nome da empresa" />
+                  {touched.orgName && !form.orgName.trim() && <div style={{ fontSize: 11, color: colors.warning || '#b45309', marginTop: 4 }}>Informe o nome da empresa.</div>}
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Administrador</label>
+                  <input className="input" type="text" value={form.adminName} onChange={e => setForm({...form, adminName: e.target.value})} onBlur={() => markTouched('adminName')} placeholder="Nome do admin" />
+                  {touched.adminName && !form.adminName.trim() && <div style={{ fontSize: 11, color: colors.warning || '#b45309', marginTop: 4 }}>Informe o nome do administrador.</div>}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Username</label>
+                    <input className="input" type="text" value={form.adminUsername} onChange={e => setForm({...form, adminUsername: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})} onBlur={() => markTouched('adminUsername')} placeholder="username" />
+                    <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>Login do admin. Só a-z, 0-9 e _.</div>
+                    {touched.adminUsername && !form.adminUsername.trim() && <div style={{ fontSize: 11, color: colors.warning || '#b45309', marginTop: 2 }}>Informe um username.</div>}
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Senha</label>
+                    <div style={{ position: 'relative' }}>
+                      <input className="input" type={showPwd ? 'text' : 'password'} value={form.adminPassword} onChange={e => setForm({...form, adminPassword: e.target.value})} onBlur={() => markTouched('adminPassword')} placeholder="Senha" style={{ paddingRight: 64 }} />
+                      <button type="button" onClick={() => setShowPwd(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: colors.blue }}>{showPwd ? 'Ocultar' : 'Mostrar'}</button>
+                    </div>
+                    {touched.adminPassword && !form.adminPassword && <div style={{ fontSize: 11, color: colors.warning || '#b45309', marginTop: 2 }}>Defina uma senha.</div>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== PASSO 2 — Produto e plano ===== */}
+            {step === 2 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Produto</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {CREATE_PRESETS.map(p => (
+                      <button key={p.key} type="button" onClick={() => applyPreset(p)} style={{ padding: '10px 12px', border: presetKey === p.key ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === p.key ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === p.key ? colors.blue : colors.earth }}>{p.label}</div>
+                        <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{p.desc}</div>
+                      </button>
+                    ))}
+                    {dbTemplates.map(t => (
+                      <div key={t.id} style={{ position: 'relative' }}>
+                        <button type="button" onClick={() => applyPreset(t)} style={{ width: '100%', padding: '10px 12px', paddingRight: 26, border: presetKey === t.id ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: presetKey === t.id ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: presetKey === t.id ? colors.blue : colors.earth }}>{t.name}</div>
+                          <div style={{ fontSize: 11, color: colors.muted, marginTop: 2, lineHeight: 1.3 }}>{t.description || 'Template salvo'}</div>
+                        </button>
+                        <button type="button" title="Excluir template" onClick={() => deleteTemplate(t.id, t.name)} style={{ position: 'absolute', top: 6, right: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: colors.muted, fontSize: 16, lineHeight: 1, padding: 2 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={saveAsTemplate} style={{ marginTop: 8, width: '100%', background: 'transparent', border: '1px dashed rgba(60,61,55,0.25)', borderRadius: 10, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.blue }}>
+                    ＋ Salvar configuração atual como template
+                  </button>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 6 }}>Vertical</label>
+                  <select className="input" value={form.vertical} onChange={e => { setPresetKey(null); setForm({ ...form, vertical: e.target.value }); }}>
+                    {VERTICALS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+                  </select>
+                  <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>{VERTICALS.find(v => v.value === form.vertical)?.description}</div>
+                </div>
+
+                <div>
+                  <button type="button" onClick={() => setShowMods(s => !s)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: colors.blue, padding: 0 }}>
+                    {showMods ? '▾ Ocultar módulos' : '▸ Ajustar módulos'}
+                  </button>
+                  {showMods && (
+                    <div style={{ marginTop: 10, border: '1px solid rgba(60,61,55,0.08)', borderRadius: 12, padding: 12, background: 'rgba(60,61,55,0.015)' }}>
+                      <CreateModulesGrid features={form.features} vertical={form.vertical} onToggle={toggleCreateModule} />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 260 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Plano</label>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      {['starter', 'pro', 'enterprise'].map(p => (
+                        <button key={p} onClick={() => setForm({...form, planSlug: p})} style={{ flex: 1, padding: 12, border: form.planSlug === p ? `2px solid ${colors.blue}` : '1px solid rgba(60,61,55,0.1)', borderRadius: 14, background: form.planSlug === p ? 'rgba(57,77,250,0.04)' : '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, textTransform: 'capitalize', color: form.planSlug === p ? colors.blue : colors.earth }}>{p}</div>
+                          <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>R$ {planPrices[p]}/mês</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Trial (dias)</label>
+                    <input className="input" type="number" value={form.trialDays} onChange={e => setForm({...form, trialDays: parseInt(e.target.value) || 0})} min={0} max={90} style={{ width: 100 }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== PASSO 3 — Marca e rótulos (opcional) ===== */}
+            {step === 3 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ fontSize: 11, color: colors.muted }}>Opcional — em branco, a org usa o padrão Raízes/Miller.</div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Marca</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Logo (URL)</span>
+                      <input className="input" type="url" value={form.logoUrl} onChange={e => setForm({...form, logoUrl: e.target.value})} placeholder="https://…/logo.svg" />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Favicon (URL)</span>
+                      <input className="input" type="url" value={form.faviconUrl} onChange={e => setForm({...form, faviconUrl: e.target.value})} placeholder="https://…/favicon.png" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
+                    <div>
+                      <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor primária</span>
+                      <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 11, color: colors.muted, display: 'block', marginBottom: 4 }}>Cor secundária</span>
+                      <input type="color" value={form.secondaryColor || '#3c3d37'} onChange={e => setForm({...form, secondaryColor: e.target.value})} style={{ width: 44, height: 44, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, cursor: 'pointer', padding: 2 }} />
+                    </div>
+                    {form.logoUrl ? <img key={form.logoUrl} src={form.logoUrl} alt="logo" style={{ height: 44, maxWidth: 120, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(60,61,55,0.08)' }} onError={e => { e.target.style.display = 'none'; }} /> : null}
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: 'block', marginBottom: 8 }}>Rótulos (nomenclatura)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px' }}>
+                    {LABEL_CATALOG.map(l => (
+                      <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 11, color: colors.muted, width: 66, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={l.label}>{l.label}</span>
+                        <input className="input" type="text" value={form.labels[l.key] || ''} onChange={e => setLabelField(l.key, e.target.value)} placeholder={l.label} style={{ padding: '7px 10px', fontSize: 12 }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== PASSO 4 — Revisão ===== */}
+            {step === 4 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ border: '1px solid rgba(60,61,55,0.1)', borderRadius: 12, padding: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: colors.earth }}>Empresa & acesso</span>
+                    <button type="button" onClick={() => setStep(1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: colors.blue }}>Editar</button>
+                  </div>
+                  <div style={{ fontSize: 13, color: colors.earth, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px' }}>
+                    <span style={{ color: colors.muted }}>Empresa</span><span style={{ fontWeight: 600 }}>{form.orgName || '—'}</span>
+                    <span style={{ color: colors.muted }}>Admin</span><span style={{ fontWeight: 600 }}>{form.adminName || '—'}{form.adminUsername ? ` (@${form.adminUsername})` : ''}</span>
+                    <span style={{ color: colors.muted }}>Senha</span><span style={{ fontWeight: 600 }}>{form.adminPassword ? (showPwd ? form.adminPassword : '••••••••') : '—'} <button type="button" onClick={() => setShowPwd(s => !s)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11, color: colors.blue }}>{showPwd ? 'ocultar' : 'revelar'}</button></span>
+                  </div>
+                </div>
+
+                <div style={{ border: '1px solid rgba(60,61,55,0.1)', borderRadius: 12, padding: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: colors.earth }}>Produto & plano</span>
+                    <button type="button" onClick={() => setStep(2)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: colors.blue }}>Editar</button>
+                  </div>
+                  <div style={{ fontSize: 13, color: colors.earth, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px' }}>
+                    <span style={{ color: colors.muted }}>Produto</span><span style={{ fontWeight: 600 }}>{presetKey ? (CREATE_PRESETS.find(p => p.key === presetKey)?.label || dbTemplates.find(t => t.id === presetKey)?.name || 'Configuração custom') : 'Configuração custom'}</span>
+                    <span style={{ color: colors.muted }}>Vertical</span><span style={{ fontWeight: 600 }}>{VERTICALS.find(v => v.value === form.vertical)?.label || 'Nenhuma'}</span>
+                    <span style={{ color: colors.muted }}>Módulos</span><span style={{ fontWeight: 600 }}>{(() => { const forced = form.vertical === 'atendimento' ? ATENDIMENTO_FORCED : null; let n = 0; MODULE_CATALOG.forEach(c => c.items.forEach(m => { const on = (forced && m.key in forced) ? forced[m.key] : (form.features[m.key] !== undefined ? form.features[m.key] : m.default); if (on) n++; })); return n; })()} ativos</span>
+                    <span style={{ color: colors.muted }}>Plano</span><span style={{ fontWeight: 600 }}>{form.planSlug} · R$ {planPrices[form.planSlug]}/mês · {form.trialDays} dias trial</span>
+                  </div>
+                </div>
+
+                <div style={{ border: '1px solid rgba(60,61,55,0.1)', borderRadius: 12, padding: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: colors.earth }}>Marca & rótulos</span>
+                    <button type="button" onClick={() => setStep(3)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: colors.blue }}>Editar</button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: colors.earth, flexWrap: 'wrap' }}>
+                    <span style={{ width: 20, height: 20, borderRadius: 6, background: form.primaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+                    <span style={{ width: 20, height: 20, borderRadius: 6, background: form.secondaryColor || '#3c3d37', border: '1px solid rgba(0,0,0,0.1)' }} />
+                    <span style={{ color: colors.muted }}>Logo: <b style={{ color: colors.earth }}>{form.logoUrl ? 'definido' : '—'}</b></span>
+                    <span style={{ color: colors.muted }}>Rótulos: <b style={{ color: colors.earth }}>{Object.values(form.labels || {}).filter(v => v && v.trim()).length || 'padrão'}</b></span>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: 11, color: colors.muted, lineHeight: 1.4 }}>Campos em branco = a organização nasce no padrão Miller (features/vertical/labels são omitidos do envio; a marca vazia segue como hoje).</div>
+                {createError && <div style={{ fontSize: 12, color: '#b91c1c', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 10, padding: '8px 12px' }}>{createError}</div>}
+              </div>
+            )}
+          </div>
+
+          {/* Footer nav */}
+          <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(60,61,55,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowModal(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.muted }}>Cancelar</button>
+              {step > 1 && <button onClick={goBack} className="input" style={{ width: 'auto', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>← Voltar</button>}
+            </div>
+            {step < 4 ? (
+              <button onClick={goNext} disabled={!canAdvance} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: 14, fontSize: 14, opacity: canAdvance ? 1 : 0.5, cursor: canAdvance ? 'pointer' : 'not-allowed' }}>
+                Avançar →
+              </button>
+            ) : (
+              <button onClick={handleCreate} disabled={creating || !step1Valid} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: 14, fontSize: 14, opacity: (creating || !step1Valid) ? 0.5 : 1 }}>
+                {creating ? 'Provisionando...' : 'Criar Organização'}
+              </button>
+            )}
           </div>
         </Modal>
       )}
