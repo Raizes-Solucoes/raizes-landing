@@ -4,10 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Raízes Admin — Gerenciamento SaaS</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Este painel é o CONTROL PLANE de todas as orgs: quem executa JS aqui age com a
+     sessão do super_admin logado. As quatro dependências vinham de CDN público SEM
+     integrity e SEM versão fixa (o @babel/standalone não tinha versão nenhuma, o
+     supabase-js seguia o major @2 flutuante). Qualquer publicação maliciosa nesses
+     pacotes, ou adulteração no CDN, executava aqui na próxima carga da página.
+     Agora: versão EXATA + SRI. Trocar de versão exige recalcular o hash —
+       curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+     O supabase-js aponta para o caminho direto do UMD (e não para o atalho @2)
+     porque o jsDelivr gera o atalho dinamicamente e avisa, no próprio corpo da
+     resposta, para não usar SRI com ele. O global exposto é o mesmo: `supabase`. -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
+        integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
+        integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@8.0.4/babel.min.js"
+        integrity="sha384-bdF7m0Y1IFKt9Q6xC8X9qkXn0OBriQWKyWwZKYsN05zF6P/g9OakjjL0G2Sd4pB4"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"
+        integrity="sha384-M65KxMm/JqBppck6onbmAgPVMBHrmPCf1L17Q+71EcvI9/VVI8j5cqoxQf6lj6h2"
+        crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
