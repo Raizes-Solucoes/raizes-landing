@@ -1737,7 +1737,18 @@ const somaMes = (ym, delta) => {
   return d.toISOString().slice(0, 7);
 };
 
-const VAZIA = { description: '', supplier: '', category: 'infra', amount: '', dueDate: '', recurrence: 'none', notes: '' };
+const VAZIA = { description: '', supplier: '', category: 'infra', amount: '', dueDate: '', recurrence: 'none', notes: '', currency: 'BRL', fxRate: '' };
+
+// Valor na moeda em que a conta É COBRADA, para conferir com a fatura. O total do mês
+// sempre soma o valor em real (`amount`), convertido e congelado na gravação.
+// Centavos SEMPRE numa tabela de despesa: 'R$ 650' ao lado de 'R$ 697,44' na mesma
+// coluna faz o primeiro parecer arredondado. O formatCurrency (sem centavos) continua
+// nos cards de MRR, onde o número é grande e a casa decimal só polui.
+const formatReais = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const formatMoeda = (v, moeda) => moeda === 'USD'
+  ? 'US$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  : formatCurrency(Number(v || 0));
 
 function FinanceiroPanel() {
   const [mes, setMes] = useState(mesAtual());
@@ -1748,6 +1759,14 @@ function FinanceiroPanel() {
   const [msg, setMsg] = useState(null);
   const [form, setForm] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [cotacao, setCotacao] = useState(null);
+
+  // Busca a cotação só quando o formulário passa para dólar — não gasta chamada ao BCB
+  // em quem só lança conta em real.
+  useEffect(() => {
+    if (form?.currency !== 'USD' || cotacao) return;
+    callFn('raizes-financeiro', { action: 'cotacao' }).then(d => { if (d.ok) setCotacao(d); });
+  }, [form?.currency]);
 
   useEffect(() => { carregar(); }, [mes]);
 
@@ -1776,22 +1795,20 @@ function FinanceiroPanel() {
     else setMsg({ type: 'error', text: data.error || 'Falha ao salvar' });
   };
 
+  // Ação dedicada, não um `save` com o registro inteiro: reenviar todos os campos só
+  // para virar um booleano faz qualquer campo esquecido ser sobrescrito em silêncio —
+  // numa despesa em dólar, regravaria a linha como real e perderia a origem.
   const alternarPago = async (d) => {
-    const data = await callFn('raizes-financeiro', {
-      action: 'save',
-      id: d.id,
-      competencia: d.competencia.slice(0, 7),
-      description: d.description,
-      supplier: d.supplier,
-      category: d.category,
-      amount: d.amount,
-      dueDate: d.due_date,
-      recurrence: d.recurrence,
-      notes: d.notes,
-      attachmentPath: d.attachment_path,
-      paidAt: d.paid_at ? null : new Date().toISOString(),
-    });
+    const data = await callFn('raizes-financeiro', { action: 'marcar_pago', id: d.id });
     if (data.ok) carregar(); else setMsg({ type: 'error', text: data.error || 'Falha' });
+  };
+
+  const atualizarCambio = async (d) => {
+    const data = await callFn('raizes-financeiro', { action: 'atualizar_cambio', id: d.id });
+    if (data.ok) {
+      setMsg({ type: 'success', text: `Câmbio atualizado para R$ ${data.taxa} (PTAX de ${formatDate(data.data)}).` });
+      carregar();
+    } else setMsg({ type: 'error', text: data.error || 'Falha ao atualizar o câmbio' });
   };
 
   const excluir = async (d) => {
@@ -1824,12 +1841,7 @@ function FinanceiroPanel() {
     const caminho = `${d.competencia.slice(0, 7)}/${d.id}-${file.name.replace(/[^\w.\-]/g, '_')}`;
     const { error } = await sb.storage.from('raizes-financeiro').upload(caminho, file, { upsert: true });
     if (error) { setMsg({ type: 'error', text: `Falha no upload: ${error.message}` }); return; }
-    const data = await callFn('raizes-financeiro', {
-      action: 'save', id: d.id, competencia: d.competencia.slice(0, 7),
-      description: d.description, supplier: d.supplier, category: d.category, amount: d.amount,
-      dueDate: d.due_date, recurrence: d.recurrence, notes: d.notes,
-      paidAt: d.paid_at, attachmentPath: caminho,
-    });
+    const data = await callFn('raizes-financeiro', { action: 'set_anexo', id: d.id, path: caminho });
     if (data.ok) { setMsg({ type: 'success', text: 'Nota anexada.' }); carregar(); }
     else setMsg({ type: 'error', text: data.error || 'Falha ao vincular o anexo' });
   };
@@ -1841,23 +1853,26 @@ function FinanceiroPanel() {
       <Toast msg={msg} onClear={() => setMsg(null)} />
 
       {/* Navegação de mês */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      {/* flexWrap + nowrap: sem os dois, na largura real do painel (janela menos os
+          240px da barra lateral) o botão de repetir encolhia e o texto quebrava letra a
+          letra, virando uma coluna de quatro linhas. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <button onClick={() => setMes(somaMes(mes, -1))} style={{ padding: '8px 14px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>‹</button>
         <div className="serif" style={{ fontSize: 20, fontWeight: 700, color: colors.earth, minWidth: 190 }}>{rotuloMes(mes)}</div>
         <button onClick={() => setMes(somaMes(mes, 1))} style={{ padding: '8px 14px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>›</button>
         <div style={{ flex: 1 }} />
-        <button onClick={repetirFixas} style={{ padding: '9px 16px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>
+        <button onClick={repetirFixas} style={{ padding: '9px 16px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth, whiteSpace: 'nowrap', flexShrink: 0 }}>
           Repetir fixas de {rotuloMes(somaMes(mes, -1)).split(' de ')[0].toLowerCase()}
         </button>
-        <button onClick={() => setForm({ ...VAZIA })} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13 }}>+ Nova despesa</button>
+        <button onClick={() => setForm({ ...VAZIA })} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>+ Nova despesa</button>
       </div>
 
       {/* Resultado do mês */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <StatCard label="Receita" value={formatCurrency(resultado?.receita)} icon={Icons.chart} accent={colors.green} sub="MRR contratado" />
-        <StatCard label="Despesas" value={formatCurrency(resultado?.despesas)} icon={Icons.wallet} accent={colors.danger} sub={`${formatCurrency(totais.aberto)} em aberto`} />
-        <StatCard label="Margem" value={formatCurrency(margem)} icon={Icons.chart} accent={margem >= 0 ? colors.green : colors.danger} sub={margem >= 0 ? 'no azul' : 'no vermelho'} />
-        <StatCard label="Pago no mês" value={formatCurrency(totais.pago)} icon={Icons.wallet} accent={colors.blue} sub={`${despesas.length} lançamento(s)`} />
+        <StatCard label="Despesas" value={formatReais(resultado?.despesas)} icon={Icons.wallet} accent={colors.danger} sub={`${formatReais(totais.aberto)} em aberto`} />
+        <StatCard label="Margem" value={formatReais(margem)} icon={Icons.chart} accent={margem >= 0 ? colors.green : colors.danger} sub={margem >= 0 ? 'no azul' : 'no vermelho'} />
+        <StatCard label="Pago no mês" value={formatReais(totais.pago)} icon={Icons.wallet} accent={colors.blue} sub={`${despesas.length} lançamento(s)`} />
       </div>
 
       {/* A receita aqui é o que está CONTRATADO, não o que caiu na conta: não existe
@@ -1871,15 +1886,42 @@ function FinanceiroPanel() {
       {/* Formulário */}
       {form && (
         <div className="glass-solid" style={{ borderRadius: 16, padding: 18, marginBottom: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.4fr 1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+          {/* auto-fit em vez de 5 colunas fixas: o painel real tem 240px a menos que a
+              janela (barra lateral), e o <input type="date"> não encolhe abaixo da
+              largura intrínseca — com colunas fixas ele comia o campo de valor até
+              sobrar um risco. Assim os campos quebram de linha sozinhos. */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10, marginBottom: 10 }}>
             <input className="input" placeholder="Descrição *" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
             <input className="input" placeholder="Fornecedor" value={form.supplier} onChange={e => setForm({ ...form, supplier: e.target.value })} />
             <select className="input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
               {Object.entries(CAT_DESPESA).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <input className="input" placeholder="Valor *" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+            <div style={{ display: 'flex', gap: 6 }}>
+              <select className="input" value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value, fxRate: '' })} style={{ width: 78, flex: 'none' }} title="Moeda da cobrança">
+                <option value="BRL">R$</option>
+                <option value="USD">US$</option>
+              </select>
+              <input className="input" placeholder="Valor *" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} style={{ minWidth: 0 }} />
+            </div>
             <input className="input" type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} title="Vencimento" />
           </div>
+          {/* Prévia da conversão antes de salvar, para conferir com a fatura. A taxa que
+              vale é a que o backend grava; isto é só o número na frente do olho. */}
+          {form.currency === 'USD' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, fontSize: 12, color: colors.muted }}>
+              <span>Câmbio PTAX (Banco Central):</span>
+              <input className="input" placeholder={cotacao ? cotacao.taxa.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : 'buscando…'} value={form.fxRate} onChange={e => setForm({ ...form, fxRate: e.target.value })} style={{ width: 110, flex: 'none' }} title="Deixe vazio para usar o PTAX do vencimento" />
+              <span>
+                {(() => {
+                  const taxa = parseFloat(String(form.fxRate).replace(',', '.')) || cotacao?.taxa;
+                  const val = parseFloat(String(form.amount).replace(/\./g, '').replace(',', '.'));
+                  if (!taxa || !val) return 'informe o valor para ver a conversão';
+                  return `US$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} → ${formatReais(Math.round(val * taxa * 100) / 100)}`;
+                })()}
+              </span>
+              <span style={{ opacity: 0.7 }}>{form.fxRate ? '(taxa informada por você)' : cotacao ? `PTAX de ${formatDate(cotacao.data)}` : ''}</span>
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: colors.earth, cursor: 'pointer' }}>
               <input type="checkbox" checked={form.recurrence === 'monthly'} onChange={e => setForm({ ...form, recurrence: e.target.checked ? 'monthly' : 'none' })} />
@@ -1922,7 +1964,14 @@ function FinanceiroPanel() {
                 </td>
                 <td style={{ fontSize: 13 }}>{CAT_DESPESA[d.category] || d.category}</td>
                 <td style={{ fontSize: 13, color: colors.muted }}>{d.due_date ? formatDate(d.due_date) : '—'}</td>
-                <td style={{ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap' }}>{formatCurrency(Number(d.amount))}</td>
+                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontWeight: 700 }}>{formatReais(d.amount)}</div>
+                  {d.currency === 'USD' && (
+                    <div style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
+                      {formatMoeda(d.amount_original, 'USD')} · câmbio {Number(d.fx_rate).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                    </div>
+                  )}
+                </td>
                 <td style={{ textAlign: 'center' }}>
                   <button onClick={() => alternarPago(d)} className="badge" style={{ border: 'none', cursor: 'pointer', background: d.paid_at ? '#dcfce7' : '#fef9c3', color: d.paid_at ? '#166534' : '#854d0e' }} title="Clique para alternar">
                     {d.paid_at ? 'pago' : 'em aberto'}
@@ -1937,6 +1986,9 @@ function FinanceiroPanel() {
                         {Icons.paperclip}
                         <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" style={{ display: 'none' }} onChange={e => anexar(d, e.target.files[0])} />
                       </label>
+                    )}
+                    {d.currency === 'USD' && (
+                      <button onClick={() => atualizarCambio(d)} title={`Recalcular pelo PTAX (hoje usa a cotação de ${formatDate(d.fx_date)})`} style={{ height: 30, padding: '0 9px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: 'pointer', color: colors.muted, fontSize: 11, fontWeight: 700 }}>US$</button>
                     )}
                     <button onClick={() => excluir(d)} title="Excluir" style={{ width: 30, height: 30, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: 'pointer', color: colors.danger, padding: 6, display: 'flex' }}>{Icons.trash}</button>
                   </div>
