@@ -117,6 +117,27 @@ const statusStyles = {
   past_due:  { bg: '#fef9c3', fg: '#854d0e', label: 'Inadimplente' },
 };
 
+// Classificação COMERCIAL da org (organizations.category). Separada do status da
+// assinatura: uma org em churn pode seguir ativa durante o aviso prévio, e uma org de
+// teste fica ativa para sempre. Só 'cliente' entra no MRR.
+const categoryStyles = {
+  cliente:       { bg: '#dcfce7', fg: '#166534', label: 'Cliente' },
+  teste_interno: { bg: '#ede9fe', fg: '#5b21b6', label: 'Teste interno' },
+  demo:          { bg: '#dbeafe', fg: '#1e40af', label: 'Demo' },
+  churn:         { bg: '#fee2e2', fg: '#991b1b', label: 'Churn' },
+};
+const CATEGORIAS = Object.keys(categoryStyles);
+// Só cliente é receita. Usada no MRR e nos contadores.
+const ehCliente = (org) => (org.category || 'cliente') === 'cliente';
+// Valor EFETIVO: o negociado manda; sem negociação vale o preço de tabela. ?? e não ||,
+// senão um valor negociado de 0 (cortesia) cairia no preço de tabela.
+const valorMensalDe = (org) => {
+  const s = org.subscription;
+  if (!s) return 0;
+  const v = s.negotiatedMonthly ?? s.plan?.price_monthly;
+  return Number(v) || 0;
+};
+
 const ticketStatusStyles = {
   aberto:      { bg: '#dbeafe', fg: '#1e40af', label: 'Aberto' },
   em_analise:  { bg: '#e0e7ff', fg: '#4338ca', label: 'Em Análise' },
@@ -140,7 +161,15 @@ const callFn = async (fn, body = {}) => {
   return res.json();
 };
 
-const formatDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+// 'YYYY-MM-DD' puro é interpretado pelo JS como meia-noite UTC, e em UTC−3 o
+// toLocaleDateString devolve o dia ANTERIOR. Num vencimento de conta isso mostra a data
+// errada. Data-só vira data LOCAL; timestamp com hora segue o caminho normal.
+const formatDate = (d) => {
+  if (!d) return '—';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+  const dt = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(d);
+  return dt.toLocaleDateString('pt-BR');
+};
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('pt-BR') : 'Nunca';
 const formatCurrency = (v) => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
 
@@ -186,6 +215,8 @@ const Icons = {
   external: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
   whatsapp: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
   chart: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  wallet: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
+  paperclip: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
 };
 
 // ─── Shared Components ───
@@ -215,14 +246,15 @@ function HealthBadge({ score }) {
   );
 }
 
-function StatCard({ label, value, icon, accent }) {
+function StatCard({ label, value, icon, accent, sub }) {
   return (
     <div className="stat-card glass-solid" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
         {icon && <span style={{ color: accent || colors.blue, opacity: 0.5, width: 18, height: 18, display: 'flex' }}>{icon}</span>}
       </div>
-      <span className="serif" style={{ fontSize: 28, fontWeight: 700, color: colors.earth }}>{value}</span>
+      <span className="serif" style={{ fontSize: 28, fontWeight: 700, color: colors.earth, whiteSpace: 'nowrap' }}>{value}</span>
+      {sub && <span style={{ fontSize: 11, color: colors.muted, marginTop: -4 }}>{sub}</span>}
     </div>
   );
 }
@@ -442,7 +474,10 @@ function LoginPage({ onLogin }) {
 function GrowthChart({ orgs }) {
   const monthData = {};
   orgs.forEach(org => {
-    const date = new Date(org.createdAt);
+    // admin-list-orgs só apelida isActive/primaryColor/logoUrl; o resto vem snake_case.
+    // `org.createdAt` era undefined → new Date(undefined) → Invalid Date → o gráfico
+    // inteiro caía num único balde "NaN-NaN".
+    const date = new Date(org.created_at || org.createdAt);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     monthData[key] = (monthData[key] || 0) + 1;
   });
@@ -491,8 +526,11 @@ function OverviewPanel() {
   const growth = data.growth || {};
   const trialHealth = data.trialHealth || {};
   const orgRisk = data.orgRisk || {};
-  const automations = data.automations || {};
-  const activity = data.activity || [];
+  // O backend devolve `automationHealth` e `activityFeed` (admin-dashboard:53). O painel
+  // lia `automations` e `activity` — undefined os dois, então o card de automações e o
+  // feed de atividade estavam vazios desde sempre, sem erro nenhum na tela.
+  const automations = data.automationHealth || {};
+  const activity = data.activityFeed || [];
 
   return (
     <div className="fade-in">
@@ -1108,6 +1146,12 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editPlan, setEditPlan] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(org.subscription?.plan?.slug || 'starter');
+  // String e não número: o campo aceita '1.234,50' e vazio significa "volta pro preço de
+  // tabela" (grava NULL), que é diferente de zero.
+  const [valorEdit, setValorEdit] = useState(
+    org.subscription?.negotiatedMonthly != null ? String(org.subscription.negotiatedMonthly) : ''
+  );
+  const [salvandoValor, setSalvandoValor] = useState(false);
   const [msg, setMsg] = useState(null);
   const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'user' });
   const [creating, setCreating] = useState(false);
@@ -1176,6 +1220,35 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
       setMsg({ type: 'error', text: data.error || 'Erro ao criar usuário' });
     }
     setCreating(false);
+  };
+
+  const salvarValor = async () => {
+    setSalvandoValor(true);
+    // Vazio → null: devolve a org ao preço de tabela. O backend valida o número e
+    // aceita vírgula, então não converto aqui — converter em dois lugares é como as
+    // duas regras divergem depois.
+    const data = await callFn('manage-subscription', {
+      orgId: org.id, action: 'set_valor', valorMensal: valorEdit.trim() === '' ? null : valorEdit.trim(),
+    });
+    setSalvandoValor(false);
+    if (data.ok) {
+      setMsg({ type: 'success', text: data.negotiated_monthly_amount == null ? 'Voltou ao preço de tabela.' : 'Valor atualizado!' });
+      onUpdate();
+      onRefreshOrgs && onRefreshOrgs();
+    } else {
+      setMsg({ type: 'error', text: data.error || 'Falha ao salvar o valor' });
+    }
+  };
+
+  const salvarCategoria = async (category) => {
+    const data = await callFn('manage-subscription', { orgId: org.id, action: 'set_category', category });
+    if (data.ok) {
+      setMsg({ type: 'success', text: 'Categoria atualizada!' });
+      onUpdate();
+      onRefreshOrgs && onRefreshOrgs();
+    } else {
+      setMsg({ type: 'error', text: data.error || 'Falha ao mudar a categoria' });
+    }
   };
 
   const updatePlan = async () => {
@@ -1283,7 +1356,23 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div>
                 <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>PLANO</span>
-                {!editPlan && <div style={{ fontSize: 16, fontWeight: 700, color: colors.earth, marginTop: 2 }}>{org.subscription?.plan?.name || 'Starter'} <span style={{ fontWeight: 400, fontSize: 13, color: colors.muted }}>R$ {org.subscription?.plan?.price_monthly || 97}/mês</span></div>}
+                {/* O plano define LIMITES (usuários, deals, features); o valor abaixo é o
+                    que a org paga de fato. Sem valor negociado vale o preço de tabela —
+                    a mesma regra do MRR no backend. O fallback antigo era '|| 97', que
+                    inventava um preço quando a assinatura não vinha. */}
+                {!editPlan && (
+                  <div style={{ fontSize: 16, fontWeight: 700, color: colors.earth, marginTop: 2 }}>
+                    {org.subscription?.plan?.name || '—'}
+                    <span style={{ fontWeight: 400, fontSize: 13, color: colors.muted }}>
+                      {' '}{org.subscription ? `${formatCurrency(valorMensalDe(org))}/mês` : 'sem assinatura'}
+                    </span>
+                    {org.subscription?.negotiatedMonthly != null && (
+                      <span style={{ fontSize: 11, color: colors.muted, fontWeight: 500, display: 'block', marginTop: 2 }}>
+                        negociado · tabela {formatCurrency(org.subscription?.plan?.price_monthly || 0)}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1303,6 +1392,57 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
               <button onClick={updatePlan} className="btn-gradient" style={{ padding: '10px 20px', borderRadius: 12, fontSize: 13 }}>Salvar</button>
             </div>
           )}
+        </div>
+
+        {/* ── Valor cobrado ────────────────────────────────────────────────────
+            Negociado caso a caso, então não dá para derivar do plano. Vazio devolve a
+            org ao preço de tabela (grava NULL), e é isso que o MRR passa a somar. */}
+        <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>VALOR COBRADO / MÊS</span>
+              <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>
+                Vazio = preço de tabela ({formatCurrency(org.subscription?.plan?.price_monthly || 0)}). É este número que entra no MRR.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+              <input
+                className="input"
+                value={valorEdit}
+                onChange={e => setValorEdit(e.target.value)}
+                placeholder="tabela"
+                style={{ width: 120, textAlign: 'right' }}
+              />
+              <button onClick={salvarValor} disabled={salvandoValor} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13, opacity: salvandoValor ? 0.6 : 1 }}>
+                {salvandoValor ? '…' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Categoria ────────────────────────────────────────────────────────
+            Classificação COMERCIAL, separada do status da assinatura: só 'cliente'
+            entra no MRR, e teste_interno/demo ficam de fora da suspensão automática
+            por trial vencido. */}
+        <div className="glass-solid" style={{ borderRadius: 16, padding: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>CATEGORIA</span>
+              <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>
+                {(org.category || 'cliente') === 'cliente'
+                  ? 'Conta como receita no MRR.'
+                  : 'Fora do MRR e da suspensão automática por trial vencido.'}
+              </div>
+            </div>
+            <select
+              className="input"
+              value={org.category || 'cliente'}
+              onChange={e => salvarCategoria(e.target.value)}
+              style={{ width: 170, flexShrink: 0 }}
+            >
+              {CATEGORIAS.map(c => <option key={c} value={c}>{categoryStyles[c].label}</option>)}
+            </select>
+          </div>
         </div>
 
         {/* Actions */}
@@ -1565,6 +1705,251 @@ function SupportPanel() {
   );
 }
 
+
+// ─── Financeiro da Raízes ───
+//
+// Despesas da PRÓPRIA empresa + resultado do mês. Tudo passa pela edge
+// `raizes-financeiro`: a tabela não tem grant para anon/authenticated e não tem policy,
+// então não existe caminho de leitura direta — de propósito, porque isto é o resultado
+// financeiro da Raízes e não de uma org cliente.
+const CAT_DESPESA = {
+  infra:        'Infra',
+  ferramentas:  'Ferramentas',
+  pessoas:      'Pessoas',
+  servicos:     'Serviços',
+  marketing:    'Marketing',
+  impostos:     'Impostos',
+  equipamentos: 'Equipamentos',
+  outros:       'Outros',
+};
+
+const mesAtual = () => new Date().toISOString().slice(0, 7);
+const rotuloMes = (ym) => {
+  const [a, m] = ym.split('-');
+  const nomes = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const nome = nomes[parseInt(m, 10) - 1];
+  // Maiúscula só na primeira letra. Com textTransform: capitalize no CSS sairia
+  // "Agosto De 2026", porque ele maiúsculiza toda palavra — inclusive o "de".
+  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} de ${a}`;
+};
+const somaMes = (ym, delta) => {
+  const d = new Date(Date.UTC(parseInt(ym.slice(0, 4), 10), parseInt(ym.slice(5), 10) - 1 + delta, 1));
+  return d.toISOString().slice(0, 7);
+};
+
+const VAZIA = { description: '', supplier: '', category: 'infra', amount: '', dueDate: '', recurrence: 'none', notes: '' };
+
+function FinanceiroPanel() {
+  const [mes, setMes] = useState(mesAtual());
+  const [despesas, setDespesas] = useState([]);
+  const [totais, setTotais] = useState({});
+  const [resultado, setResultado] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState(null);
+  const [form, setForm] = useState(null);
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => { carregar(); }, [mes]);
+
+  const carregar = async () => {
+    setLoading(true);
+    const [lista, res] = await Promise.all([
+      callFn('raizes-financeiro', { action: 'list', competencia: mes }),
+      callFn('raizes-financeiro', { action: 'resultado', competencia: mes }),
+    ]);
+    setLoading(false);
+    // Erro da edge aparece na tela. Descartar o error foi exatamente o que deixou a aba
+    // Leads mostrando lista vazia por meses sem ninguém perceber.
+    if (lista.error) { setMsg({ type: 'error', text: lista.error }); return; }
+    setDespesas(lista.despesas || []);
+    setTotais(lista.totais || {});
+    setResultado(res.error ? null : res);
+  };
+
+  const salvar = async () => {
+    if (!form.description.trim()) { setMsg({ type: 'error', text: 'Descrição é obrigatória' }); return; }
+    if (String(form.amount).trim() === '') { setMsg({ type: 'error', text: 'Valor é obrigatório' }); return; }
+    setSalvando(true);
+    const data = await callFn('raizes-financeiro', { action: 'save', competencia: mes, ...form });
+    setSalvando(false);
+    if (data.ok) { setForm(null); setMsg({ type: 'success', text: 'Despesa salva!' }); carregar(); }
+    else setMsg({ type: 'error', text: data.error || 'Falha ao salvar' });
+  };
+
+  const alternarPago = async (d) => {
+    const data = await callFn('raizes-financeiro', {
+      action: 'save',
+      id: d.id,
+      competencia: d.competencia.slice(0, 7),
+      description: d.description,
+      supplier: d.supplier,
+      category: d.category,
+      amount: d.amount,
+      dueDate: d.due_date,
+      recurrence: d.recurrence,
+      notes: d.notes,
+      attachmentPath: d.attachment_path,
+      paidAt: d.paid_at ? null : new Date().toISOString(),
+    });
+    if (data.ok) carregar(); else setMsg({ type: 'error', text: data.error || 'Falha' });
+  };
+
+  const excluir = async (d) => {
+    if (!confirm(`Excluir "${d.description}"?\n\nIsto apaga também o anexo, se houver. Não dá para desfazer.`)) return;
+    const data = await callFn('raizes-financeiro', { action: 'delete', id: d.id });
+    if (data.ok) { setMsg({ type: 'success', text: 'Despesa excluída.' }); carregar(); }
+    else setMsg({ type: 'error', text: data.error || 'Falha ao excluir' });
+  };
+
+  const repetirFixas = async () => {
+    const data = await callFn('raizes-financeiro', { action: 'repetir_fixas', competencia: mes });
+    if (data.ok) {
+      setMsg({
+        type: 'success',
+        text: data.criadas === 0
+          ? 'Nada a copiar — as fixas do mês anterior já estão aqui.'
+          : `${data.criadas} conta(s) fixa(s) copiada(s) de ${rotuloMes(somaMes(mes, -1))}.`,
+      });
+      carregar();
+    } else setMsg({ type: 'error', text: data.error || 'Falha ao repetir' });
+  };
+
+  const abrirAnexo = async (d) => {
+    const data = await callFn('raizes-financeiro', { action: 'anexo_url', path: d.attachment_path });
+    if (data.ok) window.open(data.url, '_blank'); else setMsg({ type: 'error', text: data.error || 'Falha ao abrir' });
+  };
+
+  const anexar = async (d, file) => {
+    if (!file) return;
+    const caminho = `${d.competencia.slice(0, 7)}/${d.id}-${file.name.replace(/[^\w.\-]/g, '_')}`;
+    const { error } = await sb.storage.from('raizes-financeiro').upload(caminho, file, { upsert: true });
+    if (error) { setMsg({ type: 'error', text: `Falha no upload: ${error.message}` }); return; }
+    const data = await callFn('raizes-financeiro', {
+      action: 'save', id: d.id, competencia: d.competencia.slice(0, 7),
+      description: d.description, supplier: d.supplier, category: d.category, amount: d.amount,
+      dueDate: d.due_date, recurrence: d.recurrence, notes: d.notes,
+      paidAt: d.paid_at, attachmentPath: caminho,
+    });
+    if (data.ok) { setMsg({ type: 'success', text: 'Nota anexada.' }); carregar(); }
+    else setMsg({ type: 'error', text: data.error || 'Falha ao vincular o anexo' });
+  };
+
+  const margem = resultado ? resultado.margem : 0;
+
+  return (
+    <div className="fade-in">
+      <Toast msg={msg} onClear={() => setMsg(null)} />
+
+      {/* Navegação de mês */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={() => setMes(somaMes(mes, -1))} style={{ padding: '8px 14px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>‹</button>
+        <div className="serif" style={{ fontSize: 20, fontWeight: 700, color: colors.earth, minWidth: 190 }}>{rotuloMes(mes)}</div>
+        <button onClick={() => setMes(somaMes(mes, 1))} style={{ padding: '8px 14px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>›</button>
+        <div style={{ flex: 1 }} />
+        <button onClick={repetirFixas} style={{ padding: '9px 16px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.earth }}>
+          Repetir fixas de {rotuloMes(somaMes(mes, -1)).split(' de ')[0].toLowerCase()}
+        </button>
+        <button onClick={() => setForm({ ...VAZIA })} className="btn-gradient" style={{ padding: '10px 18px', borderRadius: 12, fontSize: 13 }}>+ Nova despesa</button>
+      </div>
+
+      {/* Resultado do mês */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <StatCard label="Receita" value={formatCurrency(resultado?.receita)} icon={Icons.chart} accent={colors.green} sub="MRR contratado" />
+        <StatCard label="Despesas" value={formatCurrency(resultado?.despesas)} icon={Icons.wallet} accent={colors.danger} sub={`${formatCurrency(totais.aberto)} em aberto`} />
+        <StatCard label="Margem" value={formatCurrency(margem)} icon={Icons.chart} accent={margem >= 0 ? colors.green : colors.danger} sub={margem >= 0 ? 'no azul' : 'no vermelho'} />
+        <StatCard label="Pago no mês" value={formatCurrency(totais.pago)} icon={Icons.wallet} accent={colors.blue} sub={`${despesas.length} lançamento(s)`} />
+      </div>
+
+      {/* A receita aqui é o que está CONTRATADO, não o que caiu na conta: não existe
+          registro de pagamento de assinatura no sistema. Dizer isso na tela evita que o
+          número seja lido como caixa. */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 14px', borderRadius: 12, background: 'rgba(60,61,55,0.04)', fontSize: 12, color: colors.muted, marginBottom: 24 }}>
+        <span style={{ flexShrink: 0 }}>ⓘ</span>
+        <span>A <b>receita</b> é o MRR contratado dos clientes ativos — o sistema não registra pagamento recebido, então a margem é resultado teórico, não caixa.</span>
+      </div>
+
+      {/* Formulário */}
+      {form && (
+        <div className="glass-solid" style={{ borderRadius: 16, padding: 18, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.4fr 1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+            <input className="input" placeholder="Descrição *" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            <input className="input" placeholder="Fornecedor" value={form.supplier} onChange={e => setForm({ ...form, supplier: e.target.value })} />
+            <select className="input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+              {Object.entries(CAT_DESPESA).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <input className="input" placeholder="Valor *" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+            <input className="input" type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} title="Vencimento" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: colors.earth, cursor: 'pointer' }}>
+              <input type="checkbox" checked={form.recurrence === 'monthly'} onChange={e => setForm({ ...form, recurrence: e.target.checked ? 'monthly' : 'none' })} />
+              Conta fixa mensal
+            </label>
+            <span style={{ fontSize: 11, color: colors.muted }}>Fixa não se repete sozinha — o botão "Repetir fixas" copia para o mês seguinte.</span>
+            <div style={{ flex: 1 }} />
+            <button onClick={() => setForm(null)} style={{ padding: '9px 16px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.muted }}>Cancelar</button>
+            <button onClick={salvar} disabled={salvando} className="btn-gradient" style={{ padding: '10px 20px', borderRadius: 12, fontSize: 13, opacity: salvando ? 0.6 : 1 }}>{salvando ? 'Salvando…' : 'Salvar'}</button>
+          </div>
+        </div>
+      )}
+
+      {/* Tabela */}
+      <div className="glass-solid" style={{ borderRadius: 20, overflow: 'hidden' }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Despesa</th>
+              <th>Categoria</th>
+              <th>Vencimento</th>
+              <th style={{ textAlign: 'right' }}>Valor</th>
+              <th style={{ textAlign: 'center' }}>Status</th>
+              <th style={{ textAlign: 'right' }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} style={{ padding: 48, textAlign: 'center', color: colors.muted }}>Carregando…</td></tr>
+            ) : despesas.length === 0 ? (
+              <tr><td colSpan={6} style={{ padding: 48, textAlign: 'center', color: colors.muted }}>Nenhuma despesa em {rotuloMes(mes)}.</td></tr>
+            ) : despesas.map(d => (
+              <tr key={d.id}>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 600, color: colors.earth }}>{d.description}</span>
+                    {d.recurrence === 'monthly' && <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>fixa</span>}
+                  </div>
+                  {d.supplier && <div style={{ fontSize: 11, color: colors.muted }}>{d.supplier}</div>}
+                </td>
+                <td style={{ fontSize: 13 }}>{CAT_DESPESA[d.category] || d.category}</td>
+                <td style={{ fontSize: 13, color: colors.muted }}>{d.due_date ? formatDate(d.due_date) : '—'}</td>
+                <td style={{ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap' }}>{formatCurrency(Number(d.amount))}</td>
+                <td style={{ textAlign: 'center' }}>
+                  <button onClick={() => alternarPago(d)} className="badge" style={{ border: 'none', cursor: 'pointer', background: d.paid_at ? '#dcfce7' : '#fef9c3', color: d.paid_at ? '#166534' : '#854d0e' }} title="Clique para alternar">
+                    {d.paid_at ? 'pago' : 'em aberto'}
+                  </button>
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+                    {d.attachment_path ? (
+                      <button onClick={() => abrirAnexo(d)} title="Ver a nota" style={{ width: 30, height: 30, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: 'pointer', color: colors.blue, padding: 6, display: 'flex' }}>{Icons.paperclip}</button>
+                    ) : (
+                      <label title="Anexar a nota" style={{ width: 30, height: 30, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: 'pointer', color: colors.muted, padding: 6, display: 'flex' }}>
+                        {Icons.paperclip}
+                        <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" style={{ display: 'none' }} onChange={e => anexar(d, e.target.files[0])} />
+                      </label>
+                    )}
+                    <button onClick={() => excluir(d)} title="Excluir" style={{ width: 30, height: 30, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 8, background: '#fff', cursor: 'pointer', color: colors.danger, padding: 6, display: 'flex' }}>{Icons.trash}</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ─── Leads Panel ───
 function LeadsPanel() {
   const [leads, setLeads] = useState([]);
@@ -1646,6 +2031,7 @@ function Dashboard({ session }) {
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [search, setSearch] = useState('');
+  const [catFiltro, setCatFiltro] = useState('todas');
   const [activeTab, setActiveTab] = useState('overview');
   const [sortField, setSortField] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -1766,6 +2152,7 @@ function Dashboard({ session }) {
   };
 
   const filtered = orgs
+    .filter(o => catFiltro === 'todas' || (o.category || 'cliente') === catFiltro)
     .filter(o => o.name.toLowerCase().includes(search.toLowerCase()) || o.slug.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       let aVal, bVal;
@@ -1809,13 +2196,24 @@ function Dashboard({ session }) {
 
   const activeOrgs = orgs.filter(o => o.isActive).length;
   const totalUsers = orgs.reduce((s, o) => s + (o.metrics?.users || 0), 0);
-  const mrr = orgs.reduce((s, o) => s + (o.subscription?.plan?.price_monthly || 0), 0);
   const totalDeals = orgs.reduce((s, o) => s + (o.metrics?.deals || 0), 0);
+  const orgsCliente = orgs.filter(ehCliente);
+  // Este cálculo somava TODAS as orgs — sem filtro de status, sem is_active, e nem o da
+  // busca — enquanto o admin-dashboard filtrava active|trial. Os dois números divergiam
+  // na mesma tela (R$ 2.176 aqui contra R$ 2.079 lá). Agora seguem a mesma regra do
+  // backend: cliente com assinatura ativa, pelo valor efetivo.
+  const mrr = orgsCliente
+    .filter(o => o.subscription?.status === 'active')
+    .reduce((s, o) => s + valorMensalDe(o), 0);
+  const mrrTrial = orgsCliente
+    .filter(o => o.subscription?.status === 'trial')
+    .reduce((s, o) => s + valorMensalDe(o), 0);
 
   const navItems = [
     { key: 'overview', label: 'Visão Geral', icon: Icons.overview },
     { key: 'orgs', label: 'Organizações', icon: Icons.building },
     { key: 'leads', label: 'Leads', icon: Icons.leads },
+    { key: 'financeiro', label: 'Financeiro', icon: Icons.wallet },
     { key: 'suporte', label: 'Suporte & NPS', icon: Icons.ticket },
   ];
 
@@ -1870,13 +2268,14 @@ function Dashboard({ session }) {
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'suporte' && <SupportPanel />}
           {activeTab === 'leads' && <LeadsPanel />}
+          {activeTab === 'financeiro' && <FinanceiroPanel />}
           {activeTab === 'orgs' && (
             <div className="fade-in">
               {/* Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
-                <StatCard label="Organizações" value={`${activeOrgs}/${orgs.length}`} icon={Icons.building} />
+                <StatCard label="Clientes" value={`${orgsCliente.length}/${orgs.length}`} icon={Icons.building} sub={`${orgs.length - orgsCliente.length} interna(s)`} />
                 <StatCard label="Usuários" value={totalUsers} icon={Icons.users} accent={colors.cyan} />
-                <StatCard label="MRR Estimado" value={`R$ ${mrr.toLocaleString('pt-BR')}`} icon={Icons.chart} accent={colors.green} />
+                <StatCard label="MRR" value={formatCurrency(mrr)} icon={Icons.chart} accent={colors.green} sub={mrrTrial > 0 ? `+ ${formatCurrency(mrrTrial)} em trial` : 'só cliente ativo'} />
                 <StatCard label="Deals" value={totalDeals} icon={Icons.chat} accent={colors.warning} />
               </div>
 
@@ -1891,6 +2290,13 @@ function Dashboard({ session }) {
                   <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: colors.muted, display: 'flex' }}>{Icons.search}</span>
                   <input className="input" type="text" placeholder="Buscar organização..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 40 }} />
                 </div>
+                <select className="input" value={catFiltro} onChange={e => setCatFiltro(e.target.value)} style={{ width: 190, flex: 'none' }}>
+                  <option value="todas">Todas as categorias</option>
+                  <option value="cliente">Só clientes</option>
+                  {CATEGORIAS.filter(c => c !== 'cliente').map(c => (
+                    <option key={c} value={c}>{categoryStyles[c].label}</option>
+                  ))}
+                </select>
                 <button onClick={loadOrgs} style={{ width: 42, height: 42, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 12, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, padding: 10, transition: 'all 0.2s' }} title="Atualizar">
                   {Icons.refresh}
                 </button>
@@ -1924,7 +2330,11 @@ function Dashboard({ session }) {
                               {org.logoUrl ? <img src={org.logoUrl} style={{ width: 36, height: 36, objectFit: 'cover' }} /> : org.name.charAt(0)}
                             </div>
                             <div>
-                              <div style={{ fontWeight: 700, color: colors.earth }}>{org.name}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontWeight: 700, color: colors.earth }}>{org.name}</span>
+                                {/* Só marca o que NÃO é cliente: badge em todo mundo vira ruído. */}
+                                {!ehCliente(org) && <Badge status={org.category} styles={categoryStyles} />}
+                              </div>
                               <div style={{ fontSize: 11, color: colors.muted }}>{org.slug}.raizesolucoes.com.br</div>
                             </div>
                           </div>
