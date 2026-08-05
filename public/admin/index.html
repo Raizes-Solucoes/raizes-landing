@@ -2020,6 +2020,16 @@ function FinanceiroPanel() {
 }
 
 // ─── Leads Panel ───
+
+// `fit` é como o agente classifica o porte, para a equipe priorizar — não é nota do
+// lead. Rótulo em português porque o valor cru ('acima') não diz acima do quê.
+const PERFIL_ROTULO = { acima: 'acima', tipico: 'típico', abaixo: 'abaixo', indefinido: 'indefinido' };
+
+const perfilBadge = (fit) => ({
+  acima:      { background: '#dcfce7', color: '#166534' },
+  tipico:     { background: '#dbeafe', color: '#1e40af' },
+  abaixo:     { background: '#f1f5f9', color: '#475569' },
+}[fit] || { background: '#f1f5f9', color: '#94a3b8' });
 function LeadsPanel() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -2033,7 +2043,17 @@ function LeadsPanel() {
     setLoading(false);
   };
 
-  const qualifiedLeads = leads.filter(l => l.qualified);
+  // A coluna `qualified` NUNCA existiu em raizes_leads — os dois cards que a usavam
+  // mostravam 0 e "—" desde sempre. O que existe é `fit`, preenchido pelo agente:
+  // 'acima' | 'tipico' | 'abaixo' | 'indefinido'. Quem interessa priorizar é 'acima'.
+  const acimaDoPerfil = leads.filter(l => l.fit === 'acima');
+
+  // `status` é novo (miller-crm-backend#232): 'parcial' = deu o contato e abandonou a
+  // conversa no meio. Antes disso essa pessoa simplesmente não era gravada. É lead de
+  // verdade — a equipe liga do mesmo jeito —, mas chega sem diagnóstico, então precisa
+  // aparecer diferente ou vira "formulário quebrado" aos olhos de quem abre o painel.
+  const parciais = leads.filter(l => l.status === 'parcial');
+
   const thisMonth = leads.filter(l => {
     const d = new Date(l.created_at);
     const now = new Date();
@@ -2047,30 +2067,44 @@ function LeadsPanel() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
         <StatCard label="Total Leads" value={leads.length} icon={Icons.leads} />
         <StatCard label="Este Mês" value={thisMonth.length} icon={Icons.chart} accent={colors.cyan} />
-        <StatCard label="Qualificados" value={qualifiedLeads.length} icon={Icons.users} accent={colors.green} />
-        <StatCard label="Taxa Qualif." value={leads.length > 0 ? `${Math.round((qualifiedLeads.length / leads.length) * 100)}%` : '—'} icon={Icons.chart} accent={colors.blue} />
+        <StatCard label="Acima do perfil" value={acimaDoPerfil.length} icon={Icons.users} accent={colors.green} />
+        <StatCard label="Não concluíram" value={parciais.length} icon={Icons.chart} accent={colors.blue} />
       </div>
 
+      {/* A caixa mantém `overflow: hidden` por causa do raio da borda — e era isso que
+          engolia as colunas finais em tela estreita, SEM barra de rolagem: a 900px a
+          versão anterior já cortava 124px e não havia como chegar neles. O invólucro
+          interno rola em vez de cortar. */}
       <div className="glass-solid" style={{ borderRadius: 20, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
         <table>
           <thead>
             <tr>
-              {['Nome', 'Empresa', 'Telefone', 'Email', 'Necessidade', 'Qualificado', 'Data'].map(h => <th key={h}>{h}</th>)}
+              {['Nome', 'Empresa', 'Telefone', 'Email', 'Necessidade', 'Perfil', 'Diagnóstico', 'Data'].map(h => <th key={h}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: colors.muted }}>Nenhum lead capturado</td></tr>
+              <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: colors.muted }}>Nenhum lead capturado</td></tr>
             ) : leads.map(l => (
               <tr key={l.id}>
                 <td style={{ fontWeight: 600 }}>{l.name || '—'}</td>
-                <td style={{ color: colors.muted }}>{l.company || '—'}</td>
+                <td style={{ color: colors.muted }}>{l.empresa || '—'}</td>
                 <td style={{ color: colors.muted }}>{l.phone || '—'}</td>
                 <td style={{ color: colors.muted }}>{l.email || '—'}</td>
-                <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: colors.muted }}>{l.need || l.summary || '—'}</td>
+                <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: colors.muted }} title={l.dor || l.summary || ''}>{l.dor || l.summary || '—'}</td>
+                <td><span className="badge" style={{ whiteSpace: 'nowrap', ...perfilBadge(l.fit) }}>{PERFIL_ROTULO[l.fit] || 'indefinido'}</span></td>
                 <td>
-                  <span className="badge" style={{ background: l.qualified ? '#dcfce7' : '#f1f5f9', color: l.qualified ? '#166534' : '#475569' }}>
-                    {l.qualified ? 'Sim' : 'Não'}
+                  {/* `whiteSpace: nowrap` e rótulo de UMA palavra: "não concluiu" quebrava
+                      em duas linhas e o selo virava uma bolha torta ao lado de "completo".
+                      O cabeçalho já diz "Diagnóstico", então "incompleto" é suficiente. */}
+                  <span className="badge" style={{
+                    whiteSpace: 'nowrap',
+                    ...(l.status === 'parcial'
+                      ? { background: '#fef3c7', color: '#92400e' }
+                      : { background: '#dcfce7', color: '#166534' }),
+                  }}>
+                    {l.status === 'parcial' ? 'incompleto' : 'completo'}
                   </span>
                 </td>
                 <td style={{ color: colors.muted, fontSize: 12 }}>{formatDate(l.created_at)}</td>
@@ -2078,6 +2112,7 @@ function LeadsPanel() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
