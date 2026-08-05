@@ -259,7 +259,17 @@ function StatCard({ label, value, icon, accent, sub }) {
   );
 }
 
-function MiniBarChart({ data, color, label }) {
+// Altura, em pixel, da barra mais alta de cada gráfico.
+const ALTURA_BARRA = 90;
+
+/** '2026-08' → 'ago'. Doze rótulos 'YYYY-MM' não cabem lado a lado num card. */
+const MES_CURTO = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const rotuloMes12 = (ym) => {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(ym || ''));
+  return m ? MES_CURTO[parseInt(m[2], 10) - 1] : ym;
+};
+
+function MiniBarChart({ data, color, label, fmt }) {
   if (!data || !data.values || data.values.length === 0) {
     return (
       <div className="glass-solid" style={{ borderRadius: 16, padding: 16 }}>
@@ -272,12 +282,16 @@ function MiniBarChart({ data, color, label }) {
   return (
     <div className="glass-solid" style={{ borderRadius: 16, padding: 16 }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
         {data.values.map((v, i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div style={{ fontSize: 10, color: color || colors.blue, fontWeight: 700 }}>{v}</div>
-            <div style={{ width: '100%', maxWidth: 36, background: color ? color : `linear-gradient(to top, ${colors.blue}, ${colors.cyan})`, borderRadius: 6, height: `${(v / maxVal) * 100}%`, minHeight: 4, opacity: 0.8, transition: 'height 0.5s ease' }} />
-            <div style={{ fontSize: 9, color: colors.muted, whiteSpace: 'nowrap' }}>{data.labels[i]}</div>
+          <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div style={{ fontSize: 10, color: color || colors.blue, fontWeight: 700 }}>{fmt ? fmt(v) : v}</div>
+            {/* Altura em PIXEL, não em %. A barra ficava com `height: X%` dentro de uma
+                coluna sem altura definida — porcentagem contra pai de altura automática
+                resolve como `auto`, então TODA barra caía no minHeight e as 12 saíam
+                idênticas, independente do valor. */}
+            <div style={{ width: '100%', maxWidth: 36, background: color ? color : `linear-gradient(to top, ${colors.blue}, ${colors.cyan})`, borderRadius: 6, height: Math.max(3, Math.round((v / maxVal) * ALTURA_BARRA)), opacity: 0.8, transition: 'height 0.5s ease' }} />
+            <div style={{ fontSize: 9, color: colors.muted, whiteSpace: 'nowrap' }}>{rotuloMes12(data.labels[i])}</div>
           </div>
         ))}
       </div>
@@ -493,11 +507,13 @@ function GrowthChart({ orgs }) {
       {sorted.length === 0 ? (
         <div style={{ textAlign: 'center', color: colors.muted, fontSize: 13, padding: '32px 0' }}>Sem dados</div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 130 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
           {sorted.map(([month, count], i) => (
-            <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div key={month} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <div style={{ fontSize: 11, color: colors.blue, fontWeight: 700 }}>{count}</div>
-              <div style={{ width: '100%', maxWidth: 48, background: `linear-gradient(to top, ${colors.blue}, ${colors.cyan})`, borderRadius: 8, height: `${(count / maxVal) * 100}%`, minHeight: 6, opacity: 0.75, transition: 'height 0.5s ease' }} />
+              {/* Mesmo defeito do MiniBarChart: % contra pai de altura automática vira
+                  `auto`, e todas as barras ficavam no minHeight de 6px. */}
+              <div style={{ width: '100%', maxWidth: 48, background: `linear-gradient(to top, ${colors.blue}, ${colors.cyan})`, borderRadius: 8, height: Math.max(4, Math.round((count / maxVal) * 110)), opacity: 0.75, transition: 'height 0.5s ease' }} />
               <div style={{ fontSize: 10, color: colors.muted, whiteSpace: 'nowrap' }}>{month.slice(5)}/{month.slice(2, 4)}</div>
             </div>
           ))}
@@ -558,7 +574,8 @@ function OverviewPanel() {
             <MiniBarChart
               data={growth.mrr}
               color={colors.blue}
-              label="MRR"
+              label="MRR (estimado)"
+              fmt={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)}
             />
             <MiniBarChart
               data={growth.deals}
@@ -2327,7 +2344,7 @@ function Dashboard({ session }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
                 <StatCard label="Clientes" value={`${orgsCliente.length}/${orgs.length}`} icon={Icons.building} sub={`${orgs.length - orgsCliente.length} interna(s)`} />
                 <StatCard label="Usuários" value={totalUsers} icon={Icons.users} accent={colors.cyan} />
-                <StatCard label="MRR" value={formatCurrency(mrr)} icon={Icons.chart} accent={colors.green} sub={mrrTrial > 0 ? `+ ${formatCurrency(mrrTrial)} em trial` : 'só cliente ativo'} />
+                <StatCard label="MRR" value={formatCurrency(mrr)} icon={Icons.chart} accent={colors.green} sub={mrrTrial > 0 ? `${formatCurrency(mrrTrial)} em trial, fora do MRR` : 'só cliente ativo'} />
                 <StatCard label="Deals" value={totalDeals} icon={Icons.chat} accent={colors.warning} />
               </div>
 
