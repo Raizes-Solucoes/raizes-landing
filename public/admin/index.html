@@ -657,6 +657,25 @@ const STATUS_META = {
   'so-menu':{ label: 'Só menu',   bg: '#fef3c7', fg: '#92400e', hint: 'Esconde o menu, mas a rota abre por URL' },
 };
 
+// Preenchido pela resposta de admin-list-orgs (KNOWN_FEATURE_FLAGS do backend).
+// Vazio até o primeiro load, e vazio nunca esconde nada: a seção extra só aparece
+// quando o backend REALMENTE informou flags que este arquivo não conhece.
+let CATALOGO_BACKEND = [];
+
+/** Flags que o backend conhece e este catálogo não lista.
+ *
+ *  POR QUE EXISTE. Em 25/08/2026 este painel estava 15 flags atrás do backend — entre
+ *  elas `seguro`, `whatsapp_oficial` e a `relatorio_automatico`, que o João precisava
+ *  ligar e não achou. A lista daqui é escrita à mão, então "ainda não adicionei" e
+ *  "decidi não mostrar" ficavam indistinguíveis: em ambos os casos a flag simplesmente
+ *  não existia na tela, sem aviso. Agora a defasagem aparece com o nome cru em vez de
+ *  sumir — feio de propósito, para alguém catalogar. */
+function naoCatalogadas() {
+  const conhecidas = new Set();
+  MODULE_CATALOG.forEach(c => c.items.forEach(m => conhecidas.add(m.key)));
+  return (CATALOGO_BACKEND || []).filter(k => !conhecidas.has(k)).sort();
+}
+
 const MODULE_CATALOG = [
   {
     category: 'Menu lateral (módulos do CRM)',
@@ -709,6 +728,30 @@ const MODULE_CATALOG = [
       { key: 'renvix_gmail', label: 'E-mail (legado)', description: 'Sinônimo antigo do módulo E-mail. Em org nova use a flag \'email\'', default: false, status: 'viva' },
       { key: 'custom_skin',  label: 'Skin custom',     description: 'Aplica skin (cores/sidebar) no shell via data-skin', default: false, status: 'inline' },
       { key: 'google_calendar', label: 'Google Calendar', description: 'Card de conexão e sync do Google Calendar dentro da Agenda', default: false, status: 'inline' },
+    ],
+  },
+  {
+    // Estas 15 existiam no catálogo do backend e no painel do Miller, mas NUNCA foram
+    // adicionadas aqui — descoberto em 25/08/2026 quando o João não achou a
+    // `relatorio_automatico` para ligar. Rótulos e descrições copiados do painel do
+    // Miller (OrganizacaoSection) para as duas telas dizerem a mesma coisa.
+    category: 'Produtos e recursos (faltavam neste painel)',
+    items: [
+      { key: 'seguro',              label: 'Seguro',                     description: 'Produto Seguro no picker, filtros e painel', default: false, status: 'inline' },
+      { key: 'alunos',              label: 'Alunos (escola)',            description: 'Módulo Alunos. Rota /alunos', default: false, status: 'viva' },
+      { key: 'painel_atendimento',  label: 'Painel de atendimento',      description: 'Painel da vertical de atendimento', default: false, status: 'viva' },
+      { key: 'capital_giro',        label: 'Capital de Giro (produto)',  description: 'Pronampe e BDMG Giro no picker, filtros e importação. Sem esta flag o produto não aparece, mesmo com a aba do Painel ligada', default: false, status: 'inline' },
+      { key: 'capital_giro_painel', label: 'Capital de Giro — aba no Painel', description: 'Dashboard do produto. REQUER a flag painel', default: false, status: 'inline' },
+      { key: 'capital_giro_taxa',   label: 'Capital de Giro — editar a taxa', description: 'Deixa a org definir a comissão em Configurações → Operação (padrão 1,8%). REQUER capital_giro', default: false, status: 'inline' },
+      { key: 'documentos_cliente',  label: 'Documentos do cliente',      description: 'Kit documental na ficha do cliente, antes de existir operação. REQUER renvix_ui', default: false, status: 'inline' },
+      { key: 'cpf_autofill',        label: 'Autofill por CPF',           description: 'No cadastro, CPF válido busca nome, nascimento, mãe e gênero. API PAGA por consulta — ligar só para quem contratar', default: false, status: 'inline' },
+      { key: 'relatorio_automatico',label: 'Relatório automático (WhatsApp)', description: 'Envio diário do "Fechamento" no WhatsApp. Configura em Configurações → Automação Relatório. Só Z-API', default: false, status: 'inline' },
+      { key: 'whatsapp_oficial',    label: 'WhatsApp oficial (Cloud API)', description: 'Número oficial pela Cloud API da Meta, no lugar do Z-API', default: false, status: 'inline' },
+      { key: 'nina_copilot',        label: 'Copiloto no WhatsApp',       description: 'Comandar a Nina pelo WhatsApp da empresa, com OTP e PIN por usuário', default: false, status: 'inline' },
+      { key: 'operacao_v2',         label: 'Operação em sub-abas',       description: 'Reorganiza a tela de operação em sub-abas', default: false, status: 'inline' },
+      { key: 'renvix_equipe_funcoes', label: 'Equipe com identidade própria (Renvix)', description: 'Tabela dourada, acesso por módulo e campo Função. REQUER renvix_ui', default: false, status: 'inline' },
+      { key: 'renvix_trocar_senha', label: 'Trocar a própria senha no menu', description: 'Modal de troca de senha no menu do usuário', default: false, status: 'inline' },
+      { key: 'renvix_legacy_shell', label: '⚠️ Shell legado (rollback)', description: 'EMERGÊNCIA: devolve o shell antigo. Ligar faz a org PERDER busca, logout, notificações e badges do shell padrão', default: false, status: 'viva' },
     ],
   },
   {
@@ -933,6 +976,41 @@ function ModulesPanel({ org, onSaved, setMsg }) {
             </div>
           </div>
         ))}
+
+        {/* Flags que o BACKEND conhece e este arquivo ainda não catalogou. Aparecem com
+            o nome cru, de propósito: o custo de uma linha feia é muito menor que o de
+            uma flag invisível — foi assim que este painel ficou 15 atrás sem ninguém
+            perceber, até alguém precisar ligar uma que não existia na tela. */}
+        {naoCatalogadas().length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 10, color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+              Não catalogadas ({naoCatalogadas().length})
+            </div>
+            <div style={{ fontSize: 11, color: colors.muted, marginBottom: 8 }}>
+              O backend conhece estas flags, mas este painel ainda não tem rótulo para elas.
+              Dá para ligar e desligar normalmente. Vale catalogar em <code>MODULE_CATALOG</code>.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {naoCatalogadas().map(key => {
+                const mod = { key, label: key, description: 'Sem rótulo neste painel.', default: false, status: 'inline' };
+                const eff = effective(mod);
+                const changed = pending[key] !== undefined;
+                return (
+                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', background: changed ? 'rgba(57,77,250,0.04)' : 'rgba(254,243,199,0.35)', border: changed ? '1px solid rgba(57,77,250,0.18)' : '1px dashed rgba(146,64,14,0.35)' }}>
+                    <input type="checkbox" checked={eff} onChange={() => toggle(mod)}
+                      style={{ width: 16, height: 16, cursor: 'pointer', accentColor: colors.blue }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <code style={{ fontSize: 12, fontWeight: 600, color: colors.earth }}>{key}</code>
+                    </div>
+                    <span style={{ fontSize: 10, color: eff ? colors.green : colors.muted, fontWeight: 700 }}>
+                      {eff ? 'ATIVADO' : 'DESATIVADO'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2145,6 +2223,10 @@ function Dashboard({ session }) {
     setLoading(true);
     const data = await callFn('admin-list-orgs');
     if (data.orgs) setOrgs(data.orgs);
+    // Catálogo do backend (fonte de verdade: é contra ele que a edge valida no save).
+    // Guardado para o painel conseguir mostrar flag que existe lá e ainda não foi
+    // catalogada aqui — ver `naoCatalogadas`. Sem isto, flag nova fica INVISÍVEL.
+    if (Array.isArray(data.featureFlags)) CATALOGO_BACKEND = data.featureFlags;
     setLoading(false);
   };
 
