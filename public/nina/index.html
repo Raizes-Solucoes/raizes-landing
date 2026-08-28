@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atendimento com IA no WhatsApp que não inventa respostas | Nina, da Raízes</title>
+    <meta name="description" content="Nina, a agente de IA da Raízes, faz o primeiro atendimento no WhatsApp 24/7: não inventa respostas, só cita preços da sua tabela oficial e passa para a sua equipe no momento certo. Implantação responsável, em fases, com modo sombra.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/nina">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Nina atende seu cliente às 2h da manhã. Direito.">
+    <meta property="og:description" content="A agente de IA que faz o primeiro atendimento no WhatsApp 24/7, qualifica o interesse e passa para a sua equipe no momento certo — implantada em fases, com você no controle de cada etapa.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/nina">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Raízes Soluções Tecnológicas",
+      "url": "https://www.raizesolucoes.com.br",
+      "logo": "https://www.raizesolucoes.com.br/favicon.png",
+      "email": "contato@raizesolucoes.com.br",
+      "description": "Estúdio brasileiro de tecnologia: plataformas próprias, software sob medida e agentes de IA."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "A Nina substitui a minha equipe?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. A Nina faz o primeiro atendimento, qualifica o interesse e passa a conversa para a sua equipe no momento certo — com o motivo registrado. Sua equipe entra exatamente onde gera mais valor: na negociação e no relacionamento."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "E se a Nina não souber a resposta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ela chama um humano. A Nina responde só com base no material oficial da sua empresa — o que não está lá, ela não inventa. Assunto fora da base vai para a sua equipe, com o contexto completo da conversa."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quem escreve as regras e o tom da Nina?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O seu time — sem programador. Persona, tom e regras são editados pela sua própria equipe, e você acompanha a transcrição completa de cada conversa e o porquê de cada decisão."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como eu controlo o custo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Com teto diário de custo e botão liga/desliga. Você define o limite de gasto por dia e a Nina respeita. E pode desligar quando quiser, na hora."
+          }
+        }
+      ]
+    }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .glass-card.light:hover { background: rgba(255,255,255,0.98); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* NAVBAR — liquid glass */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* MOCKUP (ilustrativo, dados fictícios) */
+        .mockup-shell { background: #FFFFFF; border: 1px solid rgba(60,61,55,0.08); border-radius: 18px; box-shadow: 0 30px 60px rgba(22,19,13,0.14); overflow: hidden; }
+        .mockup-topbar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(60,61,55,0.07); }
+        .mockup-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(60,61,55,0.12); }
+        .wa-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
+
+        /* FAQ */
+        details.faq summary { list-style: none; }
+        details.faq summary::-webkit-details-marker { display: none; }
+        .faq-arrow { transition: transform 0.3s ease; }
+        details.faq[open] .faq-arrow { transform: rotate(180deg); }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller">Miller CRM<span>O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/nina" class="text-brand-blue">Nina · Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/sob-medida">Software sob medida<span>Construído do zero para o seu processo</span></a>
+                        <a href="/prospeccao">Prospecção B2B<span>Do CNPJ ao WhatsApp do decisor</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="hover:text-brand-blue transition-colors">Método</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/#diagnostico" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <a href="/" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Home</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller CRM</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5 text-brand-blue">Nina · Atendimento com IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Software sob medida</a>
+            <a href="/prospeccao" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Prospecção B2B</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Método</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="pt-36 md:pt-40 pb-20 md:pb-28 bg-brand-creme relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 relative z-10">
+            <div class="max-w-3xl mx-auto text-center space-y-6 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Plataforma · Atendimento</span>
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    Nina atende seu cliente às 2h da manhã. <span class="italic text-brand-leaf">Direito.</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-brand-earth/70 font-medium max-w-2xl mx-auto leading-snug">
+                    A agente de IA que faz o primeiro atendimento no WhatsApp 24/7, qualifica o interesse e passa para a sua equipe no momento certo — implantada em fases, com você no controle de cada etapa.
+                </p>
+                <div class="flex flex-wrap gap-5 pt-2 justify-center items-center">
+                    <a href="/#diagnostico" class="btn-gradient text-white px-8 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Iniciar Diagnóstico com IA</a>
+                    <a href="/miller" class="text-brand-leaf font-bold text-base hover:text-brand-blue transition-colors">Conhecer o Miller →</a>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 -top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+        <div class="absolute -left-40 bottom-0 w-96 h-96 bg-brand-leaf/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- OS 4 PILARES -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Os quatro pilares</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Feita para responder <span class="italic text-brand-leaf">direito.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Atender de madrugada é fácil. Atender bem, sem inventar, é o que separa a Nina do resto.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Não inventa</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Responde só com base no material oficial da sua empresa. Não sabe? Chama um humano.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Preço é sagrado</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">A IA nunca calcula nem arredonda: só cita valores exatamente como você cadastrou. Número que não confere simplesmente não sai.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Handoff inteligente</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Pedido do cliente, negociação, assunto fora da base: a conversa vai para a sua equipe com o motivo registrado.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Você no controle</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Persona, tom e regras editados pelo seu time, sem programador. Botão liga/desliga e teto diário de custo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MOCKUP DE CONVERSA -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+                <div class="space-y-6 reveal">
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Na prática</span>
+                    <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Assim ela conversa com o <span class="italic text-brand-leaf">seu cliente.</span></h2>
+                    <p class="text-brand-earth/60 text-lg leading-relaxed">Quando o assunto é preço, a Nina não calcula nem arredonda: só cita o valor exatamente como você cadastrou na sua tabela oficial.</p>
+                    <p class="text-brand-earth/60 text-lg leading-relaxed">E no momento em que a conversa vira negociação, ela sai de cena — a sua equipe entra, com o motivo registrado e o histórico completo.</p>
+                </div>
+                <div class="reveal">
+                    <!-- Mockup ilustrativo — dados fictícios -->
+                    <div class="mockup-shell">
+                        <div class="mockup-topbar">
+                            <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+                            <span class="ml-2 text-[10px] font-bold uppercase tracking-widest text-brand-earth/30">Atendimento · Ilustrativo</span>
+                            <span class="ml-auto flex items-center gap-1.5 text-[9px] font-bold text-brand-earth/40"><span class="wa-dot"></span>WhatsApp ativo</span>
+                        </div>
+                        <div class="p-5 bg-brand-creme/60 flex flex-col gap-3">
+                            <!-- Cliente -->
+                            <div class="self-end max-w-[80%] bg-brand-earth/8 border border-brand-earth/8 rounded-2xl rounded-br-sm px-4 py-3">
+                                <p class="text-sm text-brand-earth">Quanto custa o plano integral?</p>
+                            </div>
+                            <!-- Nina -->
+                            <div class="self-start flex items-end gap-2 max-w-[85%]">
+                                <div class="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center text-[11px] font-bold text-brand-blue flex-none">N</div>
+                                <div class="bg-white border border-brand-earth/8 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                    <p class="text-sm text-brand-earth">O plano integral custa R$ 1.850/mês.</p>
+                                    <p class="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-brand-earth/45">
+                                        <svg class="w-3.5 h-3.5 text-brand-green" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                        valor exato da tabela oficial
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- Cliente -->
+                            <div class="self-end max-w-[80%] bg-brand-earth/8 border border-brand-earth/8 rounded-2xl rounded-br-sm px-4 py-3">
+                                <p class="text-sm text-brand-earth">Consegue um desconto?</p>
+                            </div>
+                            <!-- Tag de transferência -->
+                            <div class="self-center flex items-center gap-2 bg-brand-blue/10 text-brand-blue text-[11px] font-bold px-4 py-2 rounded-full mt-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+                                Transferido para Ana — motivo: negociação
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Conversa ilustrativa, com dados fictícios — exatamente como aparece para a sua equipe.</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- MODO SOMBRA -->
+    <section class="py-24 md:py-40 bg-white relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-2xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Implantação responsável</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Antes do primeiro cliente, o <span class="italic text-brand-leaf">modo sombra.</span></h2>
+                <p class="text-xl md:text-2xl text-brand-earth/70 font-medium leading-relaxed">Antes de falar com <strong class="text-brand-earth">um</strong> cliente seu, a Nina passa semanas em modo sombra: você vê tudo o que ela <em>teria</em> respondido — e só liga quando estiver satisfeito.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+                <div class="space-y-6 reveal">
+                    <ul class="space-y-5">
+                        <li class="flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-none">
+                                <svg class="w-5 h-5 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                            </div>
+                            <p class="text-brand-earth/60 text-base leading-relaxed pt-1"><strong class="text-brand-earth">Transcrição completa</strong> — de cada conversa e do porquê de cada decisão. Nada acontece sem registro.</p>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-brand-leaf/10 flex items-center justify-center flex-none">
+                                <svg class="w-5 h-5 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9"/></svg>
+                            </div>
+                            <p class="text-brand-earth/60 text-base leading-relaxed pt-1"><strong class="text-brand-earth">Botão liga/desliga</strong> — a Nina só responde de verdade quando você ligar. E desliga na hora, se você quiser.</p>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-brand-green/10 flex items-center justify-center flex-none">
+                                <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                            </div>
+                            <p class="text-brand-earth/60 text-base leading-relaxed pt-1"><strong class="text-brand-earth">Teto diário de custo</strong> — você define o limite de gasto por dia. A Nina respeita.</p>
+                        </li>
+                    </ul>
+                    <div class="pt-2 border-l-4 border-brand-leaf/40 pl-6 space-y-2">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-leaf">Status honesto</p>
+                        <p class="text-brand-earth/60 text-base leading-relaxed">A Nina está em <strong class="text-brand-earth">piloto, com implantação faseada</strong>: cada etapa só avança com o seu aval. É o nosso jeito responsável de colocar IA na frente do seu cliente.</p>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <!-- Painel ilustrativo do modo sombra — conteúdo fictício -->
+                    <div class="rounded-3xl bg-brand-earth p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                        <div class="relative z-10 space-y-5">
+                            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                                <p class="text-white font-bold text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>Modo sombra · ativo</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-white/35 text-[10px] font-bold uppercase tracking-widest">Respostas reais</span>
+                                    <div class="w-10 h-6 rounded-full bg-white/15 flex items-center px-1"><div class="w-4 h-4 rounded-full bg-white/50"></div></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-white/30">Conversa real do cliente</p>
+                                <div class="bg-white/10 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[75%] space-y-2">
+                                    <div class="h-2 w-40 max-w-full bg-white/25 rounded-full"></div>
+                                    <div class="h-2 w-24 bg-white/15 rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-white/50">O que a Nina teria respondido</p>
+                                <div class="border border-dashed border-white/25 rounded-2xl px-4 py-3 space-y-2">
+                                    <div class="h-2 w-48 max-w-full bg-white/20 rounded-full"></div>
+                                    <div class="h-2 w-36 max-w-full bg-white/20 rounded-full"></div>
+                                    <div class="h-2 w-28 bg-white/10 rounded-full"></div>
+                                    <p class="flex items-center gap-1.5 text-[10px] font-bold text-white/40 pt-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                                        Registrado para a sua revisão — nada foi enviado
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2 pt-1">
+                                <span class="bg-white/8 text-white/50 text-[10px] font-bold px-3 py-1.5 rounded-full">Motivo de cada decisão registrado</span>
+                                <span class="bg-white/8 text-white/50 text-[10px] font-bold px-3 py-1.5 rounded-full">Teto diário de custo</span>
+                            </div>
+                        </div>
+                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-brand-blue/20 blur-[80px] rounded-full pointer-events-none"></div>
+                    </div>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Painel ilustrativo — é assim que você acompanha a Nina antes de ligá-la.</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -right-40 bottom-0 w-96 h-96 bg-brand-leaf/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-12 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Perguntas frequentes</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">O que todo mundo <span class="italic text-brand-leaf">pergunta.</span></h2>
+            </div>
+            <div class="max-w-3xl space-y-4 reveal">
+                <details class="faq glass-card light">
+                    <summary class="flex items-center justify-between gap-4 cursor-pointer p-6">
+                        <span class="serif-title font-bold text-lg md:text-xl">A Nina substitui a minha equipe?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="px-6 pb-6 text-brand-earth/60 leading-relaxed">Não. A Nina faz o primeiro atendimento, qualifica o interesse e passa a conversa para a sua equipe no momento certo — com o motivo registrado. Sua equipe entra exatamente onde gera mais valor: na negociação e no relacionamento.</p>
+                </details>
+                <details class="faq glass-card light">
+                    <summary class="flex items-center justify-between gap-4 cursor-pointer p-6">
+                        <span class="serif-title font-bold text-lg md:text-xl">E se a Nina não souber a resposta?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="px-6 pb-6 text-brand-earth/60 leading-relaxed">Ela chama um humano. A Nina responde só com base no material oficial da sua empresa — o que não está lá, ela não inventa. Assunto fora da base vai para a sua equipe, com o contexto completo da conversa.</p>
+                </details>
+                <details class="faq glass-card light">
+                    <summary class="flex items-center justify-between gap-4 cursor-pointer p-6">
+                        <span class="serif-title font-bold text-lg md:text-xl">Quem escreve as regras e o tom da Nina?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="px-6 pb-6 text-brand-earth/60 leading-relaxed">O seu time — sem programador. Persona, tom e regras são editados pela sua própria equipe, e você acompanha a transcrição completa de cada conversa e o porquê de cada decisão.</p>
+                </details>
+                <details class="faq glass-card light">
+                    <summary class="flex items-center justify-between gap-4 cursor-pointer p-6">
+                        <span class="serif-title font-bold text-lg md:text-xl">Como eu controlo o custo?</span>
+                        <svg class="faq-arrow w-5 h-5 text-brand-blue flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </summary>
+                    <p class="px-6 pb-6 text-brand-earth/60 leading-relaxed">Com teto diário de custo e botão liga/desliga. Você define o limite de gasto por dia e a Nina respeita. E pode desligar quando quiser, na hora.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-5xl mx-auto rounded-[40px] bg-brand-earth p-10 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative overflow-hidden">
+                <div class="relative z-10 text-center space-y-8 py-8">
+                    <div class="space-y-4">
+                        <h2 class="serif-title text-4xl md:text-6xl font-bold text-white leading-tight">Converse agora com uma IA construída por <span class="italic text-brand-green">quem faz IA.</span></h2>
+                        <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">O chat de diagnóstico do nosso site é a demonstração ao vivo: uma conversa que entende o seu problema antes da equipe entrar em contato.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/#diagnostico" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all inline-block">💬 Iniciar Diagnóstico com IA</a>
+                    </div>
+                    <p class="text-white/20 text-xs">Sem compromisso, sem pitch de vendas — retorno da equipe em até 24h.</p>
+                    <p class="serif-title italic text-brand-creme/50 text-lg">Feito para durar.</p>
+                </div>
+                <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-blue/20 blur-[120px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-green/10 blur-[120px] rounded-full pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-blue transition-colors">Nina · Atendimento com IA</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/prospeccao" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Prospecção B2B</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
