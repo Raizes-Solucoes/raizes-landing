@@ -74,40 +74,25 @@
             backdrop-filter: blur(8px);
         }
 
-        /* ═══ ESTEIRA DE LOGOS ═══ */
-        .logo-esteira {
-            overflow: hidden; width: 100%;
-            /* o degradê nas pontas é o que faz as logos "sumirem" em vez de cortar seco */
-            -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
-                    mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
-        }
+        /* ═══ FILEIRA DE LOGOS DOS CLIENTES ═══ */
+        /* Fileira estática e centralizada. Antes era uma esteira rolando (marquee) clonada por
+           JS, mas com poucos clientes reais o loop repetia os mesmos logos e denunciava a
+           quantidade — 3 logos reais, parados e centrados, passam mais confiança. */
+        .logo-esteira { width: 100%; }
         .logo-trilha {
-            display: flex; align-items: center; gap: 3.5rem; width: max-content;
-            animation: esteira var(--esteira-dur, 30s) linear infinite;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+            gap: 2rem 3.5rem;
         }
-        .logo-esteira:hover .logo-trilha { animation-play-state: paused; }
-        /* Anda EXATAMENTE a largura de um conjunto. Como o conjunto seguinte é idêntico
-           e começa nesse ponto, o salto de volta é invisível. O valor vem do JS, que
-           clona conjuntos até a trilha cobrir a tela — senão sobra buraco em tela larga. */
-        @keyframes esteira { from { transform: translateX(0); } to { transform: translateX(var(--esteira-desloc, -50%)); } }
 
         .logo-cliente {
             width: auto; flex: none; object-fit: contain;
             filter: grayscale(1); opacity: .5; transition: filter .3s ease, opacity .3s ease;
         }
         .logo-cliente:hover { filter: grayscale(0); opacity: 1; }
-        /* Altura por FORMATO, não igual pra todas: logo quadrada com a mesma altura de
-           uma esticada parece minúscula. Equilibra o peso visual na fileira. */
-        .logo-cliente.lg-larga    { height: 27px; }   /* proporção > 3,5:1 — ex.: Inter, Santander */
-        .logo-cliente.lg-media    { height: 31px; }   /* 2,5–3,5:1 — ex.: Gerdau, Vale */
-        .logo-cliente.lg-quadrada { height: 40px; }   /* < 2,5:1 — ex.: Nubank, ArcelorMittal */
-
-        @media (prefers-reduced-motion: reduce) {
-            .logo-trilha { animation: none; }
-            .logo-esteira { -webkit-mask-image: none; mask-image: none; }
-            .logo-trilha { flex-wrap: wrap; justify-content: center; width: 100%; gap: 2rem 3rem; }
-            .logo-trilha > [aria-hidden="true"] { display: none; }
-        }
+        /* Altura por PESO ÓPTICO, não igual pra todas: um brasão quase quadrado com a mesma
+           altura de uma wordmark larga parece menor. Iguala a "presença", não o nº de px. */
+        .logo-cliente.lg-wordmark { height: 32px; }  /* Renvix, Multibank — wordmark/lockup horizontal */
+        .logo-cliente.lg-brasao   { height: 48px; }  /* Hills — brasão ~1,34:1; +alto pra bater o peso das wordmarks */
 
         /* CARDS */
         .glass-card {
@@ -551,7 +536,7 @@
     <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
         <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center relative">
             <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
-            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center absolute left-1/2 -translate-x-1/2">
+            <div class="hidden gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center absolute left-1/2 -translate-x-1/2">
                 <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
                 <div class="nav-drop">
                     <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
@@ -572,7 +557,7 @@
                 <a href="#contato" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Protótipo Gratuito</a>
                 <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
             </div>
-            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+            <button id="mobile-menu-btn" class="hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
             </button>
         </div>
@@ -630,33 +615,21 @@
         </div>
     </section>
 
-    <!-- ════ 2. LOGOS DOS CLIENTES (esteira) ════ -->
+    <!-- ════ 2. LOGOS DOS CLIENTES (fileira estática) ════ -->
     <section class="py-7 md:py-9 bg-white relative z-10">
         <div class="container mx-auto px-4 sm:px-6">
             <p class="text-center text-[11px] md:text-xs font-bold uppercase tracking-[0.25em] text-brand-earth/35 mb-7">
                 Empresas que confiam na Raízes
             </p>
         </div>
-        <!-- esteira: trilha duplicada + máscara de degradê nas pontas -->
         <div class="logo-esteira">
-            <!-- ═══════════════════════════════════════════════════════════════════ -->
-            <!--  ⛔ ATENÇÃO — NÃO PUBLICAR ⛔                                        -->
-            <!--  As logos abaixo (prefixo "ph-") são PLACEHOLDERS de empresas reais  -->
-            <!--  que NÃO são clientes da Raízes: Gerdau, Vale, Banco Inter,          -->
-            <!--  Santander, ArcelorMittal e Nubank.                                  -->
-            <!--  Sob o título "Empresas que confiam na Raízes" isso é afirmação      -->
-            <!--  falsa sobre terceiros + uso indevido de marca registrada.           -->
-            <!--  TROCAR pelas logos reais ANTES de qualquer commit/push, porque      -->
-            <!--  push em feat/lp-v2 publica na URL de teste (pública) em ~30s.       -->
-            <!-- ═══════════════════════════════════════════════════════════════════ -->
-            <!-- Só UM conjunto aqui. O JS clona o quanto for preciso pra cobrir a tela. -->
-            <div class="logo-trilha" id="logo-trilha">
-                <img class="logo-cliente lg-larga"    src="/logos/ph-inter.svg"     alt="Banco Inter">
-                <img class="logo-cliente lg-quadrada" src="/logos/ph-nubank.svg"    alt="Nubank">
-                <img class="logo-cliente lg-media"    src="/logos/ph-gerdau.svg"    alt="Gerdau">
-                <img class="logo-cliente lg-larga"    src="/logos/ph-santander.svg" alt="Santander">
-                <img class="logo-cliente lg-quadrada" src="/logos/ph-arcelor.svg"   alt="ArcelorMittal">
-                <img class="logo-cliente lg-media"    src="/logos/ph-vale.svg"      alt="Vale">
+            <!-- Clientes REAIS da Raízes. Alturas diferentes de propósito (ver .lg-* no CSS):
+                 iguala o peso visual, não o nº de px. Nunca pôr aqui logo de empresa que não é
+                 cliente — sob este título seria afirmação falsa + uso indevido de marca. -->
+            <div class="logo-trilha">
+                <img class="logo-cliente lg-wordmark" src="/logos/renvix.svg"    alt="Renvix Financial">
+                <img class="logo-cliente lg-wordmark" src="/logos/multibank.svg" alt="Multibank">
+                <img class="logo-cliente lg-brasao"   src="/logos/hills.png"     alt="Hills English Learning">
             </div>
         </div>
     </section>
@@ -1513,7 +1486,7 @@
                 <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-3 hidden">
                 <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
                 <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
                 <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina · Atendimento com IA</a>
@@ -1521,13 +1494,13 @@
                 <a href="/prospeccao" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Prospecção B2B</a>
                 <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-3 hidden">
                 <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
                 <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
                 <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Protótipo Gratuito</a>
                 <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-3 hidden">
                 <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
                 <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
                 <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
@@ -1561,49 +1534,6 @@
         document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
         document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
         mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
-
-        // ─── ESTEIRA DE LOGOS: clona conjuntos até cobrir a tela ───
-        // Sem isso, quando o único conjunto sai da tela sobra buraco em monitor largo.
-        (function () {
-            const trilha = document.getElementById('logo-trilha');
-            if (!trilha) return;
-            const VELOCIDADE = 48; // px por segundo — constante, não importa quantas logos existam
-
-            const original = [...trilha.children];
-
-            function montar() {
-                // volta ao estado inicial antes de recalcular (ex.: ao girar o celular)
-                [...trilha.children].forEach((n, i) => { if (i >= original.length) n.remove(); });
-
-                const gap = parseFloat(getComputedStyle(trilha).gap) || 0;
-                const larguraConjunto = original.reduce((s, el) => s + el.getBoundingClientRect().width + gap, 0);
-                if (!larguraConjunto) return;
-
-                // precisa de conjunto + tela cheia à frente pra nunca aparecer vazio
-                const alvo = trilha.parentElement.getBoundingClientRect().width + larguraConjunto;
-                let atual = larguraConjunto;
-                while (atual < alvo) {
-                    original.forEach(el => {
-                        const c = el.cloneNode(true);
-                        c.setAttribute('alt', '');
-                        c.setAttribute('aria-hidden', 'true');
-                        trilha.appendChild(c);
-                    });
-                    atual += larguraConjunto;
-                }
-
-                trilha.style.setProperty('--esteira-desloc', `-${larguraConjunto}px`);
-                trilha.style.setProperty('--esteira-dur', `${larguraConjunto / VELOCIDADE}s`);
-            }
-
-            // as imagens precisam ter carregado pra medir a largura certa
-            const imgs = original.filter(el => el.tagName === 'IMG');
-            Promise.all(imgs.map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; })))
-                .then(montar);
-
-            let t;
-            window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(montar, 200); });
-        })();
 
         // Reveal on scroll
         const reveals = document.querySelectorAll('.reveal');
