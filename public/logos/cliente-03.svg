@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165 40" role="img" aria-label="Cliente 03">
+  <path d="M16 7l10 6.5v13L16 33 6 26.5v-13z" fill="none" stroke="#7c3aed" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M16 15l5 3v6l-5 3-5-3v-6z" fill="#7c3aed"/>
+  <text x="36" y="26" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="800" fill="#1e293b" letter-spacing="1.5">CLIENTE</text>
+  <text x="130" y="26" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="800" fill="#7c3aed" letter-spacing="1.5">03</text>
+</svg>

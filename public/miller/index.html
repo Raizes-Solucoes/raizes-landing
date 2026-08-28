@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM com WhatsApp integrado para equipes comerciais | Miller, da Raízes</title>
+    <meta name="description" content="Miller é o CRM com WhatsApp oficial da Meta: conversas centralizadas, funil visual por produto, automações e IA — com a sua marca. Em produção em 4 verticais. Teste grátis por 14 dias, sem cartão.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/miller">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Miller — o CRM de quem vive no WhatsApp | Raízes">
+    <meta property="og:description" content="WhatsApp, funil de vendas, automações e IA num só lugar — com a cara da sua empresa e moldado ao seu processo comercial. Teste grátis por 14 dias.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/miller">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Posso usar minha marca?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. O Miller entra no ar com a sua marca: seu logo, suas cores e uma tela de login com a cara da sua empresa. Configuramos tudo com você na implantação — pronto no primeiro dia."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como funciona a implantação?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Começamos entendendo o seu processo comercial: produtos, etapas do funil e regras do time. Configuramos a plataforma com você, treinamos a equipe e colocamos tudo no ar em horas, não meses. Durante a implantação, você tem canal direto com a equipe que constrói o produto."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Vocês migram meus dados?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. Trazemos seus contatos e negócios atuais — de planilhas ou do sistema que você usa hoje — para dentro do Miller na implantação, para o seu time começar com o histórico no lugar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Funciona com meu número atual de WhatsApp?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. Você conecta o número que seus clientes já conhecem, e as conversas passam a ficar registradas na plataforma — com histórico completo e distribuição entre os vendedores. Nada fica preso no celular de ninguém."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Preciso de cartão de crédito para o teste grátis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. São 14 dias grátis, sem cartão de crédito e sem compromisso."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quanto custa?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende do tamanho do time e do que a sua operação precisa. Comece pelo trial grátis de 14 dias ou fale com a gente no diagnóstico — uma conversa gratuita e sem compromisso para entender o seu processo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O WhatsApp é oficial?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. O Miller opera no canal oficial da Meta, com integração homologada: sem risco de banimento por automação. E, com a conta verificada, o nome da sua empresa aparece no lugar do número."
+          }
+        }
+      ]
+    }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .glass-card.light:hover { background: rgba(255,255,255,0.98); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* NAVBAR — liquid glass */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* MOCKUP (ilustrativo, dados fictícios) */
+        .mockup-shell { background: #FFFFFF; border: 1px solid rgba(60,61,55,0.08); border-radius: 18px; box-shadow: 0 30px 60px rgba(22,19,13,0.14); overflow: hidden; }
+        .mockup-topbar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(60,61,55,0.07); }
+        .mockup-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(60,61,55,0.12); }
+        .wa-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
+
+        /* FAQ */
+        .faq-item summary { list-style: none; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary svg { transition: transform 0.3s ease; }
+        .faq-item[open] summary svg { transform: rotate(180deg); }
+        .faq-item:hover { transform: none; }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller" class="text-brand-blue">Miller CRM<span class="!text-brand-blue/60">O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/nina">Nina · Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/sob-medida">Software sob medida<span>Construído do zero para o seu processo</span></a>
+                        <a href="/prospeccao">Prospecção B2B<span>Do CNPJ ao WhatsApp do decisor</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="hover:text-brand-blue transition-colors">Método</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/#diagnostico" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <a href="/" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Home</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5 text-brand-blue">Miller CRM</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Nina · Atendimento com IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Software sob medida</a>
+            <a href="/prospeccao" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Prospecção B2B</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Método</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="pt-36 md:pt-40 pb-16 md:pb-24 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto text-center space-y-6">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Plataforma · Gestão Comercial</span>
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    O CRM de quem vive no <span class="italic text-brand-leaf">WhatsApp.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-brand-earth/70 font-medium max-w-2xl mx-auto leading-snug">
+                    WhatsApp, funil de vendas, automações e IA num só lugar — com a cara da sua empresa e moldado ao seu processo comercial.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2 justify-center">
+                    <a href="/trial" class="btn-gradient text-white px-8 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Testar grátis 14 dias</a>
+                    <a href="/#contato" class="bg-white border-2 border-brand-earth text-brand-earth px-8 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Iniciar diagnóstico</a>
+                </div>
+                <p class="text-brand-earth/40 text-xs font-medium">14 dias grátis · sem cartão de crédito · sem compromisso</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAIXA DE PROVA -->
+    <section class="py-16 bg-brand-earth relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x divide-white/10 reveal">
+                <div class="text-center px-6 space-y-2 flex flex-col justify-center">
+                    <p class="stat-number text-3xl md:text-4xl font-bold text-white leading-tight">Em produção</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Operação comercial real todos os dias</p>
+                </div>
+                <div class="text-center px-6 space-y-2 flex flex-col justify-center">
+                    <p class="stat-number text-5xl md:text-6xl font-bold text-white">4<span class="text-brand-cyan text-2xl md:text-3xl ml-1">verticais</span></p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Financiamento, seguros, consórcio e crédito imobiliário</p>
+                </div>
+                <div class="text-center px-6 space-y-2 flex flex-col justify-center">
+                    <p class="stat-number text-3xl md:text-4xl font-bold text-white leading-tight">Horas, não meses</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Para colocar um cliente novo no ar</p>
+                </div>
+                <div class="text-center px-6 space-y-2 flex flex-col justify-center">
+                    <p class="stat-number text-3xl md:text-4xl font-bold text-white leading-tight">Canal oficial</p>
+                    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">Integração homologada com a Meta</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 top-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- FUNCIONALIDADES -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Funcionalidades</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Tudo o que a operação comercial precisa. <span class="italic text-brand-leaf">Num lugar só.</span></h2>
+                <p class="text-brand-earth/50 text-lg">Seis frentes que trabalham juntas — moldadas ao seu processo, não o contrário.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.658-2.658c.19.012.38.022.57.032Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">WhatsApp centralizado</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Vários números, distribuição automática de conversas e histórico completo. Nada fica preso no celular do vendedor.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Funil visual por produto</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Cada linha do seu negócio com suas próprias etapas — você enxerga cada negócio, de ponta a ponta, no quadro certo.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Automações que rodam sozinhas</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Aniversário, pesquisa de satisfação, alerta de negócio parado — o rotineiro acontece sem ninguém precisar lembrar.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-earth/8 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-earth" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Sua marca e suas regras</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Login com a sua cara, e cada consultor vê só o que deve. Configuramos com você na implantação: pronto no primeiro dia.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Relatórios e painéis em tempo real</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Funil, conversas e desempenho do time num painel só. Você enxerga a operação inteira sem pedir planilha a ninguém.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Atendimento com IA</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">A Nina faz o primeiro atendimento 24/7, qualifica o interesse e passa para a sua equipe no momento certo — implantada em fases, com você no controle.</p>
+                    <a href="/nina" class="inline-block text-brand-leaf text-sm font-bold hover:text-brand-blue transition-colors">Conhecer a Nina →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MOTOR DE VENDAS COMPLETO -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-2xl mb-12 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Plataforma · Canal Oficial + IA + Assinatura</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Da conversa ao contrato <span class="italic text-brand-leaf">assinado</span> — sem trocar de tela.</h2>
+            </div>
+
+            <!-- Jornada conectada -->
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-10 reveal">
+                <span class="px-4 py-2 bg-white border border-brand-earth/10 rounded-full text-xs font-bold uppercase tracking-widest text-brand-earth/60">Conversa</span>
+                <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                <span class="px-4 py-2 bg-white border border-brand-earth/10 rounded-full text-xs font-bold uppercase tracking-widest text-brand-earth/60">Proposta</span>
+                <svg class="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                <span class="px-4 py-2 bg-white border border-brand-earth/10 rounded-full text-xs font-bold uppercase tracking-widest text-brand-earth/60">Assinatura</span>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 reveal">
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">WhatsApp oficial da Meta</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Operação 100% dentro das regras oficiais: sem risco de banimento por automação, reputação que pertence a você. E, com a conta verificada, o <strong class="text-brand-earth">nome da sua empresa</strong> aparece no lugar do número.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C4A254] bg-[#C4A254]/10 px-3 py-1.5 rounded-full">Chegando</span>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Copiloto de IA para o time</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">O motor de IA já validado no nosso atendimento chega ao CRM: sugere a resposta certa no tom da sua marca, direto na conversa. O vendedor revisa e envia.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-brand-leaf/10 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-leaf" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C4A254] bg-[#C4A254]/10 px-3 py-1.5 rounded-full">Chegando</span>
+                    </div>
+                    <h3 class="serif-title text-xl font-bold">Assinatura digital no funil</h3>
+                    <p class="text-brand-earth/55 text-sm leading-relaxed">Fechou? O contrato vai pelo WhatsApp, o cliente assina sem sair da conversa e o documento volta anexado ao negócio. Validade jurídica reconhecida (Lei 14.063).</p>
+                </div>
+            </div>
+
+            <div class="max-w-4xl mx-auto mt-10 pt-6 border-t border-brand-earth/10 text-center text-xs md:text-sm text-brand-earth/45 font-medium reveal">
+                Canal oficial da Meta no ar, validado ponta a ponta com número real <span class="text-brand-earth/20">·</span> integração verificada com a Meta já operando (Messenger e Instagram) <span class="text-brand-earth/20">·</span> respostas dentro da janela de 24h sem custo por mensagem na Meta
+            </div>
+        </div>
+        <div class="absolute -right-40 top-20 w-96 h-96 bg-brand-blue/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- MOCKUP DE CONVERSA -->
+    <section class="py-24 md:py-32 bg-white relative z-10 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+                <div class="space-y-6 reveal">
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Na prática</span>
+                    <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">A conversa inteira, registrada. O negócio, <span class="italic text-brand-leaf">sempre visível.</span></h2>
+                    <p class="text-brand-earth/60 text-lg leading-relaxed">Cada mensagem trocada com o cliente vira histórico no CRM: quem atendeu, o que foi combinado e em que etapa o negócio está. Se o vendedor sair de férias, a conversa continua de onde parou.</p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <a href="/trial" class="btn-gradient text-white px-8 py-4 rounded-xl font-bold text-sm shadow-lg">Testar grátis 14 dias</a>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <!-- Mockup ilustrativo — conversa fictícia, dados genéricos -->
+                    <div class="mockup-shell">
+                        <div class="mockup-topbar">
+                            <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+                            <span class="ml-2 text-[10px] font-bold uppercase tracking-widest text-brand-earth/30">Conversa · Ilustrativo</span>
+                            <span class="ml-auto flex items-center gap-1.5 text-[9px] font-bold text-brand-earth/40"><span class="wa-dot"></span>WhatsApp ativo</span>
+                        </div>
+                        <div class="p-5 bg-brand-creme/60 space-y-3">
+                            <div class="max-w-[85%]">
+                                <p class="text-[9px] font-bold uppercase tracking-widest text-brand-earth/35 mb-1 ml-1">Helena · cliente</p>
+                                <div class="bg-white border border-brand-earth/8 rounded-2xl rounded-bl-sm px-4 py-3 text-xs text-brand-earth/80 leading-relaxed shadow-sm">Boa tarde! Vi o anúncio de vocês. Como funcionam as condições do consórcio?</div>
+                            </div>
+                            <div class="max-w-[85%] ml-auto">
+                                <p class="text-[9px] font-bold uppercase tracking-widest text-brand-earth/35 mb-1 mr-1 text-right">Rafael · consultor</p>
+                                <div class="bg-brand-blue/10 border border-brand-blue/10 rounded-2xl rounded-br-sm px-4 py-3 text-xs text-brand-earth/85 leading-relaxed shadow-sm">Boa tarde, Helena! Bem-vinda. Me conta o que você procura, que eu já monto uma simulação certinha para você.</div>
+                                <p class="text-right text-[9px] font-bold text-brand-green mt-1 mr-1">✓✓ entregue</p>
+                            </div>
+                            <div class="max-w-[85%]">
+                                <div class="bg-white border border-brand-earth/8 rounded-2xl rounded-bl-sm px-4 py-3 text-xs text-brand-earth/80 leading-relaxed shadow-sm">Perfeito! E consigo incluir meu esposo na proposta?</div>
+                            </div>
+                            <div class="max-w-[85%] ml-auto">
+                                <div class="bg-brand-blue/10 border border-brand-blue/10 rounded-2xl rounded-br-sm px-4 py-3 text-xs text-brand-earth/85 leading-relaxed shadow-sm">Consegue, sim! Vou preparar a proposta com os dois e retorno ainda hoje.</div>
+                            </div>
+                            <div class="flex justify-center pt-2">
+                                <span class="inline-flex items-center gap-2 bg-white border border-brand-earth/10 rounded-full px-4 py-2 text-[10px] font-bold text-brand-earth/50 uppercase tracking-widest shadow-sm"><span class="wa-dot"></span>Histórico completo no CRM · negócio atualizado no funil</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-[11px] text-brand-earth/35 mt-4 font-medium">Ilustração — conversa fictícia, sem dados reais.</p>
+                </div>
+            </div>
+        </div>
+        <div class="absolute -left-40 bottom-20 w-96 h-96 bg-brand-leaf/5 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- SEU SETOR VIRA UMA VERTICAL -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl space-y-6 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-[#C4A254]">Metodologia na prática</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Software que fala a língua do <span class="italic text-brand-leaf">seu</span> setor.</h2>
+                <p class="text-brand-earth/60 text-lg leading-relaxed">Quando o setor tem regras próprias, não adaptamos campos genéricos: construímos uma vertical inteira dentro da plataforma. É o que estamos fazendo agora com crédito estruturado — cada tela desenhada e validada lado a lado com quem opera no dia a dia.</p>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Funil próprio</strong> — com as etapas reais da sua operação, não etapas genéricas.</p></li>
+                    <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Regras do setor embutidas</strong> — os controles do seu mercado dentro da plataforma, não em planilhas paralelas.</p></li>
+                    <li class="flex items-start gap-3"><span class="w-5 h-5 rounded-full bg-brand-green/10 border border-brand-green/30 flex items-center justify-center text-brand-green text-[10px] flex-none mt-0.5">✓</span><p class="text-brand-earth/70 text-sm leading-relaxed"><strong class="text-brand-earth">Documentos no padrão do mercado</strong> — relatórios e dossiês gerados em um clique, no formato que o seu setor já aceita.</p></li>
+                </ul>
+                <p class="text-xl font-bold text-brand-earth leading-relaxed">Primeiro provamos na tela. Depois construímos. É assim que o seu setor entra.</p>
+                <p class="text-xs md:text-sm text-brand-earth/45 font-medium pt-2 border-t border-brand-earth/10">Protótipo navegável validado com quem opera crédito estruturado todos os dias <span class="text-brand-earth/20">·</span> ~90% da plataforma reaproveitada no desenho <span class="text-brand-earth/20">·</span> agora em integração à plataforma</p>
+                <a href="/sob-medida" class="inline-block text-brand-blue font-bold text-sm hover:text-brand-cyan transition-colors">Ver como construímos sob medida →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-12 space-y-4 reveal">
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">FAQ</span>
+                    <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Perguntas <span class="italic text-brand-leaf">frequentes.</span></h2>
+                </div>
+                <div class="space-y-4 reveal">
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Posso usar minha marca?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Sim. O Miller entra no ar com a sua marca: seu logo, suas cores e uma tela de login com a cara da sua empresa. Configuramos tudo com você na implantação — pronto no primeiro dia.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Como funciona a implantação?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Começamos entendendo o seu processo comercial: produtos, etapas do funil e regras do time. Configuramos a plataforma com você, treinamos a equipe e colocamos tudo no ar em horas, não meses. Durante a implantação, você tem canal direto com a equipe que constrói o produto.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Vocês migram meus dados?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Sim. Trazemos seus contatos e negócios atuais — de planilhas ou do sistema que você usa hoje — para dentro do Miller na implantação, para o seu time começar com o histórico no lugar.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Funciona com meu número atual de WhatsApp?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Sim. Você conecta o número que seus clientes já conhecem, e as conversas passam a ficar registradas na plataforma — com histórico completo e distribuição entre os vendedores. Nada fica preso no celular de ninguém.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Preciso de cartão de crédito para o teste grátis?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Não. São 14 dias grátis, sem cartão de crédito e sem compromisso.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">Quanto custa?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Depende do tamanho do time e do que a sua operação precisa. Comece pelo <a href="/trial" class="text-brand-blue font-bold hover:text-brand-cyan transition-colors">trial grátis de 14 dias</a> ou fale com a gente no <a href="/#contato" class="text-brand-blue font-bold hover:text-brand-cyan transition-colors">diagnóstico</a> — uma conversa gratuita e sem compromisso para entender o seu processo.</div>
+                    </details>
+                    <details class="faq-item glass-card light">
+                        <summary class="flex items-center justify-between gap-4 p-6 cursor-pointer">
+                            <span class="serif-title font-bold text-lg text-brand-earth">O WhatsApp é oficial?</span>
+                            <svg class="w-5 h-5 text-brand-earth/40 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </summary>
+                        <div class="px-6 pb-6 text-brand-earth/60 text-sm leading-relaxed">Sim. O Miller opera no canal oficial da Meta, com integração homologada: sem risco de banimento por automação. E, com a conta verificada, o nome da sua empresa aparece no lugar do número.</div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-24 md:py-40 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-5xl mx-auto rounded-[40px] bg-brand-earth p-10 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] relative overflow-hidden reveal">
+                <div class="relative z-10 text-center space-y-8 py-8">
+                    <div class="space-y-4">
+                        <h2 class="serif-title text-4xl md:text-6xl font-bold text-white leading-tight">Seu time inteiro numa única <br class="hidden md:block"/> linha de frente.</h2>
+                        <p class="text-white/45 text-lg max-w-2xl mx-auto font-medium">Teste o Miller com o seu processo — ou conte a sua operação para a gente no diagnóstico.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/#diagnostico" class="btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl uppercase tracking-widest transform hover:-translate-y-1 transition-all">Iniciar Diagnóstico com IA</a>
+                        <a href="/trial" class="border-2 border-white/25 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-white hover:text-brand-earth transition-all">Testar grátis 14 dias</a>
+                    </div>
+                    <p class="text-white/20 text-xs">14 dias grátis, sem cartão de crédito · diagnóstico de ~45 minutos, sem compromisso</p>
+                    <p class="serif-title italic text-brand-green text-xl">Feito para durar.</p>
+                </div>
+                <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-blue/20 blur-[120px] rounded-full pointer-events-none"></div>
+                <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-green/10 blur-[120px] rounded-full pointer-events-none"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções Tecnológicas</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-blue hover:text-brand-cyan transition-colors">Miller CRM</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina · Atendimento com IA</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/prospeccao" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Prospecção B2B</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
