@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança da Informação | Raízes Soluções</title>
+    <meta name="description" content="Como a Raízes Soluções protege os dados: controle de acesso, criptografia, resposta a incidentes, continuidade e metas de recuperação (RTO e RPO). Documentos em inglês para download.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+        .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #3C3D37; }
+        .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #3C3D37; }
+        .prose p { margin-bottom: 1rem; line-height: 1.7; }
+        .prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.5rem; line-height: 1.7; }
+        .docs { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.95rem; }
+        .docs th, .docs td { text-align: left; padding: 0.65rem 0.75rem; border-bottom: 1px solid #e5e2d8; vertical-align: top; }
+        .docs th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6c64; }
+        .metas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .meta-card { background: #fff; border: 1px solid #e5e2d8; border-radius: 0.75rem; padding: 1rem 1.25rem; }
+        .meta-card strong { display: block; font-family: 'Lora', serif; font-size: 1.6rem; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="fixed top-0 w-full z-50 bg-brand-creme/95 backdrop-blur-md border-b border-gray-200 h-20 flex items-center" style="background: rgba(249,247,242,0.95);">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold tracking-tight" style="font-family: 'Lora', serif;">
+                raízes<span style="color: #394dfa;">.</span>
+            </a>
+            <a href="/" class="text-sm text-gray-600 hover:text-gray-900">← Voltar</a>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-24 px-4 sm:px-6">
+        <article class="container mx-auto max-w-3xl prose">
+            <p class="text-sm text-gray-500 uppercase tracking-widest mb-2">Segurança e continuidade</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Segurança da Informação</h1>
+            <p class="text-sm text-gray-500 mb-12">Última atualização: 3 de novembro de 2026</p>
+
+            <p>
+                A <strong>Raízes Soluções e Tecnologia Ltda</strong> ("Raízes") trata com cuidado os dados dos clientes e os dados que
+                acessa nas plataformas conectadas (marketplaces e sistemas de gestão), sempre com a autorização do dono da conta.
+                Esta página resume como protegemos esses dados e reúne os documentos que descrevem nossos controles.
+            </p>
+            <p>
+                <em>English summary:</em> this page lists the security, privacy and continuity documents of Raízes Soluções e Tecnologia Ltda
+                (CNPJ 51.467.037/0001-65). The documents are published in English as PDF files and are reviewed at least once a year.
+            </p>
+
+            <h2>1. Como protegemos os dados</h2>
+            <ul>
+                <li><strong>Acesso por papel e privilégio mínimo</strong>: cada pessoa acessa só o que o seu papel exige, com conta própria e autenticação forte nas contas administrativas.</li>
+                <li><strong>Isolamento entre clientes</strong>: cada organização só enxerga os próprios dados, com regras aplicadas dentro do banco de dados.</li>
+                <li><strong>Criptografia</strong>: dados em trânsito protegidos por TLS 1.2 ou superior; dados em repouso criptografados com AES-256 pelo nosso provedor de banco de dados.</li>
+                <li><strong>Credenciais de integração protegidas</strong>: tokens e chaves ficam apenas no servidor, em tabelas que o navegador e os usuários não conseguem ler, e são apagados quando o cliente desconecta a integração.</li>
+                <li><strong>Mudanças revisadas</strong>: toda alteração em produção passa por revisão de uma segunda pessoa e por testes automáticos antes de ir ao ar.</li>
+                <li><strong>Sem dados pessoais dos compradores</strong>: das plataformas conectadas guardamos apenas identificadores, datas, status, valores e tarifas.</li>
+                <li><strong>Resposta a incidentes</strong>: plano escrito, com responsáveis, prazos e comunicação a clientes, parceiros e à ANPD quando a lei exige.</li>
+                <li><strong>Backups e continuidade</strong>: backups diários do banco de dados, mantidos por 7 dias, e plano de recuperação com metas definidas.</li>
+            </ul>
+
+            <h2>2. Metas de recuperação</h2>
+            <div class="metas">
+                <div class="meta-card"><span class="text-sm text-gray-500">RTO (tempo máximo para restabelecer)</span><strong>24 horas</strong></div>
+                <div class="meta-card"><span class="text-sm text-gray-500">RPO (perda máxima de dados recentes)</span><strong>24 horas</strong></div>
+            </div>
+            <p>
+                As metas valem para o banco de dados, as funções de integração, as credenciais, o aplicativo e o site. Estão detalhadas
+                na avaliação de impacto nos negócios, abaixo.
+            </p>
+
+            <h2>3. Documentos (em inglês)</h2>
+            <table class="docs">
+                <thead>
+                    <tr><th>Documento</th><th>O que cobre</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><a href="/seguranca/docs/information-security-policy.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Information Security Policy</a></td><td>Programa geral de segurança da informação.</td></tr>
+                    <tr><td><a href="/seguranca/docs/access-control-policy.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Access Control Policy</a></td><td>Quem acessa o quê, privilégio mínimo e revisão de acessos.</td></tr>
+                    <tr><td><a href="/seguranca/docs/data-classification-and-encryption-policy.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Data Classification and Encryption Policy</a></td><td>Classes de dados, criptografia em trânsito e em repouso, retenção.</td></tr>
+                    <tr><td><a href="/seguranca/docs/infrastructure-and-network-security.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Infrastructure and Network Security Statement</a></td><td>Hospedagem, segregação de rede, monitoramento e backups.</td></tr>
+                    <tr><td><a href="/seguranca/docs/endpoint-protection-standard.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Endpoint Protection Standard</a></td><td>Antivírus e proteção dos computadores de trabalho.</td></tr>
+                    <tr><td><a href="/seguranca/docs/security-baseline.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Security Baseline for Accounts and Workstations</a></td><td>Senhas, autenticação em dois fatores, bloqueio de tela.</td></tr>
+                    <tr><td><a href="/seguranca/docs/vulnerability-and-threat-management.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Vulnerability and Threat Management Procedure</a></td><td>Como encontramos e corrigimos vulnerabilidades.</td></tr>
+                    <tr><td><a href="/seguranca/docs/incident-response-plan.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Incident Response Plan</a></td><td>Papéis, canais, prazos e comunicação em caso de incidente.</td></tr>
+                    <tr><td><a href="/seguranca/docs/business-impact-assessment.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Business Impact Assessment (RTO and RPO)</a></td><td>Ativos críticos e metas de recuperação.</td></tr>
+                    <tr><td><a href="/seguranca/docs/business-continuity-and-disaster-recovery-plan.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Business Continuity and Disaster Recovery Plan</a></td><td>Como restabelecemos os serviços após uma falha grave.</td></tr>
+                    <tr><td><a href="/seguranca/docs/incident-exercise-program.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Incident Exercise Program and Report Template</a></td><td>Exercícios anuais de incidente e modelo de relatório.</td></tr>
+                    <tr><td><a href="/seguranca/docs/personal-data-protection-policy.pdf" class="text-blue-600 underline" target="_blank" rel="noopener">Personal Data Protection Policy</a></td><td>Proteção de dados pessoais (LGPD) e atendimento a titulares.</td></tr>
+                </tbody>
+            </table>
+            <p>
+                A <a href="/privacidade" class="text-blue-600 underline">Política de Privacidade</a> descreve, em português, quais dados
+                tratamos e como exercer seus direitos.
+            </p>
+
+            <h2>4. Provedores de infraestrutura</h2>
+            <ul>
+                <li><strong>Supabase</strong>: banco de dados, autenticação, armazenamento e funções de servidor (regiões us-east-1 e us-east-2 da AWS, Estados Unidos).</li>
+                <li><strong>Vercel</strong>: hospedagem do aplicativo e do site.</li>
+                <li><strong>GitHub</strong>: código-fonte e esteira de publicação.</li>
+                <li><strong>Google Workspace</strong>: e-mail e documentos.</li>
+            </ul>
+
+            <h2>5. Reportar um incidente ou vulnerabilidade</h2>
+            <p>
+                Se você suspeita de um incidente de segurança ou encontrou uma vulnerabilidade, escreva para
+                <a href="mailto:contato@raizesolucoes.com.br?subject=Security%20incident" class="text-blue-600 underline">contato@raizesolucoes.com.br</a>
+                com o assunto "Security incident". Classificamos o relato em até 24 horas.
+            </p>
+
+            <h2>6. Encarregado (DPO) e contato</h2>
+            <p>
+                <strong>Email</strong>: <a href="mailto:contato@raizesolucoes.com.br" class="text-blue-600 underline">contato@raizesolucoes.com.br</a><br/>
+                <strong>Razão social</strong>: Raízes Soluções e Tecnologia Ltda<br/>
+                <strong>CNPJ</strong>: 51.467.037/0001-65<br/>
+                <strong>Endereço</strong>: Rua José Augusto de Oliveira, 48, Petrópolis, Betim/MG, CEP 32655-164
+            </p>
+
+            <h2>7. Revisão</h2>
+            <p>
+                Estes documentos são revisados pelo menos uma vez por ano, depois de qualquer incidente relevante e quando mudamos
+                sistemas ou provedores. Próxima revisão prevista: 3 de novembro de 2027.
+            </p>
+        </article>
+    </main>
+
+    <footer class="border-t border-gray-200 py-8 px-4 sm:px-6 text-sm text-gray-500">
+        <div class="container mx-auto max-w-3xl flex flex-col md:flex-row justify-between gap-4">
+            <span>&copy; 2026 Raízes Soluções. Todos os direitos reservados.</span>
+            <div class="flex gap-6">
+                <a href="/privacidade" class="hover:text-gray-900">Privacidade</a>
+                <a href="/seguranca" class="hover:text-gray-900">Segurança</a>
+                <a href="/termos" class="hover:text-gray-900">Termos</a>
+                <a href="/excluir-dados" class="hover:text-gray-900">Excluir dados</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

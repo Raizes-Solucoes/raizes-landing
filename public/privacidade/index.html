@@ -34,7 +34,7 @@
         <article class="container mx-auto max-w-3xl prose">
             <p class="text-sm text-gray-500 uppercase tracking-widest mb-2">Documento legal</p>
             <h1 class="text-4xl md:text-5xl font-bold mb-4">Política de Privacidade</h1>
-            <p class="text-sm text-gray-500 mb-12">Última atualização: 14 de julho de 2026</p>
+            <p class="text-sm text-gray-500 mb-12">Última atualização: 3 de novembro de 2026</p>
 
             <h2>1. Quem somos</h2>
             <p>
@@ -144,11 +144,16 @@
             <h2>8. Segurança</h2>
             <ul>
                 <li>Senhas armazenadas com hash bcrypt</li>
-                <li>Tokens de acesso de terceiros criptografados em repouso</li>
-                <li>Tráfego sempre via HTTPS/TLS</li>
+                <li>Tokens de acesso de terceiros guardados apenas no servidor, em tabelas que só o servidor lê, e apagados quando você desconecta a integração</li>
+                <li>Dados criptografados em repouso (AES-256) pelo provedor do banco de dados</li>
+                <li>Tráfego sempre via HTTPS/TLS (versão 1.2 ou superior)</li>
                 <li>Acesso administrativo restrito por papel (RBAC) e autenticação obrigatória</li>
                 <li>Backups diários com retenção de 7 dias</li>
             </ul>
+            <p>
+                Os detalhes dos nossos controles, as metas de recuperação e os documentos de segurança estão em
+                <a href="/seguranca" class="text-blue-600 underline">/seguranca</a>.
+            </p>
 
             <h2>9. Crianças</h2>
             <p>
@@ -168,7 +173,7 @@
             </p>
             <p>
                 <strong>Email</strong>: <a href="mailto:contato@raizesolucoes.com.br" class="text-blue-600 underline">contato@raizesolucoes.com.br</a><br/>
-                <strong>Razão social</strong>: Raízes Soluções<br/>
+                <strong>Razão social</strong>: Raízes Soluções e Tecnologia Ltda<br/>
                 <strong>CNPJ</strong>: 51.467.037/0001-65<br/>
                 <strong>Endereço</strong>: Rua José Augusto de Oliveira, 48 — Petrópolis, Betim/MG, CEP 32655-164
             </p>
@@ -180,6 +185,7 @@
             <span>&copy; 2026 Raízes Soluções. Todos os direitos reservados.</span>
             <div class="flex gap-6">
                 <a href="/privacidade" class="hover:text-gray-900">Privacidade</a>
+                <a href="/seguranca" class="hover:text-gray-900">Segurança</a>
                 <a href="/termos" class="hover:text-gray-900">Termos</a>
                 <a href="/excluir-dados" class="hover:text-gray-900">Excluir dados</a>
             </div>
