@@ -391,7 +391,7 @@ function Modal({ title, subtitle, onClose, children, width = 480 }) {
   );
 }
 
-function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, onCancel, requireTyping, typingTarget }) {
+function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, onCancel, requireTyping, typingTarget, error }) {
   const [typed, setTyped] = useState('');
   const [loading, setLoading] = useState(false);
   const canConfirm = requireTyping ? typed === typingTarget : true;
@@ -406,6 +406,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
     <Modal title={title} onClose={onCancel} width={440}>
       <div style={{ padding: '20px 28px' }}>
         <p style={{ fontSize: 14, color: colors.earth, lineHeight: 1.6 }}>{message}</p>
+        {error && <p style={{ fontSize: 13, fontWeight: 600, color: colors.danger, lineHeight: 1.5, marginTop: 12 }}>{error}</p>}
         {requireTyping && (
           <div style={{ marginTop: 16 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: colors.muted }}>
@@ -1252,6 +1253,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'user' });
   const [creating, setCreating] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [deleteErro, setDeleteErro] = useState('');
   const [resetTarget, setResetTarget] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [tab, setTab] = useState('geral');
@@ -1373,15 +1375,21 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   };
 
   const deleteOrg = async () => {
-    // O servidor só apaga empresa já suspensa e confere o slug (confirmSlug): a trava não depende só desta tela.
-    const data = await callFn('deactivate-org', { orgId: org.id, action: 'delete', confirmSlug: org.slug });
-    if (data.ok) {
-      onClose();
-      onRefreshOrgs();
-    } else {
-      setMsg({ type: 'error', text: data.error || 'Erro ao deletar' });
+    setDeleteErro('');
+    try {
+      // O servidor só apaga empresa já suspensa e confere o slug (confirmSlug): a trava não depende só desta tela.
+      const data = await callFn('deactivate-org', { orgId: org.id, action: 'delete', confirmSlug: org.slug });
+      if (data.ok) {
+        setConfirmAction(null);
+        onClose();
+        onRefreshOrgs();
+        return;
+      }
+      // A recusa fica DENTRO da janela: o aviso do topo do painel fica fora da vista de quem clicou lá embaixo.
+      setDeleteErro(data.error === 'Failed to delete organization' ? 'Não foi possível apagar a organização.' + (data.details ? ' (' + data.details + ')' : '') : (data.error || 'Erro ao deletar'));
+    } catch (e) {
+      setDeleteErro('Não foi possível concluir. Confira a lista de organizações antes de tentar de novo.');
     }
-    setConfirmAction(null);
   };
 
   const adminUser = users.find(u => u.role === 'admin');
@@ -1548,7 +1556,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <span style={{ width: 16, height: 16, display: 'flex' }}>{Icons.external}</span>
             Impersonar Admin
           </button>
-          <button onClick={() => setConfirmAction('delete')} style={{ padding: '11px 16px', background: 'rgba(239,68,68,0.06)', color: colors.danger, border: '1px solid rgba(239,68,68,0.12)', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
+          <button onClick={() => { setDeleteErro(''); setConfirmAction('delete'); }} style={{ padding: '11px 16px', background: 'rgba(239,68,68,0.06)', color: colors.danger, border: '1px solid rgba(239,68,68,0.12)', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
             <span style={{ width: 16, height: 16, display: 'flex' }}>{Icons.trash}</span>
             Deletar
           </button>
@@ -1688,8 +1696,9 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
           confirmColor={colors.danger}
           requireTyping={true}
           typingTarget={org.name}
+          error={deleteErro}
           onConfirm={deleteOrg}
-          onCancel={() => setConfirmAction(null)}
+          onCancel={() => { setConfirmAction(null); setDeleteErro(''); }}
         />
       )}
     </div>
