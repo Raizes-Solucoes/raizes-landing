@@ -1373,7 +1373,8 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   };
 
   const deleteOrg = async () => {
-    const data = await callFn('deactivate-org', { orgId: org.id, action: 'delete' });
+    // O servidor só apaga empresa já suspensa e confere o slug (confirmSlug): a trava não depende só desta tela.
+    const data = await callFn('deactivate-org', { orgId: org.id, action: 'delete', confirmSlug: org.slug });
     if (data.ok) {
       onClose();
       onRefreshOrgs();
@@ -1682,7 +1683,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
       {confirmAction === 'delete' && (
         <ConfirmModal
           title="Deletar Organização"
-          message={`Essa ação é irreversível. Todos os dados serão permanentemente removidos: usuários, deals, clientes, chats e mensagens de "${org.name}".`}
+          message={`${org.isActive ? 'Esta organização ainda está ativa: suspenda antes de deletar. ' : ''}Essa ação é irreversível. Todos os dados serão permanentemente removidos: usuários, deals, clientes, chats e mensagens de "${org.name}".`}
           confirmLabel="Deletar Permanentemente"
           confirmColor={colors.danger}
           requireTyping={true}
