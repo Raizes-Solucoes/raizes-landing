@@ -1071,6 +1071,15 @@ function ModulesPanel({ org, onSaved, setMsg }) {
 // ─── Nina Atendimento (config cross-org) ───
 // Usa a edge nina-atendimento-config com targetOrgId (super_admin) para ler/gravar a
 // config da Nina de OUTRA org. Guard-rail: em LIVE bloqueia save com placeholders [X].
+// O `mode` que vai no salvar da Nina. A tela mostra o modo EFETIVO (o mais restritivo entre o
+// mestre da org e o público lead) e a edge grava em `mode` o que vier: reenviar o efetivo sem a
+// pessoa mexer rebaixava o mestre (live → shadow, e o público recorrente junto). Sem mexer no
+// seletor → o mestre (`mode_mestre`, que a edge passou a mandar no get); mexeu → o da tela. Edge
+// antiga, sem o campo → o de sempre (o da tela).
+const MODOS_NINA = ['off', 'shadow', 'live'];
+const modoParaGravar = (lido, naTela) =>
+  (lido && MODOS_NINA.includes(lido.mestre) && naTela === lido.mostrado) ? lido.mestre : naTela;
+
 function NinaConfigPanel({ org, setMsg }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1078,6 +1087,8 @@ function NinaConfigPanel({ org, setMsg }) {
   // Erro ao LER a config: o formulário não aparece. Antes o erro virava os valores padrão
   // (mode off, tudo vazio) e o "Salvar" seguinte gravava isso por cima da config real.
   const [erroCarga, setErroCarga] = useState('');
+  // O modo como veio do get: o que a tela mostra (efetivo) e o gravado da org (mestre).
+  const [modoLido, setModoLido] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -1085,11 +1096,13 @@ function NinaConfigPanel({ org, setMsg }) {
     const data = await callFn('nina-atendimento-config', { action: 'get', targetOrgId: org.id });
     if (!data.ok) { setErroCarga(data.error); setLoading(false); return; }
     const c = data.config || {};
+    const mostrado = MODOS_NINA.includes(c.mode) ? c.mode : 'off';
+    setModoLido({ mostrado, mestre: MODOS_NINA.includes(c.mode_mestre) ? c.mode_mestre : null });
     setCfg({
       // Sem campo na tela, mas a edge grava `reengage_after_minutes ?? null` a cada save:
       // não reenviar o valor lido DESLIGAVA o rearme por inatividade em todo salvar.
       reengage_after_minutes: Number.isInteger(c.reengage_after_minutes) && c.reengage_after_minutes > 0 ? c.reengage_after_minutes : null,
-      mode: ['off', 'shadow', 'live'].includes(c.mode) ? c.mode : 'off',
+      mode: mostrado,
       persona: c.persona || '', greeting: c.greeting || '', tone: c.tone || '',
       off_hours_message: c.off_hours_message || '',
       turn_cap: Number.isFinite(c.turn_cap) ? c.turn_cap : 6,
@@ -1113,14 +1126,18 @@ function NinaConfigPanel({ org, setMsg }) {
     if (!Array.isArray(canned_answers) || !canned_answers.every(c => c && typeof c.q === 'string' && typeof c.a === 'string')) return setMsg({ type: 'error', text: 'canned_answers deve ser array de {q, a}' });
     const cap = Number(cfg.turn_cap);
     if (!Number.isInteger(cap) || cap <= 0) return setMsg({ type: 'error', text: 'turn_cap deve ser inteiro > 0' });
-    if (cfg.mode === 'live') {
+    const modo = modoParaGravar(modoLido, cfg.mode);
+    if (modo === 'live') {
       const texts = [cfg.persona, cfg.greeting, cfg.off_hours_message, ...canned_answers.flatMap(c => [c.q, c.a])];
       if (texts.some(t => typeof t === 'string' && t.includes('[') && t.includes(']'))) return setMsg({ type: 'error', text: 'Remova placeholders [X] antes de ir a LIVE' });
     }
     setSaving(true);
-    const data = await callFn('nina-atendimento-config', { action: 'save', targetOrgId: org.id, mode: cfg.mode, persona: cfg.persona, greeting: cfg.greeting, tone: cfg.tone, off_hours_message: cfg.off_hours_message, turn_cap: cap, business_hours, handoff_rules, canned_answers, reengage_after_minutes: cfg.reengage_after_minutes });
-    if (data.ok) setMsg({ type: 'success', text: 'Config da Nina salva.' });
-    else setMsg({ type: 'error', text: data.error || 'Erro ao salvar' });
+    const data = await callFn('nina-atendimento-config', { action: 'save', targetOrgId: org.id, mode: modo, persona: cfg.persona, greeting: cfg.greeting, tone: cfg.tone, off_hours_message: cfg.off_hours_message, turn_cap: cap, business_hours, handoff_rules, canned_answers, reengage_after_minutes: cfg.reengage_after_minutes });
+    if (data.ok) {
+      // O que ficou gravado é `modo`; o seletor segue mostrando o mesmo.
+      setModoLido({ mostrado: cfg.mode, mestre: modo });
+      setMsg({ type: 'success', text: 'Config da Nina salva.' });
+    } else setMsg({ type: 'error', text: data.error || 'Erro ao salvar' });
     setSaving(false);
   };
 
