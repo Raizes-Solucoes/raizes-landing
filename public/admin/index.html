@@ -151,14 +151,48 @@ const planNames = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
 const planPrices = { starter: 97, pro: 197, enterprise: 497 };
 
 // ─── Helpers ───
+// REGRA ÚNICA de sucesso e erro de TODA chamada às edge functions (35 chamadas, 12 edges).
+// Cada edge responde o sucesso de um jeito: `{ ok: true }`, `{ user }` (create-user, 201),
+// `{ orgs }`, `{ config }`, `{ instances }`, `{ kpis, ... }`. O painel lia cada uma do seu
+// jeito e errava: `data.ok` no create-user mostrava "Erro ao criar usuário" com o usuário
+// criado; `{ error }` do admin-dashboard virava painel zerado; erro de lista virava lista
+// vazia. O que TODAS têm em comum é o status HTTP: 2xx é sucesso, o resto é erro com
+// `{ error }` (as recusas da plataforma, antes de a edge rodar, vêm em `{ message }`). Então
+// `lerResposta` devolve o corpo da edge com três campos que valem para todas:
+//   ok         → true só com 2xx e sem `ok: false`/`error` no corpo
+//   error      → a frase da edge (`error`, senão `message`), ou uma frase com o status
+//   httpStatus → o status (não `status`: o extend_trial devolve `status` no corpo)
+// e `callFn` NUNCA lança: sem sessão, sem rede ou com corpo que não é JSON (502/504 do
+// gateway) devolve ok:false com a frase. Antes lançava, e o botão ficava em "Salvando...".
+// `semResposta: true` = a resposta não chegou ou não deu para ler: a ação pode ter
+// acontecido, então a frase manda conferir antes de repetir.
+// Quem chama confere SÓ `data.ok` e mostra `data.error`.
+const lerResposta = (httpStatus, corpo) => {
+  const c = (corpo && typeof corpo === 'object' && !Array.isArray(corpo)) ? corpo : {};
+  const frase = (typeof c.error === 'string' && c.error.trim()) ? c.error
+    : (typeof c.message === 'string' && c.message.trim()) ? c.message : '';
+  const ok = httpStatus >= 200 && httpStatus < 300 && c.ok !== false && !c.error;
+  return { ...c, ok, httpStatus, error: ok ? undefined : (frase || `O servidor recusou o pedido (HTTP ${httpStatus}).`) };
+};
+const SEM_RESPOSTA = 'A resposta do servidor não chegou. A ação pode ter sido feita: confira antes de repetir.';
 const callFn = async (fn, body = {}) => {
-  const { data: { session: s } } = await sb.auth.getSession();
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.access_token}` },
-    body: JSON.stringify(body)
-  });
-  return res.json();
+  let s = null;
+  try { s = (await sb.auth.getSession()).data.session; } catch (_) { s = null; }
+  if (!s || !s.access_token) return { ok: false, httpStatus: 0, error: 'Sessão expirada: entre de novo no painel.' };
+  let res;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.access_token}` },
+      body: JSON.stringify(body)
+    });
+  } catch (_) {
+    return { ok: false, httpStatus: 0, semResposta: true, error: SEM_RESPOSTA };
+  }
+  let corpo;
+  try { corpo = await res.json(); }
+  catch (_) { return { ok: false, httpStatus: res.status, semResposta: true, error: `${SEM_RESPOSTA} (HTTP ${res.status})` }; }
+  return lerResposta(res.status, corpo);
 };
 
 // 'YYYY-MM-DD' puro é interpretado pelo JS como meia-noite UTC, e em UTC−3 o
@@ -426,11 +460,21 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
   );
 }
 
+// type: 'success' | 'error' | 'warning' (deu certo, com ressalva que a edge mandou).
+// O aviso fica no topo do painel; quem clicou lá embaixo não o via. Então ele rola até ficar à vista.
 function Toast({ msg, onClear }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (msg && ref.current && ref.current.scrollIntoView) ref.current.scrollIntoView({ block: 'nearest' });
+  }, [msg]);
   if (!msg) return null;
   const isError = msg.type === 'error';
+  const isWarn = msg.type === 'warning';
+  const bg = isError ? '#fef2f2' : isWarn ? '#fffbeb' : '#f0fdf4';
+  const fg = isError ? colors.danger : isWarn ? '#92400e' : '#166534';
+  const borda = isError ? 'rgba(239,68,68,0.15)' : isWarn ? 'rgba(146,64,14,0.2)' : 'rgba(22,101,52,0.15)';
   return (
-    <div className="fade-in" style={{ padding: '12px 18px', borderRadius: 14, marginBottom: 20, fontSize: 13, fontWeight: 500, background: isError ? '#fef2f2' : '#f0fdf4', color: isError ? colors.danger : '#166534', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${isError ? 'rgba(239,68,68,0.15)' : 'rgba(22,101,52,0.15)'}` }}>
+    <div ref={ref} role={isError ? 'alert' : 'status'} data-toast={msg.type} className="fade-in" style={{ padding: '12px 18px', borderRadius: 14, marginBottom: 20, fontSize: 13, fontWeight: 500, background: bg, color: fg, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${borda}` }}>
       {msg.text}
       <button onClick={onClear} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'inherit', fontSize: 16, padding: '0 0 0 12px' }}>×</button>
     </div>
@@ -527,17 +571,19 @@ function GrowthChart({ orgs }) {
 // ─── Overview Panel ───
 function OverviewPanel() {
   const [data, setData] = useState(null);
+  const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // `{ error }` é um objeto: guardado em `data`, o painel desenhava todos os números zerados.
     callFn('admin-dashboard').then(d => {
-      setData(d);
+      if (d.ok) setData(d); else setErro(d.error);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ textAlign: 'center', padding: 80, color: colors.muted, fontSize: 14 }}>Carregando...</div>;
-  if (!data) return <div style={{ textAlign: 'center', padding: 80, color: colors.muted, fontSize: 14 }}>Erro ao carregar dados</div>;
+  if (!data) return <div role="alert" style={{ textAlign: 'center', padding: 80, color: colors.danger, fontSize: 14 }}>Erro ao carregar dados{erro ? `: ${erro}` : ''}</div>;
 
   const kpis = data.kpis || {};
   const growth = data.growth || {};
@@ -871,7 +917,12 @@ function ModulesPanel({ org, onSaved, setMsg }) {
     setSaving(true);
     const data = await callFn('admin-update-org-settings', { orgId: org.id, features: pending });
     if (data.ok) {
-      setMsg && setMsg({ type: 'success', text: 'Módulos atualizados. O cliente vê no próximo login (F5).' });
+      // A edge grava só as flags do catálogo dela e devolve as outras em `ignored`: "atualizados"
+      // sem dizer quais ficaram de fora faz o painel afirmar uma gravação que não houve.
+      const ignoradas = Array.isArray(data.ignored) ? data.ignored : [];
+      setMsg && setMsg(ignoradas.length
+        ? { type: 'warning', text: `Módulos atualizados, menos ${ignoradas.join(', ')}: o servidor não conhece ${ignoradas.length > 1 ? 'essas flags' : 'essa flag'} e não gravou.` }
+        : { type: 'success', text: 'Módulos atualizados. O cliente vê no próximo login (F5).' });
       setPending({});
       onSaved && onSaved();
     } else {
@@ -1023,13 +1074,21 @@ function ModulesPanel({ org, onSaved, setMsg }) {
 function NinaConfigPanel({ org, setMsg }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [cfg, setCfg] = useState({ mode: 'off', persona: '', greeting: '', tone: '', off_hours_message: '', turn_cap: 6, business_hours: '{}', handoff_rules: '[]', canned_answers: '[]' });
+  const [cfg, setCfg] = useState({ mode: 'off', persona: '', greeting: '', tone: '', off_hours_message: '', turn_cap: 6, business_hours: '{}', handoff_rules: '[]', canned_answers: '[]', reengage_after_minutes: null });
+  // Erro ao LER a config: o formulário não aparece. Antes o erro virava os valores padrão
+  // (mode off, tudo vazio) e o "Salvar" seguinte gravava isso por cima da config real.
+  const [erroCarga, setErroCarga] = useState('');
 
   const load = async () => {
     setLoading(true);
+    setErroCarga('');
     const data = await callFn('nina-atendimento-config', { action: 'get', targetOrgId: org.id });
-    const c = data?.config || {};
+    if (!data.ok) { setErroCarga(data.error); setLoading(false); return; }
+    const c = data.config || {};
     setCfg({
+      // Sem campo na tela, mas a edge grava `reengage_after_minutes ?? null` a cada save:
+      // não reenviar o valor lido DESLIGAVA o rearme por inatividade em todo salvar.
+      reengage_after_minutes: Number.isInteger(c.reengage_after_minutes) && c.reengage_after_minutes > 0 ? c.reengage_after_minutes : null,
       mode: ['off', 'shadow', 'live'].includes(c.mode) ? c.mode : 'off',
       persona: c.persona || '', greeting: c.greeting || '', tone: c.tone || '',
       off_hours_message: c.off_hours_message || '',
@@ -1059,13 +1118,19 @@ function NinaConfigPanel({ org, setMsg }) {
       if (texts.some(t => typeof t === 'string' && t.includes('[') && t.includes(']'))) return setMsg({ type: 'error', text: 'Remova placeholders [X] antes de ir a LIVE' });
     }
     setSaving(true);
-    const data = await callFn('nina-atendimento-config', { action: 'save', targetOrgId: org.id, mode: cfg.mode, persona: cfg.persona, greeting: cfg.greeting, tone: cfg.tone, off_hours_message: cfg.off_hours_message, turn_cap: cap, business_hours, handoff_rules, canned_answers });
+    const data = await callFn('nina-atendimento-config', { action: 'save', targetOrgId: org.id, mode: cfg.mode, persona: cfg.persona, greeting: cfg.greeting, tone: cfg.tone, off_hours_message: cfg.off_hours_message, turn_cap: cap, business_hours, handoff_rules, canned_answers, reengage_after_minutes: cfg.reengage_after_minutes });
     if (data.ok) setMsg({ type: 'success', text: 'Config da Nina salva.' });
     else setMsg({ type: 'error', text: data.error || 'Erro ao salvar' });
     setSaving(false);
   };
 
   if (loading) return <div style={{ textAlign: 'center', color: colors.muted, padding: 32, fontSize: 13 }}>Carregando config da Nina...</div>;
+  if (erroCarga) return (
+    <div role="alert" style={{ textAlign: 'center', padding: 32, fontSize: 13, color: colors.danger }}>
+      Não foi possível ler a config da Nina: {erroCarga}
+      <div style={{ marginTop: 12 }}><button onClick={load} className="input" style={{ width: 'auto', cursor: 'pointer', fontWeight: 600 }}>Tentar de novo</button></div>
+    </div>
+  );
 
   const ta = { width: '100%', padding: '10px 14px', border: '1px solid rgba(60,61,55,0.12)', borderRadius: 12, fontSize: 13, fontFamily: 'DM Sans, sans-serif', background: '#fff', color: colors.earth, outline: 'none', resize: 'vertical' };
   const mono = { ...ta, fontFamily: 'monospace', fontSize: 12 };
@@ -1113,6 +1178,7 @@ function ChannelsPanel({ org, setMsg, onRefreshOrgs }) {
   const currentProvider = org.settings?.whatsapp_provider || 'evolution';
   const [provider, setProvider] = useState(currentProvider);
   const [instances, setInstances] = useState([]);
+  const [erroLista, setErroLista] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -1121,8 +1187,14 @@ function ChannelsPanel({ org, setMsg, onRefreshOrgs }) {
   useEffect(() => {
     let alive = true;
     setLoading(true);
+    setErroLista('');
     callFn('instance-manage', { action: 'list', orgId: org.id })
-      .then(res => { if (alive) { const arr = res?.instances ?? (Array.isArray(res) ? res : []); setInstances(arr); } })
+      .then(res => {
+        if (!alive) return;
+        // Erro (403, 500) virava "Nenhuma instância": a frase da edge some e a tela afirma o que não sabe.
+        if (!res.ok) { setInstances([]); setErroLista(res.error); return; }
+        setInstances(Array.isArray(res.instances) ? res.instances : []);
+      })
       .catch(() => { if (alive) setInstances([]); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
@@ -1131,7 +1203,7 @@ function ChannelsPanel({ org, setMsg, onRefreshOrgs }) {
   const applyProvider = async () => {
     setSaving(true);
     const data = await callFn('admin-update-org-settings', { orgId: org.id, settings: { whatsapp_provider: provider } });
-    if (data.ok) { setMsg({ type: 'success', text: `Provider alterado para "${provider}".` }); onRefreshOrgs && onRefreshOrgs(); }
+    if (data.ok) { const aviso = { type: 'success', text: `Provider alterado para "${provider}".` }; setMsg(aviso); onRefreshOrgs && onRefreshOrgs(aviso); }
     else setMsg({ type: 'error', text: data.error || 'Erro ao trocar provider' });
     setSaving(false);
     setConfirming(false);
@@ -1158,6 +1230,8 @@ function ChannelsPanel({ org, setMsg, onRefreshOrgs }) {
         <span style={{ fontSize: 11, color: colors.muted, fontWeight: 600 }}>INSTÂNCIAS</span>
         {loading ? (
           <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Carregando...</div>
+        ) : erroLista ? (
+          <div role="alert" style={{ textAlign: 'center', color: colors.danger, padding: 20, fontSize: 13 }}>Não foi possível listar as instâncias: {erroLista}</div>
         ) : instances.length === 0 ? (
           <div style={{ textAlign: 'center', color: colors.muted, padding: 20, fontSize: 13 }}>Nenhuma instância — o cliente conecta pela própria tela de Configurações.</div>
         ) : (
@@ -1250,8 +1324,16 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   );
   const [salvandoValor, setSalvandoValor] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'user' });
+  // Papéis que a create-user aceita do super_admin: admin, consultor e agent (os mesmos do Miller, em
+  // Usuarios.tsx). O select mandava 'user' e 'manager', que a edge sempre recusou com 403.
+  // Na empresa com `permissoes_por_usuario`, Consultor exige a função (campo que este painel não
+  // tem) e Agente não existe: a edge recusa, e a frase dela aparece na janela.
+  const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'consultor' });
   const [creating, setCreating] = useState(false);
+  // Erro de criar usuário e de trocar senha fica DENTRO da janela: o aviso do topo do painel fica
+  // atrás do fundo escurecido da janela aberta, e a frase da senha forte não chegava a ninguém.
+  const [userErro, setUserErro] = useState('');
+  const [resetErro, setResetErro] = useState('');
   const [confirmAction, setConfirmAction] = useState(null);
   const [deleteErro, setDeleteErro] = useState('');
   const [resetTarget, setResetTarget] = useState(null);
@@ -1282,40 +1364,53 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const loadUsers = async () => {
     setLoading(true);
     const data = await callFn('admin-manage-users', { action: 'list', orgId: org.id });
-    if (data.users) setUsers(data.users);
+    if (data.ok) setUsers(Array.isArray(data.users) ? data.users : []);
+    else setMsg({ type: 'error', text: `Não foi possível listar os usuários: ${data.error}` });
     setLoading(false);
   };
+
+  // O painel lateral fecha ao recarregar a lista de organizações: o aviso vai junto para a
+  // página, senão some com o painel.
+  const fecharComAviso = (aviso) => { setMsg(aviso); onRefreshOrgs && onRefreshOrgs(aviso); };
 
   useEffect(() => { loadUsers(); }, [org.id]);
 
   const toggleUser = async (userId, isActive) => {
-    await callFn('admin-manage-users', { action: 'toggle', userId, isActive: !isActive });
-    loadUsers();
+    // A resposta era ignorada: uma recusa parecia "não aconteceu nada".
+    const data = await callFn('admin-manage-users', { action: 'toggle', userId, isActive: !isActive });
+    if (!data.ok) setMsg({ type: 'error', text: data.error });
+    // #362: a ação aconteceu, mas a trilha de administração não gravou (`auditoria: false`).
+    else if (data.auditoria === false) setMsg({ type: 'warning', text: `Usuário ${isActive ? 'desativado' : 'ativado'}, mas o histórico de administração não registrou a ação.` });
+    await loadUsers();
   };
 
   const resetPassword = async () => {
     if (!resetTarget || !newPassword) return;
+    setResetErro('');
     const data = await callFn('admin-manage-users', { action: 'reset-password', userId: resetTarget.id, newPassword });
-    if (data.ok) setMsg({ type: 'success', text: `Senha alterada com sucesso.` });
-    else setMsg({ type: 'error', text: data.error || 'Erro ao resetar senha' });
+    // Na recusa (senha fraca, trilha que não gravou) a janela fica aberta com a frase da edge.
+    if (!data.ok) { setResetErro(data.error); return; }
+    setMsg({ type: 'success', text: `Senha alterada com sucesso.` });
     setResetTarget(null);
     setNewPassword('');
   };
 
   const createUser = async () => {
+    setUserErro('');
     if (!userForm.name || !userForm.username || !userForm.password) {
-      setMsg({ type: 'error', text: 'Preencha todos os campos' });
+      setUserErro('Preencha todos os campos');
       return;
     }
     setCreating(true);
+    // A create-user responde `{ user }` com 201, sem `ok`: o `data.ok` daqui vem do status (callFn).
     const data = await callFn('create-user', { orgId: org.id, name: userForm.name, username: userForm.username, password: userForm.password, role: userForm.role });
     if (data.ok) {
       setMsg({ type: 'success', text: `Usuário ${userForm.username} criado!` });
       setShowUserModal(false);
-      setUserForm({ name: '', username: '', password: '', role: 'user' });
+      setUserForm({ name: '', username: '', password: '', role: 'consultor' });
       loadUsers();
     } else {
-      setMsg({ type: 'error', text: data.error || 'Erro ao criar usuário' });
+      setUserErro(data.error);
     }
     setCreating(false);
   };
@@ -1330,9 +1425,8 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
     });
     setSalvandoValor(false);
     if (data.ok) {
-      setMsg({ type: 'success', text: data.negotiated_monthly_amount == null ? 'Voltou ao preço de tabela.' : 'Valor atualizado!' });
       onUpdate();
-      onRefreshOrgs && onRefreshOrgs();
+      fecharComAviso({ type: 'success', text: data.negotiated_monthly_amount == null ? 'Voltou ao preço de tabela.' : 'Valor atualizado!' });
     } else {
       setMsg({ type: 'error', text: data.error || 'Falha ao salvar o valor' });
     }
@@ -1341,9 +1435,8 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
   const salvarCategoria = async (category) => {
     const data = await callFn('manage-subscription', { orgId: org.id, action: 'set_category', category });
     if (data.ok) {
-      setMsg({ type: 'success', text: 'Categoria atualizada!' });
       onUpdate();
-      onRefreshOrgs && onRefreshOrgs();
+      fecharComAviso({ type: 'success', text: 'Categoria atualizada!' });
     } else {
       setMsg({ type: 'error', text: data.error || 'Falha ao mudar a categoria' });
     }
@@ -1355,10 +1448,9 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
     // mudava nada. Agora usa a edge manage-subscription (action change_plan).
     const data = await callFn('manage-subscription', { orgId: org.id, action: 'change_plan', planSlug: selectedPlan });
     if (data.ok) {
-      setMsg({ type: 'success', text: 'Plano atualizado!' });
       setEditPlan(false);
       onUpdate();
-      onRefreshOrgs && onRefreshOrgs();
+      fecharComAviso({ type: 'success', text: 'Plano atualizado!' });
     } else {
       setMsg({ type: 'error', text: data.error || 'Erro ao atualizar plano' });
     }
@@ -1366,7 +1458,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
 
   const impersonate = async () => {
     const data = await callFn('admin-manage-users', { action: 'impersonate', orgId: org.id });
-    if (data.magicLink) {
+    if (data.ok && data.magicLink) {
       setMsg({ type: 'success', text: 'Abrindo CRM como admin...' });
       window.open(data.magicLink, '_blank');
     } else {
@@ -1382,11 +1474,18 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
       if (data.ok) {
         setConfirmAction(null);
         onClose();
-        onRefreshOrgs();
+        // #361: a empresa saiu do banco, mas algum usuário do Auth não foi apagado (`authUsersFailed`).
+        const falhas = Number(data.authUsersFailed) || 0;
+        onRefreshOrgs(falhas > 0
+          ? { type: 'warning', text: `"${org.name}" apagada, mas ${falhas} usuário(s) do login não foram apagados: confira no Auth do Supabase.` }
+          : { type: 'success', text: `"${org.name}" apagada.` });
         return;
       }
+      // Sem resposta, a exclusão pode ter acontecido: a frase manda conferir antes de repetir.
+      if (data.semResposta) { setDeleteErro('Não foi possível concluir. Confira a lista de organizações antes de tentar de novo.'); return; }
       // A recusa fica DENTRO da janela: o aviso do topo do painel fica fora da vista de quem clicou lá embaixo.
-      setDeleteErro(data.error === 'Failed to delete organization' ? 'Não foi possível apagar a organização.' + (data.details ? ' (' + data.details + ')' : '') : (data.error || 'Erro ao deletar'));
+      // `details` vem nos 500 da edge (falha de leitura, falha da cascata): sem ele, a frase não diz o porquê.
+      setDeleteErro((data.error === 'Failed to delete organization' ? 'Não foi possível apagar a organização.' : data.error) + (data.details ? ' (' + data.details + ')' : ''));
     } catch (e) {
       setDeleteErro('Não foi possível concluir. Confira a lista de organizações antes de tentar de novo.');
     }
@@ -1570,7 +1669,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
               const days = prompt('Quantos dias deseja estender o trial?', '14');
               if (!days || isNaN(Number(days))) return;
               const data = await callFn('manage-subscription', { orgId: org.id, action: 'extend_trial', days: Number(days) });
-              if (data.ok) { setMsg({ type: 'success', text: `Trial estendido por ${days} dias` }); onRefreshOrgs(); }
+              if (data.ok) fecharComAviso({ type: 'success', text: `Trial estendido por ${days} dias` });
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(57,77,250,0.06)', color: colors.blue, border: '1px solid rgba(57,77,250,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               Estender Trial
@@ -1578,7 +1677,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <button onClick={async () => {
               if (!confirm('Ativar esta organização como cliente ativo?')) return;
               const data = await callFn('manage-subscription', { orgId: org.id, action: 'activate' });
-              if (data.ok) { setMsg({ type: 'success', text: 'Organização ativada!' }); onRefreshOrgs(); }
+              if (data.ok) fecharComAviso({ type: 'success', text: 'Organização ativada!' });
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ flex: 1, padding: '10px 14px', background: 'rgba(22,163,74,0.06)', color: colors.green, border: '1px solid rgba(22,163,74,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               Ativar
@@ -1586,7 +1685,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <button onClick={async () => {
               if (!confirm('Suspender esta organização? Os usuários verão a tela de expiração.')) return;
               const data = await callFn('manage-subscription', { orgId: org.id, action: 'suspend' });
-              if (data.ok) { setMsg({ type: 'success', text: 'Organização suspensa' }); onRefreshOrgs(); }
+              if (data.ok) fecharComAviso({ type: 'success', text: 'Organização suspensa' });
               else setMsg({ type: 'error', text: data.error || 'Erro' });
             }} style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.06)', color: colors.danger, border: '1px solid rgba(239,68,68,0.12)', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               Suspender
@@ -1619,7 +1718,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Usuários ({users.length})</span>
-            <button onClick={() => setShowUserModal(true)} className="btn-gradient" style={{ padding: '7px 16px', borderRadius: 10, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { setUserErro(''); setShowUserModal(true); }} className="btn-gradient" style={{ padding: '7px 16px', borderRadius: 10, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 14, height: 14, display: 'flex' }}>{Icons.plus}</span> Novo
             </button>
           </div>
@@ -1638,7 +1737,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
                     {user.last_login_at && <div style={{ fontSize: 11, color: colors.muted, marginTop: 3 }}>Último login: {formatDateTime(user.last_login_at)}</div>}
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => { setResetTarget(user); setNewPassword(''); }} title="Resetar senha" style={{ width: 34, height: 34, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 9, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, padding: 7 }}>{Icons.key}</button>
+                    <button onClick={() => { setResetTarget(user); setNewPassword(''); setResetErro(''); }} title="Resetar senha" style={{ width: 34, height: 34, border: '1px solid rgba(60,61,55,0.1)', borderRadius: 9, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, padding: 7 }}>{Icons.key}</button>
                     <button onClick={() => toggleUser(user.id, user.is_active)} style={{ padding: '6px 12px', border: '1px solid rgba(60,61,55,0.1)', borderRadius: 9, background: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: user.is_active ? colors.danger : colors.green }}>
                       {user.is_active ? 'Desativar' : 'Ativar'}
                     </button>
@@ -1657,6 +1756,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
         <Modal title="Resetar Senha" subtitle={`Usuário: @${(resetTarget.email || '').split('@')[0]}`} onClose={() => setResetTarget(null)} width={400}>
           <div style={{ padding: '20px 28px' }}>
             <input className="input" type="password" placeholder="Nova senha" value={newPassword} onChange={e => setNewPassword(e.target.value)} autoFocus />
+            {resetErro && <p role="alert" style={{ fontSize: 13, fontWeight: 600, color: colors.danger, lineHeight: 1.5, marginTop: 12 }}>{resetErro}</p>}
           </div>
           <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(60,61,55,0.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
             <button onClick={() => setResetTarget(null)} className="input" style={{ width: 'auto', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>Cancelar</button>
@@ -1673,10 +1773,11 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
             <input className="input" type="text" value={userForm.username} onChange={e => setUserForm({...userForm, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})} placeholder="Username *" />
             <input className="input" type="password" value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} placeholder="Senha *" />
             <select className="input" value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})}>
-              <option value="user">Usuário</option>
+              <option value="consultor">Consultor</option>
+              <option value="agent">Agente</option>
               <option value="admin">Admin</option>
-              <option value="manager">Gerente</option>
             </select>
+            {userErro && <p role="alert" style={{ fontSize: 13, fontWeight: 600, color: colors.danger, lineHeight: 1.5 }}>{userErro}</p>}
           </div>
           <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(60,61,55,0.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
             <button onClick={() => setShowUserModal(false)} className="input" style={{ width: 'auto', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>Cancelar</button>
@@ -1866,12 +1967,15 @@ function FinanceiroPanel() {
   const [form, setForm] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [cotacao, setCotacao] = useState(null);
+  const [cotacaoErro, setCotacaoErro] = useState('');
 
   // Busca a cotação só quando o formulário passa para dólar — não gasta chamada ao BCB
   // em quem só lança conta em real.
   useEffect(() => {
     if (form?.currency !== 'USD' || cotacao) return;
-    callFn('raizes-financeiro', { action: 'cotacao' }).then(d => { if (d.ok) setCotacao(d); });
+    // Sem cotação (o 503 "Banco Central indisponível agora") o campo ficava em "buscando…" para sempre.
+    setCotacaoErro('');
+    callFn('raizes-financeiro', { action: 'cotacao' }).then(d => { if (d.ok) setCotacao(d); else setCotacaoErro(d.error); });
   }, [form?.currency]);
 
   useEffect(() => { carregar(); }, [mes]);
@@ -1885,10 +1989,12 @@ function FinanceiroPanel() {
     setLoading(false);
     // Erro da edge aparece na tela. Descartar o error foi exatamente o que deixou a aba
     // Leads mostrando lista vazia por meses sem ninguém perceber.
-    if (lista.error) { setMsg({ type: 'error', text: lista.error }); return; }
+    if (!lista.ok) { setMsg({ type: 'error', text: lista.error }); return; }
     setDespesas(lista.despesas || []);
     setTotais(lista.totais || {});
-    setResultado(res.error ? null : res);
+    setResultado(res.ok ? res : null);
+    // O resultado do mês sumia da tela sem dizer por quê.
+    if (!res.ok) setMsg({ type: 'error', text: `Resultado do mês indisponível: ${res.error}` });
   };
 
   const salvar = async () => {
@@ -2016,7 +2122,7 @@ function FinanceiroPanel() {
           {form.currency === 'USD' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, fontSize: 12, color: colors.muted }}>
               <span>Câmbio PTAX (Banco Central):</span>
-              <input className="input" placeholder={cotacao ? cotacao.taxa.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : 'buscando…'} value={form.fxRate} onChange={e => setForm({ ...form, fxRate: e.target.value })} style={{ width: 110, flex: 'none' }} title="Deixe vazio para usar o PTAX do vencimento" />
+              <input className="input" placeholder={cotacao ? cotacao.taxa.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : cotacaoErro ? 'informe a taxa' : 'buscando…'} value={form.fxRate} onChange={e => setForm({ ...form, fxRate: e.target.value })} style={{ width: 110, flex: 'none' }} title="Deixe vazio para usar o PTAX do vencimento" />
               <span>
                 {(() => {
                   const taxa = parseFloat(String(form.fxRate).replace(',', '.')) || cotacao?.taxa;
@@ -2026,6 +2132,7 @@ function FinanceiroPanel() {
                 })()}
               </span>
               <span style={{ opacity: 0.7 }}>{form.fxRate ? '(taxa informada por você)' : cotacao ? `PTAX de ${formatDate(cotacao.data)}` : ''}</span>
+              {!cotacao && cotacaoErro && <span role="alert" style={{ color: colors.danger }}>{cotacaoErro}</span>}
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -2223,6 +2330,9 @@ function Dashboard({ session }) {
   const [createError, setCreateError] = useState(null); // erro do provision-org (só no passo 4; separado do toast global)
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
+  // Aviso dos templates: eles se salvam e se excluem DENTRO da janela de nova organização, e o
+  // aviso da página fica atrás do fundo escurecido dela.
+  const [tplMsg, setTplMsg] = useState(null);
   const [search, setSearch] = useState('');
   const [catFiltro, setCatFiltro] = useState('todas');
   const [activeTab, setActiveTab] = useState('overview');
@@ -2232,7 +2342,9 @@ function Dashboard({ session }) {
   const loadOrgs = async () => {
     setLoading(true);
     const data = await callFn('admin-list-orgs');
-    if (data.orgs) setOrgs(data.orgs);
+    if (data.ok) setOrgs(Array.isArray(data.orgs) ? data.orgs : []);
+    // Erro virava lista vazia ("nenhuma organização") sem frase nenhuma.
+    else setMsg({ type: 'error', text: `Não foi possível carregar as organizações: ${data.error}` });
     // Catálogo do backend (fonte de verdade: é contra ele que a edge valida no save).
     // Guardado para o painel conseguir mostrar flag que existe lá e ainda não foi
     // catalogada aqui — ver `naoCatalogadas`. Sem isto, flag nova fica INVISÍVEL.
@@ -2242,10 +2354,14 @@ function Dashboard({ session }) {
 
   useEffect(() => { loadOrgs(); loadTemplates(); }, []);
 
-  // Templates salvos (org_templates via edge admin-org-templates). Falha silenciosa →
-  // lista vazia → só os presets embutidos aparecem (fallback à prova de falha).
+  // Templates salvos (org_templates via edge admin-org-templates). Falha → só os presets
+  // embutidos aparecem (fallback à prova de falha), e o aviso diz por quê, na janela onde eles aparecem.
   const loadTemplates = async () => {
-    try { const data = await callFn('admin-org-templates', { action: 'list' }); if (data && data.templates) setDbTemplates(data.templates); }
+    try {
+      const data = await callFn('admin-org-templates', { action: 'list' });
+      if (data.ok && Array.isArray(data.templates)) setDbTemplates(data.templates);
+      else if (!data.ok) setTplMsg({ type: 'warning', text: `Os templates salvos não carregaram (${data.error}): só os embutidos aparecem.` });
+    }
     catch (_) { /* mantém só os embutidos */ }
   };
 
@@ -2279,14 +2395,14 @@ function Dashboard({ session }) {
       branding: { primaryColor: form.primaryColor, secondaryColor: form.secondaryColor, logoUrl: form.logoUrl, faviconUrl: form.faviconUrl },
     };
     const data = await callFn('admin-org-templates', { action: 'create', template });
-    if (data && data.ok) { setMsg({ type: 'success', text: `Template "${name.trim()}" salvo!` }); loadTemplates(); }
-    else setMsg({ type: 'error', text: (data && data.error) || 'Erro ao salvar template' });
+    if (data.ok) { setTplMsg({ type: 'success', text: `Template "${name.trim()}" salvo!` }); loadTemplates(); }
+    else setTplMsg({ type: 'error', text: data.error });
   };
   const deleteTemplate = async (id, name) => {
     if (!window.confirm(`Excluir o template "${name}"?`)) return;
     const data = await callFn('admin-org-templates', { action: 'delete', id });
-    if (data && data.ok) { if (presetKey === id) setPresetKey(null); loadTemplates(); }
-    else setMsg({ type: 'error', text: (data && data.error) || 'Erro ao excluir template' });
+    if (data.ok) { if (presetKey === id) setPresetKey(null); loadTemplates(); }
+    else setTplMsg({ type: 'error', text: data.error });
   };
   const toggleCreateModule = (key, value) => { setPresetKey(null); setForm(f => ({ ...f, features: { ...f.features, [key]: value } })); };
   const setLabelField = (key, value) => setForm(f => ({ ...f, labels: { ...f.labels, [key]: value } }));
@@ -2319,7 +2435,12 @@ function Dashboard({ session }) {
     if (Object.keys(cleanLabels).length > 0) payload.labels = cleanLabels;
     const data = await callFn('provision-org', payload);
     if (data.ok) {
-      setMsg({ type: 'success', text: `"${data.org.name}" criada com sucesso!` });
+      // Os passos 4 a 7 da provision-org são best-effort: o que falhou volta em `warnings`.
+      const avisos = Array.isArray(data.warnings) ? data.warnings : [];
+      const nome = (data.org && data.org.name) || form.orgName;
+      setMsg(avisos.length
+        ? { type: 'warning', text: `"${nome}" criada, com pendências de configuração: ${avisos.join('; ')}` }
+        : { type: 'success', text: `"${nome}" criada com sucesso!` });
       setShowModal(false);
       resetForm();
       loadOrgs();
@@ -2330,7 +2451,9 @@ function Dashboard({ session }) {
   };
 
   const toggleOrg = async (orgId, active) => {
-    await callFn('deactivate-org', { orgId, action: active ? 'deactivate' : 'activate' });
+    // A resposta era ignorada: a falha parecia "o botão não fez nada".
+    const data = await callFn('deactivate-org', { orgId, action: active ? 'deactivate' : 'activate' });
+    if (!data.ok) setMsg({ type: 'error', text: `Não foi possível ${active ? 'desativar' : 'ativar'} a organização: ${data.error}` });
     loadOrgs();
   };
 
@@ -2558,7 +2681,7 @@ function Dashboard({ session }) {
       </div>
 
       {/* Detail Panel */}
-      {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} onRefreshOrgs={() => { setSelectedOrg(null); loadOrgs(); }} />}
+      {selectedOrg && <OrgDetail org={selectedOrg} onClose={() => setSelectedOrg(null)} onUpdate={loadOrgs} onRefreshOrgs={(aviso) => { setSelectedOrg(null); if (aviso && aviso.text) setMsg(aviso); loadOrgs(); }} />}
 
       {/* Create Org Modal */}
       {showModal && (
@@ -2635,6 +2758,7 @@ function Dashboard({ session }) {
                       </div>
                     ))}
                   </div>
+                  {tplMsg && <div style={{ marginTop: 8 }}><Toast msg={tplMsg} onClear={() => setTplMsg(null)} /></div>}
                   <button type="button" onClick={saveAsTemplate} style={{ marginTop: 8, width: '100%', background: 'transparent', border: '1px dashed rgba(60,61,55,0.25)', borderRadius: 10, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.blue }}>
                     ＋ Salvar configuração atual como template
                   </button>
