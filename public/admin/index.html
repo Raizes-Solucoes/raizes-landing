@@ -1896,6 +1896,18 @@ function AutofixPanel() {
           <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
         </div>
 
+        {data.qualidade && (() => { const q = data.qualidade; const pct = (v) => (v == null ? '—' : `${v}%`); return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <StatCard label="Resolvidos pelo loop" value={pct(q.pctPeloLoop)} icon={Icons.bot} accent={colors.blue}
+              sub={`${q.resolvidosPeloLoop} de ${r.resolvidos ?? 0} sem código humano`} />
+            <StatCard label="Reabertos" value={pct(q.pctReabertos)} icon={Icons.ticket} accent={colors.danger}
+              sub={`${q.reaberturas} "não resolveu" no período`} />
+            <StatCard label="NPS" value={q.nps == null ? '—' : q.nps} icon={Icons.users} accent={colors.green}
+              sub={`${q.respostasNps} nota(s) · ${q.confirmaram} confirmaram`} />
+            <StatCard label="Tempo de agente" value={pct(q.pctTempoAgente)} icon={Icons.chart} accent={colors.leaf}
+              sub={`${String(q.horasAgente).replace('.', ',')} h de ${String(q.horasAteResolver).replace('.', ',')} h até resolver`} />
+          </div>); })()}
+
         <div className="glass-solid" style={{ borderRadius: 20, padding: 20, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth, minWidth: 150 }}>Gasto de hoje</span>
           {teto.teto ? (<>
