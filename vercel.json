@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/pricing", "destination": "/", "permanent": false }
+    { "source": "/pricing", "destination": "/precos", "permanent": false }
   ],
   "rewrites": [
     { "source": "/admin/(.*)", "destination": "/admin/index.html" }
