@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miller para lojas de marketplace | Raízes</title>
+    <meta name="description" content="Vendas, margem real e estoque da sua loja na Amazon, no Mercado Livre, na Magalu, no TikTok Shop e na Shopee, cruzados com o seu ERP. Serviço pago, por assinatura mensal, com valor sob cotação.">
+    <link rel="canonical" href="https://www.raizesolucoes.com.br/marketplaces">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Raízes Soluções">
+    <meta property="og:title" content="Miller para lojas de marketplace | Raízes">
+    <meta property="og:description" content="Vendas, margem real e estoque da sua loja na Amazon, no Mercado Livre, na Magalu, no TikTok Shop e na Shopee, cruzados com o seu ERP. Serviço pago, por assinatura mensal, com valor sob cotação.">
+    <meta property="og:url" content="https://www.raizesolucoes.com.br/marketplaces">
+    <meta property="og:image" content="https://www.raizesolucoes.com.br/og-cover.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            creme: '#F9F7F2',
+                            paper: '#FFFFFF',
+                            earth: '#3C3D37',
+                            leaf: '#4A5D4E',
+                            blue: '#394dfa',
+                            cyan: '#009bfa',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F9F7F2; color: #3C3D37; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        .serif-title { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+
+        /* CARDS */
+        .glass-card {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(60,61,55,0.07); border-radius: 24px;
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .glass-card.light:hover { background: rgba(255,255,255,0.98); }
+
+        /* BOTÕES */
+        .btn-gradient { background: linear-gradient(135deg, #394dfa 0%, #009bfa 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 10px 20px rgba(57,77,250,0.25); }
+
+        /* NAVBAR — liquid glass */
+        #navbar { background: rgba(249,247,242,0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); border-bottom: 1px solid rgba(255,255,255,0.45); box-shadow: 0 4px 24px rgba(60,61,55,0.05); }
+        .nav-scrolled { background: rgba(249,247,242,0.8) !important; height: 70px !important; }
+
+        /* BOTÕES LIQUID GLASS (navbar) */
+        .btn-glass { background: rgba(255,255,255,0.35); backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 16px rgba(60,61,55,0.08), inset 0 1px 0 rgba(255,255,255,0.7); transition: all 0.3s ease; }
+        .btn-glass:hover { background: rgba(255,255,255,0.6); border-color: rgba(57,77,250,0.35); box-shadow: 0 8px 24px rgba(57,77,250,0.16), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+        /* DROPDOWN (desktop) */
+        .nav-drop { position: relative; }
+        .nav-drop-menu {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px);
+            min-width: 280px; padding: 0.5rem;
+            background: rgba(249,247,242,0.95); backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(60,61,55,0.14);
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .nav-drop:hover .nav-drop-menu, .nav-drop:focus-within .nav-drop-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(4px); }
+        .nav-drop-menu a { display: block; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.8rem; text-transform: none; letter-spacing: 0.02em; }
+        .nav-drop-menu a:hover { background: rgba(57,77,250,0.07); }
+        .nav-drop-menu a span { display: block; font-size: 0.68rem; color: rgba(60,61,55,0.45); font-weight: 500; margin-top: 1px; }
+
+        /* STAT CARD */
+        .stat-number { font-family: 'Lora', serif; font-weight: 700; }
+
+        /* MOCKUP (ilustrativo, dados fictícios) */
+        .mockup-shell { background: #FFFFFF; border: 1px solid rgba(60,61,55,0.08); border-radius: 18px; box-shadow: 0 30px 60px rgba(22,19,13,0.14); overflow: hidden; }
+        .mockup-topbar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(60,61,55,0.07); }
+        .mockup-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(60,61,55,0.12); }
+        .wa-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
+
+        /* FAQ */
+        .faq-item summary { list-style: none; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary svg { transition: transform 0.3s ease; }
+        .faq-item[open] summary svg { transform: rotate(180deg); }
+        .faq-item:hover { transform: none; }
+
+        /* SCROLL ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 h-24 flex items-center">
+        <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+            <a href="/" class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></a>
+            <div class="hidden lg:flex gap-9 text-sm font-medium uppercase tracking-widest text-brand-earth/60 items-center">
+                <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
+                <div class="nav-drop">
+                    <button class="uppercase tracking-widest hover:text-brand-blue transition-colors flex items-center gap-1.5">
+                        Soluções
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <div class="nav-drop-menu text-brand-earth font-bold">
+                        <a href="/miller">Miller CRM<span>O CRM de quem vive no WhatsApp</span></a>
+                        <a href="/marketplaces">Miller para marketplaces<span>Vendas, margem e estoque nos portais</span></a>
+                        <a href="/nina">Nina · Atendimento com IA<span>Primeiro atendimento 24/7, com você no controle</span></a>
+                        <a href="/sob-medida">Software sob medida<span>Construído do zero para o seu processo</span></a>
+                        <a href="/prospeccao">Prospecção B2B<span>Do CNPJ ao WhatsApp do decisor</span></a>
+                        <a href="/trial" class="text-brand-blue">Testar o Miller grátis<span class="!text-brand-blue/60">14 dias, sem cartão de crédito</span></a>
+                    </div>
+                </div>
+                <a href="/metodo" class="hover:text-brand-blue transition-colors">Método</a>
+                <a href="/precos" class="hover:text-brand-blue transition-colors">Preços</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/#diagnostico" class="btn-gradient text-white px-5 py-3 rounded-full text-sm font-bold">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-5 py-3 rounded-full text-sm font-bold">Entrar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden btn-glass rounded-full p-3 text-brand-earth" aria-label="Abrir menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU MOBILE (overlay) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden opacity-0 bg-brand-creme/95 backdrop-blur-xl overflow-y-auto transition-opacity duration-300">
+        <div class="container mx-auto px-6 pt-6 flex justify-between items-center">
+            <span class="font-serif serif-title text-2xl font-bold text-brand-earth">raízes<span class="text-brand-blue">.</span></span>
+            <button id="mobile-menu-close" class="btn-glass rounded-full p-3 text-brand-earth" aria-label="Fechar menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="container mx-auto px-6 pt-10 pb-16 flex flex-col gap-1 text-brand-earth">
+            <a href="/" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Home</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pb-2">Soluções</p>
+            <a href="/miller" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller CRM</a>
+            <a href="/marketplaces" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Miller para marketplaces</a>
+            <a href="/nina" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Nina · Atendimento com IA</a>
+            <a href="/sob-medida" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Software sob medida</a>
+            <a href="/prospeccao" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Prospecção B2B</a>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35 pt-6 pb-2">Empresa</p>
+            <a href="/metodo" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Método</a>
+            <a href="/precos" class="py-3 serif-title text-2xl font-bold border-b border-brand-earth/5">Preços</a>
+            <div class="flex flex-col gap-3 pt-8">
+                <a href="/#diagnostico" class="btn-gradient text-white px-6 py-4 rounded-2xl font-bold text-center">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="btn-glass text-brand-earth px-6 py-4 rounded-2xl font-bold text-center">Entrar</a>
+                <a href="/trial" class="text-center text-sm font-bold text-brand-blue pt-2">Testar o Miller grátis por 14 dias →</a>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- HERO -->
+    <section class="pt-36 md:pt-40 pb-16 md:pb-24 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto text-center space-y-6">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Miller · Lojas de marketplace</span>
+                <h1 class="serif-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-brand-earth">
+                    Quanto a sua loja <span class="italic text-brand-leaf">ganha de verdade</span> em cada portal.
+                </h1>
+                <p class="text-lg md:text-xl text-brand-earth/70 font-medium max-w-2xl mx-auto leading-snug">
+                    O Miller junta as vendas, as taxas, o frete e o estoque da sua loja na Amazon, no Mercado Livre, na Magalu, no TikTok Shop e na Shopee, cruzados com o seu ERP. Você vê a margem real de cada venda e decide o que comprar.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2 justify-center">
+                    <a href="mailto:contato@raizesolucoes.com.br?subject=Cota%C3%A7%C3%A3o%20do%20Miller" class="btn-gradient text-white px-8 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg shadow-2xl">Pedir uma cotação</a>
+                    <a href="/precos" class="bg-white border-2 border-brand-earth text-brand-earth px-8 py-4 md:px-10 md:py-5 rounded-2xl font-bold text-base md:text-lg hover:bg-brand-earth hover:text-white transition-all shadow-lg">Como funciona o preço</a>
+                </div>
+                <p class="text-brand-earth/40 text-xs font-medium">Serviço pago, por assinatura mensal · valor sob cotação</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- O QUE FAZ -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mb-16 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">O que o Miller faz pela sua loja</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Vendas, margem e estoque <span class="italic text-brand-leaf">num lugar só.</span></h2>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Vendas por portal</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Faturamento, pedidos, ticket médio e itens vendidos de cada portal e de cada conta, por dia e por período, com os cancelamentos e as devoluções separados.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Margem real de cada venda</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">A comissão, a tarifa fixa, o frete e os repasses que o próprio portal informa, descontados do preço e do custo do produto. Quando o portal ainda não informou, a venda aparece como estimada.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Painel ao vivo</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">As vendas do dia por portal e por hora, a meta do dia ou da campanha, os mais vendidos e os produtos parados com estoque. Feito para ficar aberto numa TV.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Compra sugerida</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">O giro de cada produto, o estoque disponível, o que já está a caminho e o prazo do fornecedor viram uma sugestão de compra, com os pedidos ao fornecedor no mesmo lugar.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Full e FBA</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">O estoque que está nos centros de distribuição dos portais, os agendamentos de envio e o inventário parado, com custo e valor de venda.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Campanhas e expedição</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Acompanhamento de campanhas com meta e período, e a lista de pedidos a separar por turno e por portal, sem mostrar valores para quem só opera.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTAIS -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mb-12 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Portais e integrações</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Cada portal entra com <span class="italic text-brand-leaf">a sua autorização.</span></h2>
+                <p class="text-brand-earth/70 leading-relaxed">A conexão é feita pelo próprio lojista, no botão Conectar do sistema, com o login de dono da loja em cada portal. A autorização pode ser retirada a qualquer momento, no sistema ou no portal.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 reveal">
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Amazon (Seller Central, Brasil)</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Pela Selling Partner API, com a autorização do vendedor: pedidos (inclusive os entregues pelo FBA) e transações financeiras (taxas, frete e repasses). O Miller usa esses dados só para mostrar ao próprio vendedor as vendas, a margem e o estoque dele.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Mercado Livre</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Pedidos, envios, tarifas de venda e o frete pago pelo vendedor.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">Magalu, TikTok Shop e Shopee</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Pedidos e o extrato financeiro de cada pedido, com as comissões, as tarifas e os repasses.</p>
+                </div>
+                <div class="glass-card light p-8 space-y-3">
+                    <h3 class="serif-title text-xl font-bold text-brand-earth">ERP (Tiny / Olist)</h3>
+                    <p class="text-brand-earth/60 text-sm leading-relaxed">Produtos, custo médio, estoque por depósito, notas fiscais e pedidos de compra.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DADOS -->
+    <section class="py-24 md:py-32 bg-white relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto space-y-6 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Como tratamos os dados</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Só leitura. <span class="italic text-brand-leaf">Nada muda na sua loja.</span></h2>
+                <ul class="space-y-4 text-brand-earth/70 leading-relaxed">
+                    <li><strong class="text-brand-earth">O Miller lê, não altera.</strong> Não muda preço, anúncio, estoque nem pedido nos portais.</li>
+                    <li><strong class="text-brand-earth">Sem dados pessoais de comprador.</strong> Nome, documento, telefone, e-mail e endereço de quem comprou não são guardados. Fica só o estado (UF) do destino.</li>
+                    <li><strong class="text-brand-earth">Cada empresa vê só os próprios dados.</strong> As autorizações ficam cifradas e separadas por empresa, e só os usuários que a empresa cadastrar têm acesso.</li>
+                    <li><strong class="text-brand-earth">Os dados não são vendidos nem usados para publicidade.</strong> Depois do cancelamento, ficam guardados por 90 dias e então são excluídos, salvo o que a lei obriga a manter.</li>
+                </ul>
+                <p class="text-sm text-brand-earth/60">Detalhes em <a href="/seguranca" class="text-brand-blue font-bold hover:text-brand-cyan transition-colors">Segurança da Informação</a> e na <a href="/privacidade" class="text-brand-blue font-bold hover:text-brand-cyan transition-colors">Política de Privacidade</a>.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRECO -->
+    <section class="py-24 md:py-32 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto text-center space-y-6 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Preço</span>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold leading-tight">Serviço pago, <span class="italic text-brand-leaf">sob cotação.</span></h2>
+                <p class="text-brand-earth/70 leading-relaxed">O Miller para marketplaces é cobrado por assinatura mensal. Como cada implantação é feita para a operação da loja, o valor sai de uma cotação, que é gratuita e sem compromisso. O que define o valor está na <a href="/precos" class="text-brand-blue font-bold hover:text-brand-cyan transition-colors">página de preços</a>.</p>
+                <a href="mailto:contato@raizesolucoes.com.br?subject=Cota%C3%A7%C3%A3o%20do%20Miller" class="inline-block btn-gradient text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl">Pedir uma cotação</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUEM OFERECE -->
+    <section class="py-20 bg-brand-creme relative z-10">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="max-w-3xl mx-auto glass-card light p-8 md:p-10 space-y-4 reveal">
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.3em] text-brand-blue">Quem oferece</span>
+                <h2 class="serif-title text-3xl md:text-4xl font-bold leading-tight">O Miller é um produto da <span class="italic text-brand-leaf">Raízes.</span></h2>
+                <p class="text-brand-earth/70 leading-relaxed">O Miller é desenvolvido, vendido e operado pela Raízes Soluções e Tecnologia Ltda. É a mesma empresa que assina o contrato, emite a nota fiscal e responde pelo tratamento dos dados.</p>
+                <dl class="grid sm:grid-cols-2 gap-x-8 gap-y-3 text-sm pt-2">
+                    <div><dt class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/40">Razão social</dt><dd class="font-bold text-brand-earth">RAIZES SOLUCOES E TECNOLOGIA LTDA</dd></div>
+                    <div><dt class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/40">CNPJ</dt><dd class="font-bold text-brand-earth">51.467.037/0001-65</dd></div>
+                    <div><dt class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/40">Endereço</dt><dd class="font-bold text-brand-earth">Rua Jose Augusto de Oliveira, 48, Betim, MG, CEP 32655-164, Brasil</dd></div>
+                    <div><dt class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/40">Contato</dt><dd class="font-bold text-brand-earth"><a href="mailto:contato@raizesolucoes.com.br" class="text-brand-blue hover:text-brand-cyan transition-colors">contato@raizesolucoes.com.br</a></dd></div>
+                </dl>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="py-16 bg-brand-creme border-t border-brand-earth/5">
+        <div class="container mx-auto px-4 sm:px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            <div class="space-y-3">
+                <span class="font-serif serif-title text-2xl font-bold text-brand-earth tracking-tight">raízes<span class="text-brand-blue">.</span></span>
+                <p class="serif-title italic text-brand-leaf text-lg">Feito para durar.</p>
+                <p class="text-xs font-bold uppercase tracking-[0.3em] text-brand-earth/25">Raízes Soluções e Tecnologia Ltda</p>
+                <p class="text-sm text-brand-earth/40">contato@raizesolucoes.com.br</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-brand-earth/25">CNPJ 51.467.037/0001-65</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Soluções</p>
+                <a href="/miller" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller CRM</a>
+                <a href="/marketplaces" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Miller para marketplaces</a>
+                <a href="/nina" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Nina · Atendimento com IA</a>
+                <a href="/sob-medida" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Software sob medida</a>
+                <a href="/prospeccao" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Prospecção B2B</a>
+                <a href="/trial" class="block text-sm font-bold text-brand-blue hover:text-brand-cyan transition-colors">Testar o Miller grátis →</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Empresa</p>
+                <a href="/metodo" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Como trabalhamos</a>
+                <a href="/precos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Preços</a>
+                <a href="/#contato" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Protótipo Gratuito</a>
+                <a href="https://app.raizesolucoes.com.br" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Entrar na plataforma</a>
+            </div>
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-earth/35">Legal</p>
+                <a href="/privacidade" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Política de Privacidade</a>
+                <a href="/seguranca" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Segurança da Informação</a>
+                <a href="/termos" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Termos de Uso</a>
+                <a href="/excluir-dados" class="block text-sm font-medium text-brand-earth/55 hover:text-brand-blue transition-colors">Excluir meus dados</a>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-earth/10 text-center text-[11px] font-bold text-brand-earth/25 uppercase tracking-[0.2em]">
+            &copy; 2026 Raízes Soluções. Todos os direitos reservados.<br><span class="normal-case tracking-normal font-medium">RAIZES SOLUCOES E TECNOLOGIA LTDA · CNPJ 51.467.037/0001-65 · Rua Jose Augusto de Oliveira, 48, Betim, MG, CEP 32655-164. O Miller é um produto da Raízes Soluções e Tecnologia Ltda.</span>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+        });
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobile-menu');
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            requestAnimationFrame(() => mobileMenu.classList.remove('opacity-0'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileMenu() {
+            mobileMenu.classList.add('opacity-0');
+            document.body.style.overflow = '';
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileMenu);
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.12 });
+        reveals.forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
