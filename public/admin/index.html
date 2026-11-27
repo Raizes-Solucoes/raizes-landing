@@ -1850,38 +1850,190 @@ function DecisaoChip({ d }) {
   return <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>{DECISAO_LABEL[d] || d}</span>;
 }
 
+// Relatório do fluxo: casos (o card refinado com os relatos ligados), com quem cada um esperou, o que o loop resolveu e
+// a estimativa de horas de pessoa economizadas. As premissas da estimativa vêm da edge e aparecem na tela.
+const DONO = {
+  loop: { rotulo: 'Fila do loop', cor: colors.cyan },
+  gente: { rotulo: 'Esperando gente', cor: colors.warning },
+  cliente: { rotulo: 'Esperando o cliente', cor: '#a78bfa' },
+};
+const COR_AGENTE = colors.blue;
+const RESULTADO = {
+  pelo_loop: { rotulo: 'resolvido pelo loop', bg: '#dcfce7', fg: '#166534' },
+  com_gente: { rotulo: 'resolvido com gente', bg: '#e0f2fe', fg: '#075985' },
+  falta_merge: { rotulo: 'falta o merge', bg: '#dbeafe', fg: '#1e40af' },
+  aberto: { rotulo: 'em andamento', bg: '#ede9fe', fg: '#5b21b6' },
+  cancelado: { rotulo: 'cancelado', bg: colors.subtle, fg: colors.earth },
+  encerrado: { rotulo: 'encerrado', bg: colors.subtle, fg: colors.earth },
+};
+const TIPO_LABEL = { bug: 'Erro', comportamento: 'Comportamento inesperado', duvida: 'Dúvida', sugestao: 'Sugestão', erro: 'Erro automático' };
+const ORIGEM_LABEL = { clientes: 'Clientes', internos: 'Testes internos', todos: 'Tudo' };
+const virgula = (x) => String(x).replace('.', ',');
+const tempoCurto = (h) => (h == null ? '—' : h <= 0 ? '0 min' : h < 1 ? `${Math.max(1, Math.round(h * 60))} min` : h < 48 ? `${virgula(Math.round(h * 10) / 10)} h` : `${virgula(Math.round(h / 2.4) / 10)} dias`);
+const quando = (iso) => (iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : '—');
+const minutosEmHoras = (m) => tempoCurto(m / 60);
+
+function ResultadoChip({ r }) {
+  const c = RESULTADO[r] || RESULTADO.encerrado;
+  return <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>{c.rotulo}</span>;
+}
+
+/** Barra empilhada: cada parte com a largura proporcional ao valor. */
+function BarraEmpilhada({ partes, altura = 12 }) {
+  const total = partes.reduce((t, p) => t + Math.max(0, p.valor), 0);
+  if (!total) return <div style={{ height: altura, borderRadius: 999, background: colors.subtle }} />;
+  return (
+    <div style={{ display: 'flex', height: altura, borderRadius: 999, overflow: 'hidden', background: colors.subtle, gap: 1 }}>
+      {partes.filter(p => p.valor > 0).map((p, i) => (
+        <div key={i} title={p.titulo} style={{ flexGrow: p.valor, flexBasis: 0, minWidth: 3, background: p.cor }} />
+      ))}
+    </div>
+  );
+}
+
+/** Do relato ao resolvido, na ordem: rodadas dos agentes e esperas, com quem o card ficou. */
+function linhaDoCaso(c) {
+  const itens = [
+    ...c.etapas.map(e => ({ t: Date.parse(e.inicio), etapa: e })),
+    ...c.esperas.map(w => ({ t: Date.parse(w.desde), espera: w })),
+  ];
+  return itens.sort((a, b) => a.t - b.t || (a.espera ? 1 : -1));
+}
+
+function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
+  const itens = linhaDoCaso(c);
+  const partes = itens.map(i => i.etapa
+    ? { valor: (i.etapa.minutos ?? 0) / 60, cor: COR_AGENTE, titulo: `${PAPEL_LABEL[i.etapa.papel] || i.etapa.papel}: ${tempoCurto((i.etapa.minutos ?? 0) / 60)}` }
+    : { valor: i.espera.horas, cor: DONO[i.espera.dono]?.cor || colors.muted, titulo: `${DONO[i.espera.dono]?.rotulo || i.espera.dono} (${i.espera.motivo}): ${tempoCurto(i.espera.horas)}` });
+  const meta = [TIPO_LABEL[c.tipo] || c.tipo, mostrarOrg && c.org, c.relatos.length > 1 ? `${c.relatos.length} relatos` : null, c.pelaEquipe ? 'relatado pela equipe Raízes' : null].filter(Boolean).join(' · ');
+  return (
+    <div style={{ borderTop: `1px solid ${colors.subtle}`, padding: '12px 0' }}>
+      <button onClick={alternar} aria-expanded={aberto}
+        style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8, font: 'inherit', color: 'inherit' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: colors.blue, minWidth: 56 }}>{c.id}</span>
+          <span style={{ flex: '1 1 260px', minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.earth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.titulo || TIPO_LABEL[c.tipo] || 'Card sem título'}</span>
+            {meta && <span style={{ fontSize: 11, color: colors.muted }}>{meta}</span>}
+          </span>
+          <ResultadoChip r={c.resultado} />
+          <span style={{ fontSize: 12, color: colors.earth, minWidth: 64, textAlign: 'right' }} title="do relato ao resolvido (ou até agora)">{tempoCurto(c.tempo.total)}</span>
+          <span style={{ fontSize: 12, color: colors.muted, minWidth: 70, textAlign: 'right' }}>{usd(c.custo)}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: c.economia ? colors.green : colors.muted, minWidth: 64, textAlign: 'right' }} title="horas de pessoa economizadas (estimativa)">
+            {c.economia ? `${minutosEmHoras(c.economia.liquido)}` : '—'}
+          </span>
+          <span style={{ fontSize: 12, color: colors.muted, width: 14 }}>{aberto ? '▾' : '▸'}</span>
+        </div>
+        <BarraEmpilhada partes={partes} altura={6} />
+      </button>
+
+      {aberto && (
+        <div style={{ marginTop: 12, padding: 16, borderRadius: 14, background: 'rgba(60,61,55,0.03)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', fontSize: 12, color: colors.earth }}>
+            <span>Card: <a href={LINEAR(c.id)} target="_blank" rel="noopener" style={{ color: colors.blue, fontWeight: 600 }}>{c.id}</a></span>
+            {c.relatos.filter(r => r !== c.id).length > 0 && (
+              <span>Relato{c.relatos.length > 1 ? 's' : ''}: {c.relatos.filter(r => r !== c.id).map((r, i) => (
+                <React.Fragment key={r}>{i ? ', ' : ''}<a href={LINEAR(r)} target="_blank" rel="noopener" style={{ color: colors.blue }}>{r}</a></React.Fragment>))}</span>
+            )}
+            <span>Aberto em {quando(c.criadoEm)}</span>
+            {c.resolvidoEm && <span>Resolvido em {quando(c.resolvidoEm)}</span>}
+            {c.reaberto && <span style={{ color: colors.danger, fontWeight: 600 }}>Reaberto pelo cliente</span>}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', fontSize: 12, color: colors.muted }}>
+            <span><b style={{ color: COR_AGENTE }}>●</b> Agentes {tempoCurto(c.tempo.agente)}</span>
+            <span><b style={{ color: DONO.loop.cor }}>●</b> Fila do loop {tempoCurto(c.tempo.loop)}</span>
+            <span><b style={{ color: DONO.gente.cor }}>●</b> Esperando gente {tempoCurto(c.tempo.gente)}</span>
+            {c.tempo.cliente > 0 && <span><b style={{ color: DONO.cliente.cor }}>●</b> Esperando o cliente {tempoCurto(c.tempo.cliente)}</span>}
+            {c.economia && <span style={{ color: colors.green }}>Economia estimada: {minutosEmHoras(c.economia.poupado)} poupadas − {minutosEmHoras(c.economia.gasto)} de gente = <b>{minutosEmHoras(c.economia.liquido)}</b>{c.resultado === 'falta_merge' ? ' (quando for ao ar)' : ''}</span>}
+          </div>
+          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {itens.map((i, k) => i.etapa ? (
+              <li key={k} style={{ display: 'grid', gridTemplateColumns: '92px 1fr', gap: 10, fontSize: 12 }}>
+                <span style={{ color: colors.muted, whiteSpace: 'nowrap' }}>{quando(i.etapa.inicio)}</span>
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <b style={{ color: colors.earth }}>{PAPEL_LABEL[i.etapa.papel] || i.etapa.papel}{i.etapa.rodada > 1 ? ` · rodada ${i.etapa.rodada}` : ''}</b>
+                    <DecisaoChip d={i.etapa.decisao} />
+                    <span style={{ color: colors.muted }}>{i.etapa.minutos == null ? 'rodando' : tempoCurto(i.etapa.minutos / 60)} · {usd(i.etapa.custo)}{i.etapa.card && i.etapa.card !== c.id ? ` · no ${i.etapa.card}` : ''}</span>
+                    {(i.etapa.prs || []).map(p => (
+                      <a key={p.url} href={p.url} target="_blank" rel="noopener" style={{ color: colors.blue, fontWeight: 600 }}>
+                        PR #{p.numero}{p.repo ? ` (${p.repo.replace('miller-crm-', '')})` : ''}{p.risco ? ` · risco ${p.risco === 'medio' ? 'médio' : p.risco}` : ''}
+                      </a>
+                    ))}
+                  </span>
+                  {i.etapa.resumo && <span style={{ color: colors.muted, lineHeight: 1.45 }}>{i.etapa.resumo}</span>}
+                </span>
+              </li>
+            ) : (
+              <li key={k} style={{ display: 'grid', gridTemplateColumns: '92px 1fr', gap: 10, fontSize: 12 }}>
+                <span />
+                <span style={{ borderLeft: `3px solid ${DONO[i.espera.dono]?.cor || colors.muted}`, paddingLeft: 8, color: colors.earth }}>
+                  {DONO[i.espera.dono]?.rotulo || i.espera.dono} ({i.espera.motivo}) por <b>{tempoCurto(i.espera.horas)}</b>
+                </span>
+              </li>
+            ))}
+            {itens.length === 0 && <li style={{ fontSize: 12, color: colors.muted }}>Nenhuma rodada de agente neste card.</li>}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AutofixPanel() {
   const [dias, setDias] = useState(30);
+  const [origem, setOrigem] = useState('clientes');
   const [data, setData] = useState(null);
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(true);
+  const [casoAberto, setCasoAberto] = useState(null);
+  const [filtroCaso, setFiltroCaso] = useState('todos');
 
   useEffect(() => {
     setLoading(true);
-    callFn('autofix-painel', { dias }).then(d => {
+    callFn('autofix-painel', { dias, origem }).then(d => {
       if (d.ok) { setData(d); setErro(''); } else setErro(d.error);
       setLoading(false);
     });
-  }, [dias]);
+  }, [dias, origem]);
 
   const r = data?.resumo || {};
+  const q = data?.qualidade || {};
   const funil = data?.funil || [];
   const serie = data?.serie || [];
   const maxFunil = Math.max(1, ...funil.map(f => f.n));
   const maxCusto = Math.max(0.01, ...serie.map(s => s.custo));
   const teto = data?.teto || {};
   const usoTeto = teto.teto ? Math.min(1, (teto.gastoHoje || 0) / teto.teto) : 0;
+  const novo = !!data?.casos; // a edge antiga não manda os casos: a tela mostra só o que já mostrava
+  const eco = data?.economia || {};
+  const tempo = data?.tempo || {};
+  const res = data?.resolucao || {};
+  const pct = (v) => (v == null ? '—' : `${v}%`);
+  const resolvidosCasos = (res.pelo_loop || 0) + (res.com_gente || 0);
+  const pctGente = tempo.total ? Math.round((tempo.gente / tempo.total) * 100) : null;
+  const casos = (data?.casos || []).filter(c => filtroCaso === 'todos' || (filtroCaso === 'resolvidos' ? ['pelo_loop', 'com_gente'].includes(c.resultado) : filtroCaso === 'abertos' ? ['aberto', 'falta_merge'].includes(c.resultado) : c.resultado === filtroCaso));
+  const botao = (ativo) => ({ padding: '6px 14px', borderRadius: 999, border: `1px solid ${ativo ? colors.blue : colors.subtle}`, background: ativo ? 'rgba(57,77,250,0.08)' : '#fff',
+    color: ativo ? colors.blue : colors.earth, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' });
+  const contagem = (o) => { const n = data?.origens; if (!n) return ''; const v = o === 'clientes' ? n.clientes : o === 'internos' ? n.internos : n.clientes + n.internos + n.semRelato; return ` · ${v}`; };
 
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <span style={{ fontSize: 13, color: colors.muted }}>O loop de agentes do time ATD: do relato ao resolvido, com o custo de IA.</span>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {[7, 30, 90].map(n => (
-            <button key={n} onClick={() => setDias(n)} disabled={loading}
-              style={{ padding: '6px 14px', borderRadius: 999, border: `1px solid ${dias === n ? colors.blue : colors.subtle}`, background: dias === n ? 'rgba(57,77,250,0.08)' : '#fff',
-                color: dias === n ? colors.blue : colors.earth, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{n} dias</button>
-          ))}
+        <span style={{ fontSize: 13, color: colors.muted, maxWidth: 420 }}>O loop de agentes do time ATD: o caminho de cada relato até resolver, o que o loop resolveu sozinho e quanto tempo de gente isso poupou.</span>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {(!data || data.origem) && ( // a edge antiga não separa cliente de teste: sem ela, o seletor mentiria
+            <div role="group" aria-label="Origem dos relatos" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['clientes', 'internos', 'todos'].map(o => (
+                <button key={o} onClick={() => setOrigem(o)} disabled={loading} aria-pressed={origem === o} style={botao(origem === o)}>{ORIGEM_LABEL[o]}{contagem(o)}</button>
+              ))}
+            </div>
+          )}
+          <div role="group" aria-label="Período" style={{ display: 'flex', gap: 6 }}>
+            {[7, 30, 90].map(n => (
+              <button key={n} onClick={() => setDias(n)} disabled={loading} aria-pressed={dias === n} style={botao(dias === n)}>{n} dias</button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1889,24 +2041,139 @@ function AutofixPanel() {
       {erro && <div role="alert" style={{ padding: 16, borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontSize: 14 }}>Não deu para carregar o painel: {erro}</div>}
 
       {data && (<>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-          <StatCard label="Relatos" value={r.relatos ?? 0} icon={Icons.ticket} sub={`${r.resolvidos ?? 0} resolvidos · ${r.abertos ?? 0} em aberto`} />
-          <StatCard label="Até resolver" value={duracaoCurta(r.horasMedianaResolver)} icon={Icons.chart} accent={colors.green} sub="mediana, do relato ao resolvido" />
-          <StatCard label="Custo de IA" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards`} />
-          <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
-        </div>
+        {novo && origem === 'clientes' && (data.origens?.internos > 0 || data.origens?.clientesPelaEquipe > 0) && (
+          <div style={{ fontSize: 12, color: colors.muted }}>
+            {data.origens.internos > 0 && <>Fora desta conta: {data.origens.internos === 1 ? '1 caso' : `${data.origens.internos} casos`} de orgs de teste interno ou demonstração{data.origens.semRelato ? ` e ${data.origens.semRelato === 1 ? '1 card' : `${data.origens.semRelato} cards`} sem relato` : ''}. </>}
+            {data.origens.clientesPelaEquipe ? `Dos casos de clientes, ${data.origens.clientesPelaEquipe === 1 ? '1 foi relatado' : `${data.origens.clientesPelaEquipe} foram relatados`} pela equipe Raízes entrada na org, não pelo cliente. ` : ''}<button onClick={() => setOrigem('todos')} style={{ background: 'none', border: 'none', padding: 0, color: colors.blue, cursor: 'pointer', font: 'inherit' }}>Ver tudo</button>
+          </div>
+        )}
 
-        {data.qualidade && (() => { const q = data.qualidade; const pct = (v) => (v == null ? '—' : `${v}%`); return (
+        {novo ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            <StatCard label="Resolvidos pelo loop" value={pct(q.pctPeloLoop)} icon={Icons.bot} accent={colors.blue}
-              sub={`${q.resolvidosPeloLoop} de ${r.resolvidos ?? 0} sem código humano`} />
-            <StatCard label="Reabertos" value={pct(q.pctReabertos)} icon={Icons.ticket} accent={colors.danger}
-              sub={`${q.reaberturas} "não resolveu" no período`} />
-            <StatCard label="NPS" value={q.nps == null ? '—' : q.nps} icon={Icons.users} accent={colors.green}
-              sub={`${q.respostasNps} nota(s) · ${q.confirmaram} confirmaram`} />
-            <StatCard label="Tempo de agente" value={pct(q.pctTempoAgente)} icon={Icons.chart} accent={colors.leaf}
-              sub={`${String(q.horasAgente).replace('.', ',')} h de ${String(q.horasAteResolver).replace('.', ',')} h até resolver`} />
-          </div>); })()}
+            <StatCard label="Resolvidos pelo loop" value={res.pelo_loop ?? 0} icon={Icons.bot} accent={colors.blue}
+              sub={`de ${resolvidosCasos} caso(s) resolvido(s) · ${res.com_gente ?? 0} com gente`} />
+            <StatCard label="Horas de gente poupadas" value={tempoCurto(eco.horasLiquidas || 0)} icon={Icons.users} accent={colors.green}
+              sub={`estimativa em ${eco.casos ?? 0} caso(s)${eco.pendentes ? ` · +${tempoCurto(eco.horasPendentes)} quando ${eco.pendentes} PR(s) forem ao ar` : ''}`} />
+            <StatCard label="Até resolver" value={duracaoCurta(r.horasMedianaResolver)} icon={Icons.chart} accent={colors.leaf}
+              sub={pctGente == null ? 'mediana, do relato ao resolvido' : `mediana · ${pctGente}% do tempo esperando gente`} />
+            <StatCard label="Custo de IA" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards`} />
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <StatCard label="Relatos" value={r.relatos ?? 0} icon={Icons.ticket} sub={`${r.resolvidos ?? 0} resolvidos · ${r.abertos ?? 0} em aberto`} />
+            <StatCard label="Até resolver" value={duracaoCurta(r.horasMedianaResolver)} icon={Icons.chart} accent={colors.green} sub="mediana, do relato ao resolvido" />
+            <StatCard label="Custo de IA" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards`} />
+            <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
+          </div>
+        )}
+
+        {data.qualidade && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {novo && <StatCard label="Relatos" value={r.relatos ?? 0} icon={Icons.ticket} sub={`${r.resolvidos ?? 0} resolvidos · ${r.abertos ?? 0} em aberto`} />}
+            {!novo && <StatCard label="Resolvidos pelo loop" value={pct(q.pctPeloLoop)} icon={Icons.bot} accent={colors.blue} sub={`${q.resolvidosPeloLoop} de ${r.resolvidos ?? 0} sem código humano`} />}
+            <StatCard label="Reabertos" value={pct(q.pctReabertos)} icon={Icons.ticket} accent={colors.danger} sub={`${q.reaberturas} "não resolveu" no período`} />
+            <StatCard label="NPS" value={q.nps == null ? '—' : q.nps} icon={Icons.users} accent={colors.green} sub={`${q.respostasNps} nota(s) · ${q.confirmaram} confirmaram`} />
+            {novo
+              ? <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
+              : <StatCard label="Tempo de agente" value={pct(q.pctTempoAgente)} icon={Icons.chart} accent={colors.leaf} sub={`${virgula(q.horasAgente)} h de ${virgula(q.horasAteResolver)} h até resolver`} />}
+          </div>
+        )}
+
+        {novo && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+            <div className="glass-solid" style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Onde o tempo foi</span>
+                <span style={{ fontSize: 12, color: colors.muted }}>{tempo.casos ? `${tempo.casos} caso(s) resolvido(s) · ${tempoCurto(tempo.total)} somados` : 'nenhum caso resolvido no período'}</span>
+              </div>
+              <BarraEmpilhada altura={14} partes={[
+                { valor: tempo.agente || 0, cor: COR_AGENTE, titulo: 'Agentes trabalhando' },
+                { valor: tempo.loop || 0, cor: DONO.loop.cor, titulo: DONO.loop.rotulo },
+                { valor: tempo.gente || 0, cor: DONO.gente.cor, titulo: DONO.gente.rotulo },
+                { valor: tempo.cliente || 0, cor: DONO.cliente.cor, titulo: DONO.cliente.rotulo },
+              ]} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+                {[['Agentes trabalhando', tempo.agente, COR_AGENTE], [DONO.loop.rotulo, tempo.loop, DONO.loop.cor], [DONO.gente.rotulo, tempo.gente, DONO.gente.cor], [DONO.cliente.rotulo, tempo.cliente, DONO.cliente.cor]].map(([rot, h, cor]) => (
+                  <div key={rot} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: 11, color: colors.muted }}><b style={{ color: cor }}>●</b> {rot}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: colors.earth }}>{tempoCurto(h || 0)}{tempo.total ? <span style={{ fontSize: 11, fontWeight: 500, color: colors.muted }}> · {Math.round(((h || 0) / tempo.total) * 100)}%</span> : null}</span>
+                  </div>
+                ))}
+              </div>
+              <span style={{ fontSize: 11, color: colors.muted }}>Esperando gente inclui N2, aprovação em Produto e o tempo entre o QA aprovar e o PR ir ao ar.</span>
+            </div>
+
+            <div className="glass-solid" style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Parados agora</span>
+                <span style={{ fontSize: 12, color: colors.muted }}>{(data.parados || []).length} card(s) aberto(s)</span>
+              </div>
+              {data.linear && !data.linear.ok && <span style={{ fontSize: 12, color: colors.warning }}>O Linear não respondeu: o estado vem do último passo do loop.</span>}
+              {(data.parados || []).map(p => {
+                const suspeito = p.dono === 'loop' && p.motivo !== 'agente rodando' && p.horas >= 1;
+                return (
+                  <div key={p.caso} style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 10, alignItems: 'center', padding: '8px 0', borderTop: `1px solid ${colors.subtle}`, fontSize: 13 }}>
+                    <a href={LINEAR(p.caso)} target="_blank" rel="noopener" style={{ color: colors.blue, fontWeight: 700 }}>{p.caso}</a>
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: 'block', color: colors.earth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.titulo || 'Card sem título'}</span>
+                      <span style={{ fontSize: 11, color: suspeito ? colors.danger : colors.muted }}>
+                        <b style={{ color: DONO[p.dono]?.cor }}>●</b> {DONO[p.dono]?.rotulo || p.dono}: {p.motivo}{p.onde ? ` · no Linear: ${p.onde}` : ''}
+                        {p.relatos.filter(x => x !== p.caso).length ? ` · relato ${p.relatos.filter(x => x !== p.caso).join(', ')} espera junto` : ''}
+                        {suspeito ? ' · o loop deveria ter andado' : ''}
+                      </span>
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: p.horas >= 24 ? colors.danger : colors.earth, whiteSpace: 'nowrap' }} title={`desde ${quando(p.desde)}`}>há {tempoCurto(p.horas)}</span>
+                  </div>
+                );
+              })}
+              {(data.parados || []).length === 0 && <span style={{ fontSize: 13, color: colors.muted }}>Nenhum card parado.</span>}
+            </div>
+          </div>
+        )}
+
+        {novo && (
+          <div className="glass-solid" style={{ borderRadius: 20, padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Casos do período</span>
+              <div role="group" aria-label="Filtrar casos" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[['todos', 'Todos'], ['resolvidos', 'Resolvidos'], ['abertos', 'Em andamento'], ['cancelado', 'Cancelados']].map(([k, rot]) => (
+                  <button key={k} onClick={() => setFiltroCaso(k)} aria-pressed={filtroCaso === k} style={{ ...botao(filtroCaso === k), padding: '4px 12px', fontSize: 12 }}>{rot}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', fontSize: 11, color: colors.muted, padding: '6px 24px 6px 0', flexWrap: 'wrap' }}>
+              <span style={{ minWidth: 64, textAlign: 'right' }}>tempo total</span>
+              <span style={{ minWidth: 70, textAlign: 'right' }}>custo de IA</span>
+              <span style={{ minWidth: 64, textAlign: 'right' }}>poupado</span>
+            </div>
+            {casos.map(c => (
+              <CasoLinha key={c.id} c={c} mostrarOrg={origem !== 'internos'} aberto={casoAberto === c.id} alternar={() => setCasoAberto(casoAberto === c.id ? null : c.id)} />
+            ))}
+            {casos.length === 0 && <div style={{ fontSize: 13, color: colors.muted, padding: '12px 0', borderTop: `1px solid ${colors.subtle}` }}>Nenhum caso {filtroCaso === 'todos' ? 'no período' : 'com este filtro'}.</div>}
+          </div>
+        )}
+
+        {novo && eco.premissas && (
+          <details className="glass-solid" style={{ borderRadius: 20, padding: '18px 24px' }}>
+            <summary style={{ fontSize: 14, fontWeight: 700, color: colors.earth, cursor: 'pointer' }}>Como calculamos as horas de gente poupadas</summary>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12, fontSize: 13, color: colors.earth, lineHeight: 1.5 }}>
+              <span>É uma estimativa, feita a partir dos tempos de referência abaixo. Só conta o caso que o loop resolveu e que segurou: a dúvida respondida pelo agente, ou o PR do agente aprovado no QA, mergeado e no ar, sem o cliente reabrir. Para cada caso, o tempo que uma pessoa levaria para fazer o que os agentes fizeram, menos o tempo que ainda coube a alguém (revisar o PR, cada ida a N2, aprovar a melhoria). PR aprovado esperando merge aparece à parte, como pendente.</span>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead><tr style={{ color: colors.muted, textAlign: 'left' }}><th style={{ padding: '6px 0', fontWeight: 600 }}>Tarefa</th><th style={{ fontWeight: 600, textAlign: 'right' }}>Referência</th><th style={{ fontWeight: 600, textAlign: 'right' }}>Conta como</th></tr></thead>
+                <tbody>
+                  {eco.premissas.map(p => (
+                    <tr key={p.chave} style={{ borderTop: `1px solid ${colors.subtle}` }}>
+                      <td style={{ padding: '8px 0' }}>{p.rotulo}</td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{p.minutos} min</td>
+                      <td style={{ textAlign: 'right', color: p.lado === 'poupado' ? colors.green : colors.warning, whiteSpace: 'nowrap' }}>{p.lado === 'poupado' ? 'poupado' : 'gasto por gente'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <span style={{ fontSize: 12, color: colors.muted }}>No período: {tempoCurto(eco.horasPoupadas || 0)} poupadas, {tempoCurto(eco.horasGastas || 0)} ainda gastas por gente, {tempoCurto(eco.horasLiquidas || 0)} de saldo.</span>
+            </div>
+          </details>
+        )}
 
         <div className="glass-solid" style={{ borderRadius: 20, padding: 20, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth, minWidth: 150 }}>Gasto de hoje</span>
@@ -1917,6 +2184,7 @@ function AutofixPanel() {
             </div>
             <span style={{ fontSize: 13, color: colors.earth, whiteSpace: 'nowrap' }}>{usd(teto.gastoHoje)} de {usd(teto.teto)} {usoTeto >= 1 ? '· teto atingido, nenhum agente novo hoje' : ''}</span>
           </>) : <span style={{ fontSize: 13, color: colors.muted }}>{usd(teto.gastoHoje)} · sem teto diário configurado</span>}
+          {novo && <span style={{ fontSize: 11, color: colors.muted, width: '100%' }}>O gasto de hoje é de todas as orgs; o resto da aba segue o recorte escolhido acima.</span>}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
