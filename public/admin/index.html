@@ -2075,7 +2075,9 @@ function AutofixPanel() {
             <StatCard label="NPS" value={q.nps == null ? '—' : q.nps} icon={Icons.users} accent={colors.green} sub={`${q.respostasNps} nota(s) · ${q.confirmaram} confirmaram`} />
             {novo
               ? <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning}
-                  sub={data.n2 ? `${data.n2.negocio} de negócio · ${data.n2.tecnico} técnico(s) no período` : 'das decisões dos agentes (N2)'} />
+                  sub={!data.n2 ? 'das decisões dos agentes (N2)'
+                    : data.n2.defeitos == null ? `${data.n2.negocio} de negócio · ${data.n2.tecnico} técnico(s) no período`
+                    : `${data.n2.negocio} de negócio · ${data.n2.defeitos} defeito(s) do loop · ${data.n2.retomados} retomada(s)`} />
               : <StatCard label="Tempo de agente" value={pct(q.pctTempoAgente)} icon={Icons.chart} accent={colors.leaf} sub={`${virgula(q.horasAgente)} h de ${virgula(q.horasAteResolver)} h até resolver`} />}
           </div>
         )}
@@ -2135,19 +2137,27 @@ function AutofixPanel() {
         {novo && data.n2 && (() => { const n2 = data.n2; const max = Math.max(1, ...n2.porMotivo.map(m => m.n)); return (
           <div className="glass-solid" style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Por que foi para gente (N2)</span>
-              <span style={{ fontSize: 12, color: colors.muted }}>{n2.negocio} de negócio · {n2.tecnico} técnico(s){n2.desde ? ` · contado desde ${n2.desde.slice(8, 10)}/${n2.desde.slice(5, 7)}` : ''}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>{n2.defeitos == null ? 'Por que foi para gente (N2)' : 'Paradas do loop'}</span>
+              <span style={{ fontSize: 12, color: colors.muted }}>
+                {n2.defeitos == null ? `${n2.negocio} de negócio · ${n2.tecnico} técnico(s)` : `${n2.negocio} N2 de negócio · ${n2.retomados} retomada(s) pelo loop · ${n2.defeitos} defeito(s) do loop`}
+                {n2.desde ? ` · contado desde ${n2.desde.slice(8, 10)}/${n2.desde.slice(5, 7)}` : ''}
+              </span>
             </div>
-            <span style={{ fontSize: 12, color: colors.muted }}>Negócio é decisão de gente. Técnico é o que o loop deveria resolver sozinho: a meta é chegar perto de zero.</span>
+            <span style={{ fontSize: 12, color: colors.muted }}>
+              {n2.defeitos == null ? 'Negócio é decisão de gente. Técnico é o que o loop deveria resolver sozinho: a meta é chegar perto de zero.'
+                : 'Só negócio vai para gente (N2). Parada técnica o loop retoma sozinho; "defeito do loop" é a que ele não resolveu e espera quem mantém o loop: a meta é zero.'}
+            </span>
             {n2.porMotivo.map(m => (
-              <div key={m.codigo} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 74px 120px 28px', gap: 10, alignItems: 'center', fontSize: 13, padding: '6px 0', borderTop: `1px solid ${colors.subtle}` }}>
+              <div key={m.codigo} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 74px 120px 56px', gap: 10, alignItems: 'center', fontSize: 13, padding: '6px 0', borderTop: `1px solid ${colors.subtle}` }}>
                 <span style={{ color: colors.earth, minWidth: 0 }}>{m.rotulo}</span>
                 <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, textAlign: 'center',
                   background: m.natureza === 'tecnico' ? '#fee2e2' : '#fef3c7', color: m.natureza === 'tecnico' ? '#991b1b' : '#92400e' }}>{m.natureza === 'tecnico' ? 'técnico' : 'negócio'}</span>
                 <div style={{ height: 8, borderRadius: 999, background: colors.subtle }}>
                   <div style={{ width: `${(m.n / max) * 100}%`, height: '100%', borderRadius: 999, background: m.natureza === 'tecnico' ? colors.danger : colors.warning }} />
                 </div>
-                <span style={{ fontWeight: 700, color: colors.earth, textAlign: 'right' }}>{m.n}</span>
+                <span style={{ fontWeight: 700, color: colors.earth, textAlign: 'right' }} title={m.natureza === 'tecnico' && m.retomados != null ? `${m.retomados} retomada(s) · ${m.defeitos} defeito(s) do loop` : undefined}>
+                  {m.n}{m.natureza === 'tecnico' && m.defeitos ? <span style={{ display: 'block', fontSize: 10, fontWeight: 600, color: colors.danger }}>{m.defeitos} defeito{m.defeitos > 1 ? 's' : ''}</span> : null}
+                </span>
               </div>
             ))}
             {n2.porMotivo.length === 0 && <span style={{ fontSize: 13, color: colors.muted }}>Nenhum card foi para gente no período.</span>}
