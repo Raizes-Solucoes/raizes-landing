@@ -2074,7 +2074,8 @@ function AutofixPanel() {
             <StatCard label="Reabertos" value={pct(q.pctReabertos)} icon={Icons.ticket} accent={colors.danger} sub={`${q.reaberturas} "não resolveu" no período`} />
             <StatCard label="NPS" value={q.nps == null ? '—' : q.nps} icon={Icons.users} accent={colors.green} sub={`${q.respostasNps} nota(s) · ${q.confirmaram} confirmaram`} />
             {novo
-              ? <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
+              ? <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning}
+                  sub={data.n2 ? `${data.n2.negocio} de negócio · ${data.n2.tecnico} técnico(s) no período` : 'das decisões dos agentes (N2)'} />
               : <StatCard label="Tempo de agente" value={pct(q.pctTempoAgente)} icon={Icons.chart} accent={colors.leaf} sub={`${virgula(q.horasAgente)} h de ${virgula(q.horasAteResolver)} h até resolver`} />}
           </div>
         )}
@@ -2130,6 +2131,27 @@ function AutofixPanel() {
             </div>
           </div>
         )}
+
+        {novo && data.n2 && (() => { const n2 = data.n2; const max = Math.max(1, ...n2.porMotivo.map(m => m.n)); return (
+          <div className="glass-solid" style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Por que foi para gente (N2)</span>
+              <span style={{ fontSize: 12, color: colors.muted }}>{n2.negocio} de negócio · {n2.tecnico} técnico(s){n2.desde ? ` · contado desde ${n2.desde.slice(8, 10)}/${n2.desde.slice(5, 7)}` : ''}</span>
+            </div>
+            <span style={{ fontSize: 12, color: colors.muted }}>Negócio é decisão de gente. Técnico é o que o loop deveria resolver sozinho: a meta é chegar perto de zero.</span>
+            {n2.porMotivo.map(m => (
+              <div key={m.codigo} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 74px 120px 28px', gap: 10, alignItems: 'center', fontSize: 13, padding: '6px 0', borderTop: `1px solid ${colors.subtle}` }}>
+                <span style={{ color: colors.earth, minWidth: 0 }}>{m.rotulo}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, textAlign: 'center',
+                  background: m.natureza === 'tecnico' ? '#fee2e2' : '#fef3c7', color: m.natureza === 'tecnico' ? '#991b1b' : '#92400e' }}>{m.natureza === 'tecnico' ? 'técnico' : 'negócio'}</span>
+                <div style={{ height: 8, borderRadius: 999, background: colors.subtle }}>
+                  <div style={{ width: `${(m.n / max) * 100}%`, height: '100%', borderRadius: 999, background: m.natureza === 'tecnico' ? colors.danger : colors.warning }} />
+                </div>
+                <span style={{ fontWeight: 700, color: colors.earth, textAlign: 'right' }}>{m.n}</span>
+              </div>
+            ))}
+            {n2.porMotivo.length === 0 && <span style={{ fontSize: 13, color: colors.muted }}>Nenhum card foi para gente no período.</span>}
+          </div>); })()}
 
         {novo && (
           <div className="glass-solid" style={{ borderRadius: 20, padding: 24 }}>
