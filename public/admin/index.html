@@ -31,6 +31,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'DM Sans', sans-serif; background: #F9F7F2; color: #3C3D37; }
   .serif { font-family: 'Lora', serif; letter-spacing: -0.02em; }
+  .fluxo-relator svg { display: block; margin: 0 auto; max-width: 100%; height: auto; min-width: 460px; }
   .loader { display: flex; align-items: center; justify-content: center; height: 100vh; background: #F9F7F2; }
   .loader::after { content: ''; width: 40px; height: 40px; border: 3px solid rgba(57,77,250,0.15); border-top-color: #394dfa; border-radius: 50%; animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -1829,6 +1830,7 @@ function OrgDetail({ org, onClose, onUpdate, onRefreshOrgs }) {
 // Métricas do período pela edge `autofix-painel` (só super_admin): o cálculo é do backend
 // (_shared/autofix-painel.ts, testado); aqui só a tela.
 const DECISAO_LABEL = {
+  relatado: 'explicou o caso', sem_relato: 'sem explicação',
   card_refinado: 'card refinado', duplicado: 'duplicado', aguardando_usuario: 'perguntou ao cliente',
   resposta_usuario: 'respondeu a dúvida', reproduzir: 'pediu reprodução', produto: 'produto', n2: 'N2',
   pr_aberto: 'PR aberto', aprovado: 'aprovado', reprovado: 'reprovado', reproduzido: 'reproduzido',
@@ -1836,11 +1838,12 @@ const DECISAO_LABEL = {
   reinvestigar: 'reinvestigar', ambiente: 'ambiente', rodando: 'rodando',
 };
 const DECISAO_COR = {
+  relatado: { bg: '#dcfce7', fg: '#166534' },
   n2: { bg: '#fef3c7', fg: '#92400e' }, reprovado: { bg: '#fee2e2', fg: '#991b1b' }, ambiente: { bg: '#fee2e2', fg: '#991b1b' },
   aprovado: { bg: '#dcfce7', fg: '#166534' }, pr_aberto: { bg: '#dbeafe', fg: '#1e40af' }, card_refinado: { bg: '#dbeafe', fg: '#1e40af' },
   resposta_usuario: { bg: '#dcfce7', fg: '#166534' }, rodando: { bg: '#ede9fe', fg: '#5b21b6' },
 };
-const PAPEL_LABEL = { investigador: 'Investigador', corretor: 'Corretor', qa: 'QA', supervisor: 'Supervisor' };
+const PAPEL_LABEL = { investigador: 'Investigador', corretor: 'Corretor', qa: 'QA', supervisor: 'Supervisor', relator: 'Relator' };
 const usd = (v) => (v == null ? '—' : `US$ ${Number(v).toFixed(2).replace('.', ',')}`);
 const duracaoCurta = (h) => (h == null ? '—' : h < 1 ? `${Math.round(h * 60)} min` : h < 48 ? `${String(h).replace('.', ',')} h` : `${Math.round(h / 24)} dias`);
 const LINEAR = (card) => `https://linear.app/raizessolucoes/issue/${card}`;
@@ -1900,6 +1903,168 @@ function linhaDoCaso(c) {
   return itens.sort((a, b) => a.t - b.t || (a.espera ? 1 : -1));
 }
 
+// ── Explicação do relator ────────────────────────────────────────────────────────────────────────
+// Quando o QA aprova o PR, o agente relator explica o caso. O texto chega do servidor já validado, mas descende do relato
+// de um cliente: aqui ele é renderizado SEMPRE como texto do React (nunca como HTML). O fluxograma é o único SVG: o
+// servidor só aceita a forma que o nosso gerador escreve, o Mermaid roda em `strict` com rótulos em texto SVG, e o SVG
+// passa pelo DOMPurify (perfil SVG) antes de entrar na página. As duas bibliotecas carregam só quando uma explicação é
+// aberta, com versão exata + SRI (como os scripts do topo).
+const LIB_PURIFY = { url: 'https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js', sri: 'sha384-P0JNneQf81HOl9VwNXK76cQ9VMD6Nfsnepxb0cCOg8+UzEdzgPHAPV4wVQrvYQSx' };
+const LIB_MERMAID = { url: 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js', sri: 'sha384-EOXBFmc3gx5mb+vn0vPvvGqACToJD24hhacX5Yx+8NUUQrHIle/Qi5Bg9o3zKwW2' };
+const _scripts = {};
+function carregarScript({ url, sri }) {
+  if (!_scripts[url]) {
+    _scripts[url] = new Promise((ok, falha) => {
+      const el = document.createElement('script');
+      el.src = url; el.integrity = sri; el.crossOrigin = 'anonymous'; el.async = true;
+      el.onload = ok; el.onerror = () => { delete _scripts[url]; falha(new Error('não carregou ' + url)); };
+      document.head.appendChild(el);
+    });
+  }
+  return _scripts[url];
+}
+let _mermaidPronto = null;
+async function desenharFluxograma(id, src) {
+  await Promise.all([carregarScript(LIB_PURIFY), carregarScript(LIB_MERMAID)]);
+  if (!_mermaidPronto) {
+    window.mermaid.initialize({
+      startOnLoad: false, securityLevel: 'strict', theme: 'base', htmlLabels: false,
+      flowchart: { htmlLabels: false, useMaxWidth: true, curve: 'basis' },
+      themeVariables: { fontFamily: "'DM Sans', sans-serif", fontSize: '14px', edgeLabelBackground: '#ffffff', lineColor: '#8a877c', primaryTextColor: colors.earth },
+    });
+    _mermaidPronto = true;
+  }
+  const { svg } = await window.mermaid.render(id, src);
+  return window.DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true } });
+}
+
+const TIPO_NO = {
+  inicio: { rotulo: 'a pessoa faz', cor: '#3b5b8c', bg: '#eef2f8' },
+  passo: { rotulo: 'o sistema faz', cor: '#8a877c', bg: '#f7f6f2' },
+  decisao: { rotulo: 'condição', cor: '#b7791f', bg: '#fff7e0' },
+  problema: { rotulo: 'onde dava errado', cor: '#c0392b', bg: '#fde8e6' },
+  correcao: { rotulo: 'a correção', cor: '#2e7d32', bg: '#e6f4ea' },
+  resultado: { rotulo: 'o que a pessoa vê', cor: '#3b5b8c', bg: '#eef2f8' },
+};
+
+function Fluxograma({ id, src, fluxo }) {
+  const [svg, setSvg] = useState(null);
+  const [erro, setErro] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    setSvg(null); setErro(null);
+    if (!src) { setErro('sem diagrama'); return; }
+    desenharFluxograma(`fluxo-${id.replace(/[^A-Za-z0-9-]/g, '')}`, src)
+      .then(x => { if (vivo) setSvg(x); })
+      .catch(e => { if (vivo) setErro(e.message || String(e)); });
+    return () => { vivo = false; };
+  }, [id, src]);
+  if (svg) {
+    return <div className="fluxo-relator" style={{ overflowX: 'auto', padding: '8px 4px' }} dangerouslySetInnerHTML={{ __html: svg }} />;
+  }
+  if (!erro) return <div style={{ fontSize: 12, color: colors.muted, padding: 16, textAlign: 'center' }}>Desenhando o fluxograma…</div>;
+  // sem desenho (biblioteca fora do ar, diagrama recusado): os quadros e as setas em texto
+  if (!fluxo) return <div style={{ fontSize: 12, color: colors.muted }}>Fluxograma indisponível.</div>;
+  const texto = Object.fromEntries(fluxo.nos.map(n => [n.id, n]));
+  return (
+    <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: colors.earth }}>
+      {fluxo.arestas.map((a, k) => (
+        <li key={k}>
+          <b style={{ color: TIPO_NO[texto[a.de]?.tipo]?.cor }}>{texto[a.de]?.texto}</b>
+          {' → '}{a.rotulo ? <i style={{ color: colors.muted }}>({a.rotulo}) </i> : null}
+          <b style={{ color: TIPO_NO[texto[a.para]?.tipo]?.cor }}>{texto[a.para]?.texto}</b>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function BlocoRelator({ titulo, cor, children }) {
+  return (
+    <section style={{ flex: '1 1 300px', minWidth: 0, background: colors.paper, borderRadius: 14, padding: '14px 16px', borderTop: `3px solid ${cor}`, boxShadow: '0 1px 2px rgba(60,61,55,0.06)' }}>
+      <h5 style={{ margin: '0 0 8px', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: cor, fontWeight: 700 }}>{titulo}</h5>
+      {children}
+    </section>
+  );
+}
+
+const paragrafos = (lista) => (lista || []).map((t, k) => <p key={k} style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: colors.earth }}>{t}</p>);
+
+function ExplicacaoRelator({ caso, r }) {
+  const [aberta, setAberta] = useState(true);
+  return (
+    <div style={{ borderRadius: 16, background: 'linear-gradient(180deg, rgba(57,77,250,0.05), rgba(57,77,250,0) 140px)', border: `1px solid rgba(57,77,250,0.18)`, padding: 18 }}>
+      <button onClick={() => setAberta(!aberta)} aria-expanded={aberta}
+        style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', width: '100%' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: colors.blue }}>📝 Explicação do relator</span>
+        {r.em && <span style={{ fontSize: 11, color: colors.muted }}>{quando(r.em)}</span>}
+        <span style={{ marginLeft: 'auto', fontSize: 12, color: colors.muted }}>{aberta ? '▾' : '▸'}</span>
+      </button>
+      <h4 className="serif" style={{ margin: '8px 0 6px', fontSize: 20, lineHeight: 1.3, color: colors.earth, fontWeight: 600 }}>{r.titulo}</h4>
+      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: colors.earth }}>{r.resumo}</p>
+      {aberta && (
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+            <BlocoRelator titulo="O problema" cor={TIPO_NO.problema.cor}>{paragrafos(r.problema)}</BlocoRelator>
+            <BlocoRelator titulo="A correção" cor={TIPO_NO.correcao.cor}>{paragrafos(r.correcao)}</BlocoRelator>
+          </div>
+          <BlocoRelator titulo="Fluxograma" cor={colors.blue}>
+            <Fluxograma id={caso} src={r.fluxograma_mermaid} fluxo={r.fluxo} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', justifyContent: 'center', marginTop: 6 }}>
+              {Object.entries(TIPO_NO).filter(([t]) => (r.fluxo?.nos || []).some(n => n.tipo === t)).map(([t, v]) => (
+                <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: colors.muted }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: v.bg, border: `1.5px solid ${v.cor}` }} />{v.rotulo}
+                </span>
+              ))}
+            </div>
+          </BlocoRelator>
+          {r.comprovacao?.length > 0 && (
+            <BlocoRelator titulo="Como o QA provou" cor={colors.leaf}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {r.comprovacao.map((c, k) => (
+                  <div key={k}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: colors.earth, lineHeight: 1.45, marginBottom: 6 }}>{c.criterio}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {[['Antes (sem a correção)', c.antes, '#991b1b', 'rgba(239,68,68,0.06)'], ['Depois (com a correção)', c.depois, '#166534', 'rgba(16,185,129,0.07)']].map(([rot, txt, cor, bg]) => {
+                        const semTeste = /^n[ãa]o test/i.test(txt || '');
+                        return (
+                          <div key={rot} style={{ flex: '1 1 220px', minWidth: 0, borderRadius: 10, padding: '8px 10px', background: semTeste ? colors.subtle : bg }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: semTeste ? colors.muted : cor, marginBottom: 3 }}>{rot}</div>
+                            <div style={{ fontSize: 12, lineHeight: 1.5, color: semTeste ? colors.muted : cor }}>{txt || '—'}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </BlocoRelator>
+          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+            {r.arquivos?.length > 0 && (
+              <BlocoRelator titulo="O que mudou no código" cor={colors.earth}>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {r.arquivos.map((a, k) => (
+                    <li key={k} style={{ fontSize: 12, lineHeight: 1.5 }}>
+                      <code style={{ fontSize: 11, background: colors.subtle, padding: '2px 6px', borderRadius: 6, color: colors.earth, wordBreak: 'break-all' }}>{a.arquivo}</code>
+                      <div style={{ color: colors.muted, marginTop: 2 }}>{a.mudanca}</div>
+                    </li>
+                  ))}
+                </ul>
+              </BlocoRelator>
+            )}
+            {r.riscos && (
+              <BlocoRelator titulo="O que observar depois do merge" cor={colors.warning}>
+                <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: colors.earth }}>{r.riscos}</p>
+              </BlocoRelator>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
   const itens = linhaDoCaso(c);
   const partes = itens.map(i => i.etapa
@@ -1916,6 +2081,7 @@ function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
             <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.earth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.titulo || TIPO_LABEL[c.tipo] || 'Card sem título'}</span>
             {meta && <span style={{ fontSize: 11, color: colors.muted }}>{meta}</span>}
           </span>
+          {c.relator && <span title="tem a explicação do relator" style={{ fontSize: 13 }}>📝</span>}
           <ResultadoChip r={c.resultado} />
           <span style={{ fontSize: 12, color: colors.earth, minWidth: 64, textAlign: 'right' }} title="do relato ao resolvido (ou até agora)">{tempoCurto(c.tempo.total)}</span>
           <span style={{ fontSize: 12, color: colors.muted, minWidth: 70, textAlign: 'right' }}>{usd(c.custo)}</span>
@@ -1929,6 +2095,7 @@ function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
 
       {aberto && (
         <div style={{ marginTop: 12, padding: 16, borderRadius: 14, background: 'rgba(60,61,55,0.03)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {c.relator && <ExplicacaoRelator caso={c.id} r={c.relator} />}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', fontSize: 12, color: colors.earth }}>
             <span>Card: <a href={LINEAR(c.id)} target="_blank" rel="noopener" style={{ color: colors.blue, fontWeight: 600 }}>{c.id}</a></span>
             {c.relatos.filter(r => r !== c.id).length > 0 && (
