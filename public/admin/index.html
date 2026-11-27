@@ -1905,7 +1905,7 @@ function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
   const partes = itens.map(i => i.etapa
     ? { valor: (i.etapa.minutos ?? 0) / 60, cor: COR_AGENTE, titulo: `${PAPEL_LABEL[i.etapa.papel] || i.etapa.papel}: ${tempoCurto((i.etapa.minutos ?? 0) / 60)}` }
     : { valor: i.espera.horas, cor: DONO[i.espera.dono]?.cor || colors.muted, titulo: `${DONO[i.espera.dono]?.rotulo || i.espera.dono} (${i.espera.motivo}): ${tempoCurto(i.espera.horas)}` });
-  const meta = [TIPO_LABEL[c.tipo] || c.tipo, mostrarOrg && c.org, c.relatos.length > 1 ? `${c.relatos.length} relatos` : null].filter(Boolean).join(' · ');
+  const meta = [TIPO_LABEL[c.tipo] || c.tipo, mostrarOrg && c.org, c.relatos.length > 1 ? `${c.relatos.length} relatos` : null, c.pelaEquipe ? 'relatado pela equipe Raízes' : null].filter(Boolean).join(' · ');
   return (
     <div style={{ borderTop: `1px solid ${colors.subtle}`, padding: '12px 0' }}>
       <button onClick={alternar} aria-expanded={aberto}
@@ -2041,10 +2041,10 @@ function AutofixPanel() {
       {erro && <div role="alert" style={{ padding: 16, borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontSize: 14 }}>Não deu para carregar o painel: {erro}</div>}
 
       {data && (<>
-        {novo && origem === 'clientes' && data.origens?.internos > 0 && (
+        {novo && origem === 'clientes' && (data.origens?.internos > 0 || data.origens?.clientesPelaEquipe > 0) && (
           <div style={{ fontSize: 12, color: colors.muted }}>
-            Fora desta conta: {data.origens.internos === 1 ? '1 caso' : `${data.origens.internos} casos`} de orgs de teste interno ou demonstração
-            {data.origens.semRelato ? ` e ${data.origens.semRelato === 1 ? '1 card' : `${data.origens.semRelato} cards`} sem relato` : ''}. <button onClick={() => setOrigem('todos')} style={{ background: 'none', border: 'none', padding: 0, color: colors.blue, cursor: 'pointer', font: 'inherit' }}>Ver tudo</button>
+            {data.origens.internos > 0 && <>Fora desta conta: {data.origens.internos === 1 ? '1 caso' : `${data.origens.internos} casos`} de orgs de teste interno ou demonstração{data.origens.semRelato ? ` e ${data.origens.semRelato === 1 ? '1 card' : `${data.origens.semRelato} cards`} sem relato` : ''}. </>}
+            {data.origens.clientesPelaEquipe ? `Dos casos de clientes, ${data.origens.clientesPelaEquipe === 1 ? '1 foi relatado' : `${data.origens.clientesPelaEquipe} foram relatados`} pela equipe Raízes entrada na org, não pelo cliente. ` : ''}<button onClick={() => setOrigem('todos')} style={{ background: 'none', border: 'none', padding: 0, color: colors.blue, cursor: 'pointer', font: 'inherit' }}>Ver tudo</button>
           </div>
         )}
 
