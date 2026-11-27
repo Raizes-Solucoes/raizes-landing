@@ -2148,6 +2148,99 @@ function CasoLinha({ c, aberto, alternar, mostrarOrg }) {
   );
 }
 
+// Chamados abertos por org e por usuário (pedido de 27/11): no período e no recorte do painel, com filtro por org e por
+// quem abriu. Os nomes vêm do servidor (só super_admin vê este painel).
+const STATUS_CHAMADO = { aberto: 'aberto', em_analise: 'em análise', em_execucao: 'em execução', aguardando_usuario: 'esperando o cliente', resolvido: 'resolvido', cancelado: 'cancelado', fechado: 'fechado' };
+function ChamadosPorOrg({ d }) {
+  const [orgSel, setOrgSel] = useState('');
+  const [userSel, setUserSel] = useState('');
+  const orgs = d.orgs || [];
+  const chaveOrg = (o) => o.orgId || '_';
+  const daOrg = orgSel ? orgs.find(o => chaveOrg(o) === orgSel) : null;
+  const usuarios = daOrg ? daOrg.usuarios : Object.values(orgs.flatMap(o => o.usuarios).reduce((m, u) => {
+    const k = u.usuarioId || '_';
+    m[k] = m[k] ? { ...m[k], n: m[k].n + u.n } : { ...u };
+    return m;
+  }, {})).sort((a, b) => b.n - a.n);
+  const lista = (d.lista || []).filter(c => (!orgSel || (c.orgId || '_') === orgSel) && (!userSel || (c.usuarioId || '_') === userSel));
+  const total = orgs.reduce((t, o) => t + o.n, 0);
+  const tipos = (pt) => Object.entries(pt || {}).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n} ${TIPO_LABEL[t] || t}`).join(' · ');
+  const selectStyle = { fontSize: 12, padding: '6px 10px', borderRadius: 10, border: `1px solid ${colors.subtle}`, background: colors.paper, color: colors.earth, maxWidth: '100%' };
+  return (
+    <div className="glass-solid" style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: colors.earth }}>Chamados abertos por org e usuário</span>
+        <span style={{ fontSize: 12, color: colors.muted }}>{total} chamado{total === 1 ? '' : 's'} no período · {orgs.length} org{orgs.length === 1 ? '' : 's'}</span>
+      </div>
+      {orgs.length === 0 ? <span style={{ fontSize: 13, color: colors.muted }}>Nenhum chamado no período.</span> : (<>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+          {orgs.map(o => {
+            const sel = orgSel === chaveOrg(o);
+            return (
+              <button key={chaveOrg(o)} onClick={() => { setOrgSel(sel ? '' : chaveOrg(o)); setUserSel(''); }} aria-pressed={sel}
+                style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', borderRadius: 14, padding: '12px 14px', background: sel ? 'rgba(57,77,250,0.07)' : colors.paper,
+                  border: `1px solid ${sel ? 'rgba(57,77,250,0.45)' : colors.subtle}`, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <b style={{ fontSize: 13, color: colors.earth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.org}</b>
+                  <b style={{ fontSize: 15, color: colors.blue }}>{o.n}</b>
+                </span>
+                <span style={{ fontSize: 11, color: colors.muted }}>{tipos(o.porTipo)}</span>
+                <span style={{ fontSize: 11, color: colors.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {o.usuarios.map(u => `${u.usuario} (${u.n})`).join(', ')}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <label style={{ fontSize: 12, color: colors.muted, display: 'flex', gap: 6, alignItems: 'center' }}>Org
+            <select value={orgSel} onChange={e => { setOrgSel(e.target.value); setUserSel(''); }} style={selectStyle}>
+              <option value="">Todas</option>
+              {orgs.map(o => <option key={chaveOrg(o)} value={chaveOrg(o)}>{o.org} ({o.n})</option>)}
+            </select>
+          </label>
+          <label style={{ fontSize: 12, color: colors.muted, display: 'flex', gap: 6, alignItems: 'center' }}>Quem abriu
+            <select value={userSel} onChange={e => setUserSel(e.target.value)} style={selectStyle}>
+              <option value="">Todos</option>
+              {usuarios.map(u => <option key={u.usuarioId || '_'} value={u.usuarioId || '_'}>{u.usuario}{u.equipe ? ' · equipe' : ''} ({u.n})</option>)}
+            </select>
+          </label>
+          {(orgSel || userSel) && <button onClick={() => { setOrgSel(''); setUserSel(''); }} style={{ ...selectStyle, cursor: 'pointer' }}>Limpar filtro</button>}
+          <span style={{ fontSize: 12, color: colors.muted, marginLeft: 'auto' }}>{lista.length} na lista</span>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 640 }}>
+            <thead>
+              <tr style={{ textAlign: 'left', color: colors.muted }}>
+                {['Quando', 'Card', 'Título', 'Tipo', 'Org', 'Quem abriu', 'Situação'].map(h => <th key={h} style={{ padding: '6px 8px', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {lista.map((c, k) => (
+                <tr key={`${c.card || 'x'}-${k}`} style={{ borderTop: `1px solid ${colors.subtle}`, verticalAlign: 'top' }}>
+                  <td style={{ padding: '8px', whiteSpace: 'nowrap', color: colors.muted }}>{quando(c.criadoEm)}</td>
+                  <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>
+                    {c.card ? <a href={LINEAR(c.card)} target="_blank" rel="noopener" style={{ color: colors.blue, fontWeight: 600 }}>{c.card}</a> : '—'}
+                    {c.caso && c.caso !== c.card && <span style={{ color: colors.muted }}> → <a href={LINEAR(c.caso)} target="_blank" rel="noopener" style={{ color: colors.blue }}>{c.caso}</a></span>}
+                  </td>
+                  <td style={{ padding: '8px', color: colors.earth, minWidth: 200 }}>{c.titulo || '—'}</td>
+                  <td style={{ padding: '8px', whiteSpace: 'nowrap', color: colors.earth }}>{TIPO_LABEL[c.tipo] || c.tipo}</td>
+                  <td style={{ padding: '8px', color: colors.earth }}>{c.org}</td>
+                  <td style={{ padding: '8px', color: colors.earth, whiteSpace: 'nowrap' }}>
+                    {c.usuario}{c.equipe && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#ede9fe', color: '#5b21b6' }}>equipe</span>}
+                  </td>
+                  <td style={{ padding: '8px', whiteSpace: 'nowrap', color: c.status === 'resolvido' ? '#166534' : colors.earth }}>{STATUS_CHAMADO[c.status] || String(c.status || '').replace(/_/g, ' ')}</td>
+                </tr>
+              ))}
+              {lista.length === 0 && <tr><td colSpan={7} style={{ padding: '12px 8px', color: colors.muted }}>Nenhum chamado com este filtro.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </>)}
+    </div>
+  );
+}
+
 function AutofixPanel() {
   const [dias, setDias] = useState(30);
   const [origem, setOrigem] = useState('clientes');
@@ -2352,6 +2445,8 @@ function AutofixPanel() {
             {casos.length === 0 && <div style={{ fontSize: 13, color: colors.muted, padding: '12px 0', borderTop: `1px solid ${colors.subtle}` }}>Nenhum caso {filtroCaso === 'todos' ? 'no período' : 'com este filtro'}.</div>}
           </div>
         )}
+
+        {novo && data.chamadosPorOrg && <ChamadosPorOrg d={data.chamadosPorOrg} />}
 
         {novo && eco.premissas && (
           <details className="glass-solid" style={{ borderRadius: 20, padding: '18px 24px' }}>
