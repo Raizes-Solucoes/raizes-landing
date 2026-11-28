@@ -2317,13 +2317,13 @@ function AutofixPanel() {
               sub={`estimativa em ${eco.casos ?? 0} caso(s)${eco.pendentes ? ` · +${tempoCurto(eco.horasPendentes)} quando ${eco.pendentes} PR(s) forem ao ar` : ''}`} />
             <StatCard label="Até resolver" value={duracaoCurta(r.horasMedianaResolver)} icon={Icons.chart} accent={colors.leaf}
               sub={pctGente == null ? 'mediana, do relato ao resolvido' : `mediana · ${pctGente}% do tempo esperando gente`} />
-            <StatCard label="Custo de IA" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards`} />
+            <StatCard label="Custo de IA dos casos" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards · sem replays, testes e rodadas que caíram (o total da chave está no console da Anthropic)`} />
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <StatCard label="Relatos" value={r.relatos ?? 0} icon={Icons.ticket} sub={`${r.resolvidos ?? 0} resolvidos · ${r.abertos ?? 0} em aberto`} />
             <StatCard label="Até resolver" value={duracaoCurta(r.horasMedianaResolver)} icon={Icons.chart} accent={colors.green} sub="mediana, do relato ao resolvido" />
-            <StatCard label="Custo de IA" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards`} />
+            <StatCard label="Custo de IA dos casos" value={usd(r.custo)} icon={Icons.wallet} accent={colors.leaf} sub={`${usd(r.custoPorCard)} por card · ${r.cards ?? 0} cards · sem replays, testes e rodadas que caíram (o total da chave está no console da Anthropic)`} />
             <StatCard label="Foram para o time" value={r.taxaN2 == null ? '—' : `${r.taxaN2}%`} icon={Icons.users} accent={colors.warning} sub="das decisões dos agentes (N2)" />
           </div>
         )}
@@ -2499,7 +2499,8 @@ function AutofixPanel() {
           </div>
 
           <div className="glass-solid" style={{ borderRadius: 20, padding: 24 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: colors.earth, marginBottom: 16 }}>Custo de IA por dia</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: colors.earth, marginBottom: 4 }}>Custo de IA dos casos por dia</div>
+            <div style={{ fontSize: 12, color: colors.muted, marginBottom: 16 }}>O que cada rodada do loop registrou ao terminar. Não inclui replays, testes nem rodadas que caíram antes de responder: o gasto total da chave fica no console da Anthropic.</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: ALTURA_BARRA + 22 }}>
               {serie.map(s => (
                 <div key={s.dia} title={`${s.dia.slice(8, 10)}/${s.dia.slice(5, 7)}: ${usd(s.custo)} · ${s.rodadas} rodada(s)`}
